@@ -16,31 +16,5 @@ export default [
                 }
             }
         ],
-    },
-    {
-        path: 'locum',
-        children: [
-            {
-                path: '',
-                component: EnquiriesComponent,
-                data: { type: 'locum' },
-                resolve: {
-                    enquiries: () => inject(EnquiryService).getEnquiries('locum'),
-                }
-            }
-        ],
-    },
-    {
-        path: 'clinic',
-        children: [
-            {
-                path: '',
-                component: EnquiriesComponent,
-                data: { type: 'clinic' },
-                resolve: {
-                    enquiries: () => inject(EnquiryService).getEnquiries('clinic'),
-                }
-            }
-        ],
-    },
+    }
 ] as Routes;

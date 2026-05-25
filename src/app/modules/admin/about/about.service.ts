@@ -56,9 +56,9 @@ export class AboutService {
     }
 
 
-    deletePhoto(fileName: string): Observable<boolean> {
+    deletePhoto(fileName: string, fileType: string): Observable<boolean> {
         return this._httpClient
-            .post(this.apiUrl + '/deletephoto', {fileName})
+            .post(this.apiUrl + '/deletephoto', {fileName, fileType})
             .pipe(
                 map((response: any) => {
                    if (response.status) {

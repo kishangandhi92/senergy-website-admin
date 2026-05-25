@@ -77,10 +77,11 @@ import { HomeService } from './home.service';
 export class HomepageComponent implements OnInit, OnDestroy {
     entityForm: UntypedFormGroup;
     subscription: Subscription = null;
-    uploadedBannerImage = null;
+    uploadedWhoWeAreImage = null;
     public readonly baseURL = environment.apiBaseUrl;
     public readonly PHOTO_TYPE = {
-        BANNER: 'banner',
+        WHOWEARE: 'WHOWEARE',
+        WHYCHOOSEUS: 'WHYCHOOSEUS',
     };
     public readonly maxFileSizeInMb = FILE_UPLOAD.MAX_FILE_SIZE_IN_MB;
     private destroy$ = new Subject<void>(); // To clean up subscriptions
@@ -105,9 +106,10 @@ export class HomepageComponent implements OnInit, OnDestroy {
 
     generateFormGroup() {
         this.entityForm = this._formBuilder.group({
-            bannerTitle: ['', [Validators.required]],
-            bannerSubtitle: ['', [Validators.required]],
-            bannerDescription: ['', [Validators.required]],
+            whoWeAreTitle: ['', [Validators.required]],
+            whoWeAreDescription: ['', [Validators.required]],
+            whyChooseUsDescription: ['', [Validators.required]],
+            coreServicesDescription: ['', [Validators.required]],
         });
     }
 
@@ -132,12 +134,13 @@ export class HomepageComponent implements OnInit, OnDestroy {
 
     patchFormValues(data) {
         this.entityForm.patchValue({
-            bannerTitle: data.bannerTitle,
-            bannerSubtitle: data.bannerSubtitle,
-            bannerDescription: data.bannerDescription,
+            whoWeAreTitle: data.whoWeAreTitle,
+            whoWeAreDescription: data.whoWeAreDescription,
+            coreServicesDescription: data.coreServicesDescription,
+            whyChooseUsDescription: data.whyChooseUsDescription,
         });
 
-        this.uploadedBannerImage = data.bannerImage;
+        this.uploadedWhoWeAreImage = data.whoWeArePhoto;
     }
 
     updateSelectedEntity() {
@@ -146,8 +149,8 @@ export class HomepageComponent implements OnInit, OnDestroy {
             return;
         }
 
-        if (!this.uploadedBannerImage) {
-            this._snackBar.showError('Please upload a photo for Banner');
+        if (!this.uploadedWhoWeAreImage) {
+            this._snackBar.showError('Please upload a photo for Who We Are section');
             return;
         }
 
@@ -157,10 +160,11 @@ export class HomepageComponent implements OnInit, OnDestroy {
         const formValues = this.entityForm.value;
 
         const requestObj = {
-            bannerTitle: formValues.bannerTitle,
-            bannerSubtitle: formValues.bannerSubtitle,
-            bannerDescription: formValues.bannerDescription,
-            uploadedBannerImage: this.uploadedBannerImage,
+            whoWeAreTitle: formValues.whoWeAreTitle,
+            whoWeAreDescription: formValues.whoWeAreDescription,
+            coreServicesDescription: formValues.coreServicesDescription,
+            whyChooseUsDescription: formValues.whyChooseUsDescription,
+            uploadedWhoWeAreImage: this.uploadedWhoWeAreImage
         };
 
         this._homeService.update(requestObj).subscribe(
@@ -207,7 +211,9 @@ export class HomepageComponent implements OnInit, OnDestroy {
                     (response) => {
                         this.entityForm.enable();
                         if (response.status) {
-                            this.uploadedBannerImage = response.data[0];
+                            if (fieldName === this.PHOTO_TYPE.WHOWEARE) {
+                                this.uploadedWhoWeAreImage = response.data[0];
+                            }
                         } else {
                             this._snackBar.showError('Failed to upload Photo');
                         }
@@ -243,8 +249,9 @@ export class HomepageComponent implements OnInit, OnDestroy {
                 this._homeService.deletePhoto(fileName, type).subscribe(
                     (response) => {
                         if (response) {
-                            this.uploadedBannerImage = null;
-
+                            if (type === this.PHOTO_TYPE.WHOWEARE) {
+                                this.uploadedWhoWeAreImage = null;
+                            } 
                             this._snackBar.showSuccess(
                                 'File deleted successfully!'
                             );

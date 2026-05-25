@@ -8,10 +8,7 @@ export default [
         path     : '',
         component: DashboardComponent,
         resolve: {
-            //  stats: () => inject(DashboardService).getStats(),
-            //  enquiries: () => inject(DashboardService).getEnquiries(),
-            //  clinicEnquiries: () => inject(DashboardService).getClinicEnquiries(),
-            //  locumEnquiries: () => inject(DashboardService).getLocumEnquiries(),
+             enquiries: () => inject(DashboardService).getEnquiries(),
         },
     },
 ] as Routes;

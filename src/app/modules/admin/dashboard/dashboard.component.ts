@@ -1,10 +1,8 @@
-import { CommonModule, CurrencyPipe, NgClass } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import {
-    ChangeDetectionStrategy,
     Component,
     OnDestroy,
     OnInit,
-    ViewEncapsulation,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
@@ -14,12 +12,11 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { Router, RouterModule } from '@angular/router';
-import { ApexOptions, NgApexchartsModule } from 'ng-apexcharts';
+import { NgApexchartsModule } from 'ng-apexcharts';
 import { Observable, Subject, takeUntil } from 'rxjs';
 import { DashboardService } from './dashboard.service';
 import { UserService } from 'app/core/user/user.service';
 import { User } from 'app/core/user/user.types';
-import { FuseCardComponent } from '@fuse/components/card';
 import { DateTime } from 'luxon';
 import { FuseAlertComponent } from '@fuse/components/alert';
 
@@ -35,10 +32,7 @@ import { FuseAlertComponent } from '@fuse/components/alert';
     MatButtonToggleModule,
     NgApexchartsModule,
     MatTableModule,
-    NgClass,
-    CurrencyPipe,
     CommonModule,
-    FuseCardComponent,
     FuseAlertComponent,
     RouterModule
  ],
@@ -48,10 +42,11 @@ import { FuseAlertComponent } from '@fuse/components/alert';
 
 
 export class DashboardComponent implements OnInit, OnDestroy {
-
+    enquiryData;
     data: any;
     private _unsubscribeAll: Subject<any> = new Subject<any>();
     user: Observable<User>;
+    displayedColumns2: string[] = [ 'name', 'emailId', 'phone',  'purpose', 'message', 'enquiredOn'];
     /**
      * Constructor
      */
@@ -67,17 +62,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
     ngOnInit(): void {
         this.user = this._userService.user$;
 
-        // Get the data
-        this._dashboardService.data$
-            .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe((response) => {
-                // Store the data
-                if (response.status) {
-                    this.data = response.data;
-                }
-
-            });
-
+        this._dashboardService.enquiries.subscribe((response) => {
+            console.log('enquiries', response);
+            if (response.status) {
+                this.enquiryData = response.data;
+            }
+        });
     }
 
     /**

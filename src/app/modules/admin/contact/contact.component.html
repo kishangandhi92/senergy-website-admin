@@ -37,126 +37,52 @@
 
     <!-- Main -->
     <div class="flex-auto border-t p-6 sm:p-10">
-
-         <fuse-alert class="mb-5" [type]="'info'" [appearance]="'outline'">
-            <span fuseAlertTitle>Photo upload instructions</span>
-            <p class="text-sm color-gray-100">Accepted File Types: <strong>.jpg, .jpeg,
-                    .png</strong> Max
-                File Size: <strong>{{ maxFileSizeInMb }}MB</strong></p>
-        </fuse-alert>
-
-        <form [formGroup]="entityForm" class="flex flex-col space-y-1">
-
-            <div class="flex flex-col sm:flex-row space-y-6  md:space-x-6 ">
-                <div class="w-full md:w-2/3">
-                    <div class="flex flex-col">
-                        <div class="flex gap-3">
-                            <mat-form-field class="w-1/2">
-                            <mat-label>Email ID</mat-label>
-                            <input matInput [formControlName]="'email'" type="email" required maxlength="50" />
-                            @if (entityForm.get('email').hasError('required')) {
-                            <mat-error>Email ID is required </mat-error>
-                            }
-                            @if (entityForm.get('email').hasError('email')) {
-                            <mat-error>Email ID is invalid </mat-error>
-                            }
-                        </mat-form-field>
-                        <mat-form-field class="w-1/2">
-                            <mat-label>Hours</mat-label>
-                            <input matInput [formControlName]="'hours'" required maxlength="50" />
-                            @if (entityForm.get('hours').hasError('required')) {
-                            <mat-error> Hours is required </mat-error>
-                            }
-                        </mat-form-field>
-                        </div>
-                        
-                        <mat-form-field class="w-full">
-                            <mat-label>Address</mat-label>
-                            <input matInput [formControlName]="'address'" required maxlength="50" />
-                            @if (entityForm.get('address').hasError('required')) {
-                            <mat-error> Address is required </mat-error>
-                            }
-                        </mat-form-field>
-                        <mat-form-field class="w-full">
-                            <mat-label>Map Link</mat-label>
-                            <input matInput [formControlName]="'mapLink'" required maxlength="200" />
-                            @if (entityForm.get('mapLink').hasError('required')) {
-                            <mat-error> Map Link is required </mat-error>
-                            }
-                            @if (entityForm.get('mapLink').hasError('pattern')) {
-                            <mat-error> Map Link is invalid </mat-error>
-                            }
-                            <mat-hint>Include the full Google Maps URL (max 200 characters).</mat-hint>
-                        </mat-form-field>
-                        <div class="flex mt-3 gap-3">
-
-                            <mat-form-field class="w-1/3">
-                                <mat-label>Facebook Link</mat-label>
-                                <input matInput [formControlName]="'fbLink'" required maxlength="200" />
-                                @if (entityForm.get('fbLink').hasError('required')) {
-                                <mat-error> Facebook Link is required </mat-error>
-                                }
-                                @if (entityForm.get('fbLink').hasError('pattern')) {
-                                <mat-error> Facebook Link is invalid </mat-error>
-                                }
-                            </mat-form-field>
-                            <mat-form-field class="w-1/3">
-                                <mat-label>Instagram Link</mat-label>
-                                <input matInput [formControlName]="'instaLink'" required maxlength="200" />
-                                @if (entityForm.get('instaLink').hasError('required')) {
-                                <mat-error> Instagram Link is required </mat-error>
-                                }
-                                @if (entityForm.get('instaLink').hasError('pattern')) {
-                                <mat-error> Instagram Link is invalid </mat-error>
-                                }
-                            </mat-form-field>
-                            <mat-form-field class="w-1/3">
-                                <mat-label>Tiktok Link</mat-label>
-                                <input matInput [formControlName]="'tiktokLink'" required maxlength="200" />
-                                @if (entityForm.get('tiktokLink').hasError('required')) {
-                                <mat-error> Tiktok Link is required </mat-error>
-                                }
-                                @if (entityForm.get('tiktokLink').hasError('pattern')) {
-                                <mat-error> Tiktok Link is invalid </mat-error>
-                                }
-                            </mat-form-field>
-                        </div>
-                    </div>
-                </div>
-                <div class="w-full md:w-1/3">
-                    <div class="flex flex-col space-y-5 items-center">
-                        <div class="w-full">
-
-                            <fuse-card *ngIf="uploadedImage" class="filter-article flex w-full  flex-col">
-
-                                <img class="w-full object-cover" style="aspect-ratio: 70 / 40;"
-                                    [src]="baseURL + '/assets/img/' + uploadedImage" alt="Banner image" />
-
-
-                                <div class="m-3 text-center">
-                                    <button class="px-3 text-red-600" mat-button [disabled]="entityForm.disabled"
-                                        (click)="deleteFile(null, uploadedImage)">
-                                        Delete Photo
-                                    </button>
-                                </div>
-                            </fuse-card>
-                        </div>
-                        <div class="w-full text-center">
-                            <button class="w-full" [disabled]="entityForm.disabled" type="button" [color]="'primary'"
-                                mat-flat-button (click)="fileInput0.click()">
-                                <mat-icon [svgIcon]="'mat_outline:file_upload'"></mat-icon>
-                                Upload Map Photo</button>
-
-                            <input hidden type="file" class="form-control" #fileInput0 accept=".jpg,.jpeg,.png"
-                                (change)="onFileSelect($event, 'map')" />
-
-                        </div>
-                    </div>
-                </div>
+         <form [formGroup]="entityForm" class="flex flex-col space-y-1">
+            <div class="flex flex-row w-full space-x-6">
+                <mat-form-field class="w-1/2">
+                    <mat-label>Email ID</mat-label>
+                    <input matInput [formControlName]="'email'" type="email" required maxlength="50" />
+                    @if (entityForm.get('email').hasError('required')) {
+                    <mat-error>Email ID is required </mat-error>
+                    }
+                    @if (entityForm.get('email').hasError('email')) {
+                    <mat-error>Email ID is invalid </mat-error>
+                    }
+                </mat-form-field>
+                 <mat-form-field class="w-1/2">
+                    <mat-label>Phone Number</mat-label>
+                    <input matInput [formControlName]="'phone'" required maxlength="20" />
+                    @if (entityForm.get('phone').hasError('required')) {
+                    <mat-error> Phone Number is required </mat-error>
+                    }
+                    @if (entityForm.get('phone').hasError('pattern')) {
+                    <mat-error> Phone Number is invalid </mat-error>
+                    }
+                </mat-form-field>
             </div>
-
-
-        </form>
+            <div class="flex flex-row w-full space-x-6">
+                <mat-form-field class="w-full">
+                    <mat-label>Address</mat-label>
+                    <textarea matInput [formControlName]="'address'" required maxlength="300"></textarea>
+                    @if (entityForm.get('address').hasError('required')) {
+                    <mat-error> Address is required </mat-error>
+                    }
+                </mat-form-field>
+            </div>
+            <div class="flex flex-row w-full space-x-6">
+                <mat-form-field class="w-full">
+                    <mat-label>Map Link</mat-label>
+                    <input matInput [formControlName]="'mapLink'" required maxlength="200" />
+                    @if (entityForm.get('mapLink').hasError('required')) {
+                    <mat-error> Map Link is required </mat-error>
+                    }
+                    @if (entityForm.get('mapLink').hasError('pattern')) {
+                    <mat-error> Map Link is invalid </mat-error>
+                    }
+                    <mat-hint>Include the full Google Maps URL (max 200 characters).</mat-hint>
+                </mat-form-field>
+            </div>
+         </form>
     </div>
 
 </div>

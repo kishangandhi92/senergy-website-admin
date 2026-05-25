@@ -55,32 +55,4 @@ export class ContactService {
         );
     }
 
-    deletePhoto(fileName: string): Observable<boolean> {
-        return this._httpClient
-            .post(this.apiUrl + '/deletephoto', {fileName})
-            .pipe(
-                map((response: any) => {
-                   if (response.status) {
-                    return true;
-                   }
-                   return false;
-                })
-            );
-    }
-
-    uploadFiles(formData: FormData) {
-        return this.content$.pipe(
-            take(1),
-            switchMap((projects) =>
-                this._httpClient
-                    .post(this.apiUrl + '/upload', formData)
-                    .pipe(
-                        map((response: any) => {
-                            return response;
-                        })
-                    )
-            )
-        );
-    }
-
 }

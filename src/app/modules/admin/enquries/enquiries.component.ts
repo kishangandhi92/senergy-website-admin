@@ -12,15 +12,10 @@ import {
     OnInit,
     ViewChild,
 } from '@angular/core';
-import {
-    FormsModule,
-    ReactiveFormsModule,
-    UntypedFormBuilder,
-} from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatOptionModule, MatRippleModule } from '@angular/material/core';
-import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -35,8 +30,6 @@ import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ActivatedRoute } from '@angular/router';
 import { FuseCardComponent } from '@fuse/components/card';
-import { FuseConfirmationService } from '@fuse/services/confirmation';
-import { SnackBarService } from 'app/core/general/snackbar.service';
 import { PipesModule } from 'app/pipes/pipes.module';
 import { Observable, Subject } from 'rxjs';
 import { EnquiryService } from './enquiry.service';
@@ -77,7 +70,6 @@ export class EnquiriesComponent implements OnInit, AfterViewInit, OnDestroy {
     @ViewChild(MatSort) private _sort: MatSort = null;
     query = '';
     type = '';
-    pageTitle = 'Enquiries';
     enquiries$: Observable<any[]>;
     isLoading: boolean = false;
 
@@ -86,28 +78,12 @@ export class EnquiriesComponent implements OnInit, AfterViewInit, OnDestroy {
     constructor(
         private route: ActivatedRoute,
         private _changeDetectorRef: ChangeDetectorRef,
-        private _fuseConfirmationService: FuseConfirmationService,
-        private _matDialog: MatDialog,
-        private _formBuilder: UntypedFormBuilder,
-        private _enquiryService: EnquiryService,
-        private _snackBar: SnackBarService
+        private _enquiryService: EnquiryService
     ) {}
 
     ngOnInit(): void {
         this.type = this.route.snapshot.data['type']; // Get 'id' as a string
         this.enquiries$ = this._enquiryService.enquiries$;
-
-        switch (this.type) {
-            case 'general':
-                this.pageTitle = 'All General Enquiries';
-                break;
-            case 'locum':
-                this.pageTitle = 'All Locum Enquiries';
-                break;
-            case 'clinic':
-                this.pageTitle = 'All Clinic Enquiries';
-                break;
-        }
     }
 
     ngAfterViewInit(): void {

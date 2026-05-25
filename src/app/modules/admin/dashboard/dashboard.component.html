@@ -41,56 +41,71 @@
         <div class="mx-auto w-full max-w-screen-xl">
             <div class="grid w-full min-w-0 grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-4">
 
-                <!-- Summary -->
-                <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow">
-
-                    <div class="mt-2 flex flex-col items-center">
-                        <div class="text-5xl font-bold leading-none tracking-tight text-blue-500 sm:text-6xl">
-                            {{ data?.locum }}
+                <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow sm:col-span-6">
+                    <div class="flex justify-between">
+                        <div>
+                            <div class="text-2xl font-extrabold leading-none tracking-tight">
+                                Recent General Enquries
+                            </div>
+                            <div class="text-secondary mt-1.5 mb-1.5 text-lg">
+                                Displaying recent 10 enquiries made from the website contact page
+                            </div>
                         </div>
-                        <div class="text-lg font-medium text-blue-600 dark:text-blue-500">
-                            Locum Enquiries
-                        </div>
+                        <a [routerLink]="['/enquiries/general']"  class="ml-4" mat-flat-button [color]="'primary'">
+                            <span class="ml-2 mr-1">Show All</span>
 
+                        </a>
+                    </div>
+
+                    <div class="mt-2 flex flex-auto flex-col overflow-x-auto">
+                        <div *ngIf="!enquiryData || enquiryData.length === 0" class="no-records">
+
+                            <fuse-alert [type]="'warning'">
+                                No records found
+                            </fuse-alert>
+
+                        </div>
+                        <table mat-table [dataSource]="enquiryData" class="mat-elevation-z8"
+                            *ngIf="enquiryData && enquiryData.length > 0">
+
+                            <!--- Note that these columns can be defined in any order.
+                                  The actual rendered columns are set as a property on the row definition" -->
+
+                            <ng-container matColumnDef="name">
+                                <th mat-header-cell *matHeaderCellDef> Name </th>
+                                <td mat-cell *matCellDef="let element"> {{element.name}} </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="emailId">
+                                <th mat-header-cell *matHeaderCellDef> Email ID </th>
+                                <td mat-cell *matCellDef="let element"> {{element.emailId}} </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="purpose">
+                                <th mat-header-cell *matHeaderCellDef> Purpose </th>
+                                <td mat-cell *matCellDef="let element"> {{element.purpose}} </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="phone">
+                                <th mat-header-cell *matHeaderCellDef> Phone </th>
+                                <td mat-cell *matCellDef="let element"> {{element.phone}} </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="message">
+                                <th mat-header-cell *matHeaderCellDef> Message </th>
+                                <td mat-cell *matCellDef="let element"> {{element.message}} </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="enquiredOn">
+                                <th mat-header-cell *matHeaderCellDef> Enquired On </th>
+                                <td mat-cell *matCellDef="let element"> {{element.enquiredOn}} </td>
+                            </ng-container>
+
+                            <tr mat-header-row *matHeaderRowDef="displayedColumns2"></tr>
+                            <tr mat-row *matRowDef="let row; columns: displayedColumns2;"></tr>
+                        </table>
                     </div>
                 </div>
-                <!-- Overdue -->
-                <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow">
-
-                    <div class="mt-2 flex flex-col items-center">
-                        <div class="text-5xl font-bold leading-none tracking-tight text-red-500 sm:text-6xl">
-                            {{ data?.clinic }}
-                        </div>
-                        <div class="text-lg font-medium text-red-600 dark:text-red-500">
-                            Clinic Enquiries
-                        </div>
-                    </div>
-                </div>
-                <!-- Issues -->
-                <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow">
-
-                    <div class="mt-2 flex flex-col items-center">
-                        <div class="text-5xl font-bold leading-none tracking-tight text-amber-500 sm:text-6xl">
-                            {{ data?.enquiries }}
-                        </div>
-                        <div class="text-lg font-medium text-amber-600 dark:text-amber-500">
-                            General Enquiries
-                        </div>
-                    </div>
-                </div>
-                <!-- Features -->
-                <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow">
-
-                    <div class="mt-2 flex flex-col items-center">
-                        <div class="text-5xl font-bold leading-none tracking-tight text-green-500 sm:text-6xl">
-                            {{ data?.subscribers }}
-                        </div>
-                        <div class="text-lg font-medium text-green-600 dark:text-green-500">
-                            Subscribers
-                        </div>
-                    </div>
-                </div>
-
 
 
 

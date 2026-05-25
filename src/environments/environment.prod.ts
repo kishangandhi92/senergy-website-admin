@@ -1,4 +1,4 @@
 export const environment = {
     production: true,
-    apiBaseUrl: 'https://mareya-eg.com'
+    apiBaseUrl: 'https://theconcierge.tokyo/'
   };

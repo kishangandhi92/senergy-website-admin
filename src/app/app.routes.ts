@@ -10,14 +10,14 @@ import { PrivilegeGuard } from './core/auth/guards/privilege.guard';
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 export const appRoutes: Route[] = [
     // Redirect empty path to '/example'
-    { path: '', pathMatch: 'full', redirectTo: 'configurations/home' },
+    { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
 
     // Redirect signed-in user to the '/example'
     //
     // After the user signs in, the sign-in page will redirect the user to the 'signed-in-redirect'
     // path. Below is another redirection for that path to redirect the user to the desired
     // location. This is a small convenience to keep all main routes together here on this file.
-    { path: 'signed-in-redirect', pathMatch: 'full', redirectTo: 'configurations/home' },
+    { path: 'signed-in-redirect', pathMatch: 'full', redirectTo: 'dashboard' },
 
     // Auth routes for guests
     {
@@ -121,15 +121,21 @@ export const appRoutes: Route[] = [
                 data: { userType: 'administrator' },  // Only allow administrators
                 children: [
                     {
+                        path: 'slider',
+                        loadChildren: () =>
+                            import('app/modules/admin/slider/slider.routes')
+
+                    },
+                    {
                         path: 'home',
                         loadChildren: () =>
                             import('app/modules/admin/homepage/home.routes')
 
                     },
                     {
-                        path: 'products',
+                        path: 'services',
                         loadChildren: () =>
-                            import('app/modules/admin/products/product.routes')
+                            import('app/modules/admin/services/services.routes')
 
                     },
                     {
@@ -155,6 +161,12 @@ export const appRoutes: Route[] = [
                 path: 'subscribers',
                 loadChildren: () =>
                     import('app/modules/admin/subscribers/subscribers.routes')
+
+            },
+            {
+                path: 'enquiries',
+                loadChildren: () =>
+                    import('app/modules/admin/enquries/enquries.routes')
 
             },
             {

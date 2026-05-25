@@ -33,10 +33,11 @@ import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { FILE_UPLOAD } from 'app/constants/upload';
 import { SnackBarService } from 'app/core/general/snackbar.service';
 import { PipesModule } from 'app/pipes/pipes.module';
+import { environment } from 'environments/environment';
 import { QuillModule } from 'ngx-quill';
 import { Subject, Subscription } from 'rxjs';
 import { AboutService } from './about.service';
-import { environment } from 'environments/environment';
+import { MatTabsModule } from '@angular/material/tabs';
 
 @Component({
     selector: 'app-people',
@@ -68,6 +69,7 @@ import { environment } from 'environments/environment';
         FuseCardComponent,
         QuillModule,
         FuseAlertComponent,
+        MatTabsModule
     ],
     templateUrl: './about.component.html',
     styleUrl: './about.component.scss',
@@ -75,8 +77,12 @@ import { environment } from 'environments/environment';
 export class AboutComponent implements OnInit, OnDestroy {
     entityForm: UntypedFormGroup;
     subscription: Subscription = null;
-    uploadedImage = null;
+    uploadBannerImage = null;
     public readonly baseURL = environment.apiBaseUrl;
+    public readonly PHOTO_TYPE = {
+        ABOUT: 'about',
+        APPROACH: 'approach',
+    };
     public readonly maxFileSizeInMb = FILE_UPLOAD.MAX_FILE_SIZE_IN_MB;
     private destroy$ = new Subject<void>(); // To clean up subscriptions
 
@@ -84,7 +90,7 @@ export class AboutComponent implements OnInit, OnDestroy {
         private _formBuilder: UntypedFormBuilder,
         private _snackBar: SnackBarService,
         private _fuseConfirmationService: FuseConfirmationService,
-        private _aboutService: AboutService,
+        private _aboutService: AboutService
     ) {}
 
     ngOnInit(): void {
@@ -98,10 +104,142 @@ export class AboutComponent implements OnInit, OnDestroy {
         this.destroy$?.complete();
     }
 
+    approaches: Array<{ icon: string; title: string; description: string }> =
+        [];
+    selectedApproachIndex: number = -1;
+    isEditMode: boolean = false;
+    currentApproachIcon: string = null;
+
     generateFormGroup() {
         this.entityForm = this._formBuilder.group({
             pageTitle: ['', [Validators.required]],
-            description: ['', [Validators.required]]
+            ourStoryTitle: ['', [Validators.required]],
+            storyDescription: ['', [Validators.required]],
+            approachDescription: ['', [Validators.required]],
+            approachIcon: [''],
+            approachTitle: [''],
+            approachOneLineDescription: [''],
+        });
+    }
+
+    addApproach(): void {
+        const title = this.entityForm.get('approachTitle').value;
+        const description = this.entityForm.get(
+            'approachOneLineDescription'
+        ).value;
+
+        if (title && description && this.currentApproachIcon) {
+            if (this.isEditMode && this.selectedApproachIndex > -1) {
+                this.approaches[this.selectedApproachIndex] = {
+                    icon: this.currentApproachIcon,
+                    title,
+                    description,
+                };
+                this.isEditMode = false;
+                this.selectedApproachIndex = -1;
+            } else {
+                this.approaches.push({
+                    icon: this.currentApproachIcon,
+                    title,
+                    description,
+                });
+            }
+
+            // Reset the form fields and current icon
+            this.entityForm.patchValue({
+                approachTitle: '',
+                approachOneLineDescription: '',
+            });
+            this.currentApproachIcon = null;
+        } else {
+            if (!this.currentApproachIcon) {
+                this._snackBar.showError(
+                    'Please upload an icon for the approach'
+                );
+            }
+        }
+    }
+
+    cancelEditMode(): void {
+        this.isEditMode = false;
+        this.selectedApproachIndex = -1;
+        // Reset the form fields and current icon
+        this.entityForm.patchValue({
+            approachTitle: '',
+            approachOneLineDescription: '',
+        });
+        this.currentApproachIcon = null;
+    }
+
+    onApproachIconSelect(event: Event): void {
+        const input = event.target as HTMLInputElement;
+        if (input.files && input.files.length > 0) {
+            const selectedFiles = Array.from(input.files);
+            const maxFileSize = this.maxFileSizeInMb * 1024 * 1024;
+
+            const formData = new FormData();
+            selectedFiles.forEach((file, index) => {
+                if (file.size > maxFileSize) {
+                    this._snackBar.showError(
+                        `The file "${file.name}" exceeds the ${this.maxFileSizeInMb} MB limit.`
+                    );
+                    return;
+                }
+                formData.append(`${this.PHOTO_TYPE.APPROACH}[${index}]`, file);
+            });
+
+            formData.append('fieldType', this.PHOTO_TYPE.APPROACH);
+
+            if (formData.has(`${this.PHOTO_TYPE.APPROACH}[0]`)) {
+                this.entityForm.disable();
+                this._aboutService.uploadFiles(formData).subscribe(
+                    (response) => {
+                        this.entityForm.enable();
+                        if (response.status) {
+                            this.currentApproachIcon = response.data[0];
+                        } else {
+                            this._snackBar.showError('Failed to upload icon');
+                        }
+                    },
+                    (error) => {
+                        this.entityForm.enable();
+                        this._snackBar.showError(
+                            'Oh no! Server error occurred while uploading icon'
+                        );
+                    }
+                );
+            }
+        }
+    }
+
+    editApproach(index: number): void {
+        const approach = this.approaches[index];
+        this.selectedApproachIndex = index;
+        this.isEditMode = true;
+        this.currentApproachIcon = approach.icon;
+
+        this.entityForm.patchValue({
+            approachTitle: approach.title,
+            approachOneLineDescription: approach.description,
+        });
+    }
+
+    deleteApproach(index: number): void {
+        const confirmation = this._fuseConfirmationService.open({
+            title: 'Delete Approach',
+            message:
+                'Are you sure you want to delete this approach? This action cannot be undone!',
+            actions: {
+                confirm: {
+                    label: 'Delete',
+                },
+            },
+        });
+
+        confirmation.afterClosed().subscribe((result) => {
+            if (result === 'confirmed') {
+                this.approaches.splice(index, 1);
+            }
         });
     }
 
@@ -126,11 +264,22 @@ export class AboutComponent implements OnInit, OnDestroy {
 
     patchFormValues(data) {
         this.entityForm.patchValue({
-            pageTitle: data.pageTitle,
-            description: data.description
+            pageTitle: data.pageDescription,
+            ourStoryTitle: data.storyTitle,
+            storyDescription: data.storyDescription,
+            approachDescription: data.approachDescription,
         });
 
-        this.uploadedImage = data.photo;
+        this.uploadBannerImage = data.bannerPhoto;
+
+        // Load approaches if they exist
+        if (data.approachData) {
+            try {
+                this.approaches = JSON.parse(data.approachData);
+            } catch (e) {
+                this.approaches = [];
+            }
+        }
     }
 
     updateSelectedEntity() {
@@ -139,13 +288,12 @@ export class AboutComponent implements OnInit, OnDestroy {
             return;
         }
 
-        if (!this.uploadedImage) {
+        if (!this.uploadBannerImage) {
             this._snackBar.showError(
-                'Please upload a photo for About section'
+                'Please upload a photo for the Page Banner'
             );
             return;
         }
-
 
         // Disable the form
         this.entityForm.disable();
@@ -154,8 +302,11 @@ export class AboutComponent implements OnInit, OnDestroy {
 
         const requestObj = {
             pageTitle: formValues.pageTitle,
-            description: formValues.description,
-            photo: this.uploadedImage,
+            ourStoryTitle: formValues.ourStoryTitle,
+            storyDescription: formValues.storyDescription,
+            approachDescription: formValues.approachDescription,
+            bannerImage: this.uploadBannerImage,
+            approaches: JSON.stringify(this.approaches), // Convert approaches array to JSON string
         };
 
         this._aboutService.update(requestObj).subscribe(
@@ -170,7 +321,8 @@ export class AboutComponent implements OnInit, OnDestroy {
                 this._snackBar.showError(
                     'Oh no! Server error occured while updating Details'
                 );
-            }, () => {
+            },
+            () => {
                 this.entityForm.enable();
             }
         );
@@ -196,29 +348,30 @@ export class AboutComponent implements OnInit, OnDestroy {
             formData.append('fieldType', fieldName);
 
             if (formData.has(`${fieldName}[0]`)) {
-            this.entityForm.disable();
-            this._aboutService.uploadFiles(formData).subscribe(
-                (response) => {
-                    this.entityForm.enable();
-                    if (response.status) {
-                            this.uploadedImage = response.data[0];
-                        
-                    } else {
-                        this._snackBar.showError('Failed to upload Photo');
+                this.entityForm.disable();
+                this._aboutService.uploadFiles(formData).subscribe(
+                    (response) => {
+                        this.entityForm.enable();
+                        if (response.status) {
+                            if (fieldName === this.PHOTO_TYPE.ABOUT) {
+                                this.uploadBannerImage = response.data[0];
+                            }
+                        } else {
+                            this._snackBar.showError('Failed to upload Photo');
+                        }
+                    },
+                    (error) => {
+                        this.entityForm.enable();
+                        this._snackBar.showError(
+                            'Oh no! Server error occurred while uploading Photos'
+                        );
                     }
-                },
-                (error) => {
-                    this.entityForm.enable();
-                    this._snackBar.showError(
-                        'Oh no! Server error occurred while uploading Photos'
-                    );
-                }
-            );
+                );
             }
         }
     }
 
-    deleteFile(index: number, fileName) {
+    deleteFile(index: number, type, fileName) {
         // Open the confirmation dialog
         const confirmation = this._fuseConfirmationService.open({
             title: 'Delete File',
@@ -235,11 +388,12 @@ export class AboutComponent implements OnInit, OnDestroy {
         confirmation.afterClosed().subscribe((result) => {
             // If the confirm button pressed...
             if (result === 'confirmed') {
-                this._aboutService.deletePhoto(fileName).subscribe(
+                this._aboutService.deletePhoto(fileName, type).subscribe(
                     (response) => {
                         if (response) {
-                                this.uploadedImage = null;
-                            
+                            if (type === this.PHOTO_TYPE.ABOUT) {
+                                this.uploadBannerImage = null;
+                            }
                             this._snackBar.showSuccess(
                                 'File deleted successfully!'
                             );

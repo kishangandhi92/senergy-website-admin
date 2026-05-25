@@ -13,7 +13,7 @@
             <!-- Title -->
             <div class="truncate">
                 <div class="text-4xl truncate font-extrabold tracking-tight">
-                    Hero Section
+                    Home Page
                 </div>
             </div>
             <!-- Actions -->
@@ -36,80 +36,110 @@
     </div>
 
     <!-- Main -->
-    <div class="flex-auto border-t p-6 ">
+    <div class="-mt-px flex-auto border-t">
         <div class="mx-auto w-full max-w-screen-xl">
-
-            <fuse-alert class="mb-5" [type]="'info'" [appearance]="'outline'">
-                <span fuseAlertTitle>Photo upload instructions</span>
-                <p class="text-sm color-gray-100">Accepted File Types: <strong>.jpg, .jpeg,
+            <div class="p-6 pb-0">
+                <fuse-alert class="mb-5" [type]="'info'" [appearance]="'outline'">
+                    <span fuseAlertTitle>Photo upload instructions</span>
+                    <p class="text-sm color-gray-100">Accepted File Types: <strong>.jpg, .jpeg,
                         .png</strong> Max
                     File Size: <strong>{{ maxFileSizeInMb }}MB</strong></p>
-            </fuse-alert>
-
+                </fuse-alert>
+            </div>
             <!-- Tabs -->
-            <form [formGroup]="entityForm" class="flex flex-col space-y-5">
-                <div class="flex flex-col sm:flex-row space-y-6  md:space-x-6 ">
-                    <div class="w-full md:w-2/3">
-                        <div class="flex flex-col">
-                            <mat-form-field class="w-full">
-                                <mat-label>Banner Subtitle</mat-label>
-                                <input matInput [formControlName]="'bannerSubtitle'" required maxlength="200" />
+            <form [formGroup]="entityForm">
+                <mat-tab-group class="sm:px-2" mat-stretch-tabs="false" [animationDuration]="'0'" dynamicHeight>
+                    <!-- Home -->
+                    <mat-tab label="Who We Are">
+                        <div class="flex flex-col sm:flex-row space-y-6  md:space-x-6 ">
+                            <div class="w-full md:w-2/3">
+                                <div class="flex flex-col">
+                                    <mat-form-field class="w-full">
+                                        <mat-label>Title</mat-label>
+                                        <input matInput [formControlName]="'whoWeAreTitle'" required maxlength="200" />
+                                        @if (entityForm.get('whoWeAreTitle').hasError('required')) {
+                                        <mat-error> Title is required </mat-error>
+                                        }
+                                    </mat-form-field>
 
-                                @if (entityForm.get('bannerSubtitle').hasError('required')) {
-                                <mat-error> Banner Subtitle is required </mat-error>
-                                }
-                            </mat-form-field>
+                                    <mat-form-field class="w-full mt-4">
+                                        <mat-label>Description</mat-label>
+                                        <textarea matInput [formControlName]="'whoWeAreDescription'" required
+                                            maxlength="300" style="height: 100px;"></textarea>
+                                        @if (entityForm.get('whoWeAreDescription').hasError('required')) {
+                                        <mat-error> Description is required </mat-error>
+                                        }
+                                    </mat-form-field>
+                                </div>
+                            </div>
+                            <div class="w-full md:w-1/3">
+                                <div class="flex flex-col space-y-5 items-center">
+                                    <div class="w-full">
 
-                            <mat-form-field class="w-full">
-                                <mat-label>Banner Title</mat-label>
-                                <input matInput [formControlName]="'bannerTitle'" required maxlength="200" />
-                                @if (entityForm.get('bannerTitle').hasError('required')) {
-                                <mat-error> Banner Title is required </mat-error>
-                                }
-                            </mat-form-field>
+                                        <fuse-card *ngIf="uploadedWhoWeAreImage" class="filter-article flex w-full flex-col">
 
-                            <mat-form-field class="w-full mt-4">
-                                <mat-label>Banner Description</mat-label>
-                                <textarea matInput [formControlName]="'bannerDescription'" required maxlength="400"
-                                    style="min-height: 100px;"></textarea>
-                                @if (entityForm.get('bannerDescription').hasError('required')) {
-                                <mat-error> Banner Description is required </mat-error>
-                                }
-                            </mat-form-field>
-                        </div>
-                    </div>
-                    <div class="w-full md:w-1/3">
-                        <div class="flex flex-col space-y-5 items-center">
-                            <div class="w-full">
-
-                                <fuse-card *ngIf="uploadedBannerImage" class="filter-article flex w-full flex-col">
-
-                                    <img class="w-full object-cover" style="aspect-ratio: 70 / 40;"
-                                        [src]="baseURL + '/assets/img/hero/' + uploadedBannerImage"
-                                        alt="Banner image" />
+                                            <img class="w-full object-cover" style="aspect-ratio: 70 / 40;"
+                                                [src]="baseURL + '/assets/images/bg/' + uploadedWhoWeAreImage" alt="Who We Are Photo" />
 
 
-                                    <div class="m-3 text-center">
-                                        <button class="px-3 text-red-600" mat-button [disabled]="entityForm.disabled"
-                                            (click)="deleteFile(null, PHOTO_TYPE.BANNER, uploadedBannerImage)">
-                                            Delete Photo
-                                        </button>
+                                            <div class="m-3 text-center">
+                                                <button class="px-3 text-red-600" mat-button [disabled]="entityForm.disabled"
+                                                    (click)="deleteFile(null, PHOTO_TYPE.WHOWEARE, uploadedWhoWeAreImage)">
+                                                    Delete Photo
+                                                </button>
+                                            </div>
+                                        </fuse-card>
                                     </div>
-                                </fuse-card>
-                            </div>
-                            <div class="w-full text-center">
-                                <button class="w-full" [disabled]="entityForm.disabled" type="button"
-                                    [color]="'primary'" mat-flat-button (click)="fileInput0.click()">
-                                    <mat-icon [svgIcon]="'mat_outline:file_upload'"></mat-icon>
-                                    Upload Banner Photo</button>
+                                    <div class="w-full text-center">
+                                        <button class="w-full" [disabled]="entityForm.disabled" type="button"
+                                            [color]="'primary'" mat-flat-button (click)="fileInput0.click()">
+                                            <mat-icon [svgIcon]="'mat_outline:file_upload'"></mat-icon>
+                                            Upload Photo</button>
 
-                                <input hidden type="file" class="form-control" #fileInput0 accept=".jpg,.jpeg,.png"
-                                    (change)="onFileSelect($event, PHOTO_TYPE.BANNER)" />
+                                        <input hidden type="file" class="form-control" #fileInput0 accept=".jpg,.jpeg,.png"
+                                            (change)="onFileSelect($event, PHOTO_TYPE.WHOWEARE)" />
 
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
+                    </mat-tab>
+                  <mat-tab label="Core Services">
+                        <div class="flex flex-col sm:flex-row space-y-6  md:space-x-6 ">
+                            <div class="w-full">
+                                <div class="flex flex-col">
+                                   
+                                    <mat-form-field class="w-full mt-4" [subscriptSizing]="'dynamic'">
+                                        <mat-label>Core Services Description</mat-label>
+                                        <textarea matInput [formControlName]="'coreServicesDescription'" required
+                                            maxlength="300" style="height: 100px;"></textarea>
+                                        @if (entityForm.get('coreServicesDescription').hasError('required')) {
+                                        <mat-error> Description is required </mat-error>
+                                        }
+                                    </mat-form-field>
+                                </div>
+                            </div>
+                        </div>
+                    </mat-tab>
+
+                    <mat-tab label="Why Choose Us">
+                        <div class="flex flex-col sm:flex-row space-y-6  md:space-x-6 ">
+                            <div class="w-full">
+                                <div class="flex flex-col">
+                                   
+                                    <mat-form-field class="w-full mt-4" [subscriptSizing]="'dynamic'">
+                                        <mat-label>Why Choose Us Description</mat-label>
+                                        <textarea matInput [formControlName]="'whyChooseUsDescription'" required
+                                            maxlength="300" style="height: 100px;"></textarea>
+                                        @if (entityForm.get('whyChooseUsDescription').hasError('required')) {
+                                        <mat-error> Description is required </mat-error>
+                                        }
+                                    </mat-form-field>
+                                </div>
+                            </div>
+                        </div>
+                    </mat-tab>
+                </mat-tab-group>
             </form>
         </div>
     </div>
