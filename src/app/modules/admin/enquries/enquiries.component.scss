@@ -1,0 +1,8 @@
+.locum-grid {
+    grid-template-columns:  repeat(7, 1fr);
+}
+
+.clinic-grid,
+.general-grid {
+    grid-template-columns:  repeat(6, 1fr);
+}

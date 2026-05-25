@@ -1,0 +1,100 @@
+<div class="flex min-w-0 flex-auto flex-col">
+    <!-- Header -->
+    <div class="bg-card  bg-primary-100 ">
+        <div class="mx-auto flex w-full max-w-screen-xl flex-col px-6 sm:px-8">
+            <div class="my-8 flex min-w-0 flex-auto flex-col sm:my-8 sm:flex-row sm:items-center">
+                <!-- Avatar and name -->
+                <div class="flex min-w-0 flex-auto items-center">
+
+                    <div class="ml-4 flex min-w-0 flex-col" *ngIf="user | async as user">
+
+                        <div
+                            class="truncate text-2xl font-semibold leading-7 tracking-tight md:text-5xl md:leading-snug">
+                            Welcome, {{ user.name }}!
+                        </div>
+                    </div>
+                </div>
+                <!-- Actions -->
+                <div class="mt-6 flex items-center space-x-3 sm:ml-2 sm:mt-0">
+                    <!-- <button
+                        class="bg-accent"
+                        mat-flat-button
+                        [color]="'accent'"
+                    >
+                        <mat-icon
+                            class="icon-size-5"
+                            [svgIcon]="'heroicons_solid:envelope'"
+                        ></mat-icon>
+                        <span class="ml-2">Messages</span>
+                    </button> -->
+                    <!-- <button mat-flat-button [color]="'primary'">
+                        Enter Readings
+                    </button> -->
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="-mt-px flex-auto border-t p-6 ">
+        <div class="mx-auto w-full max-w-screen-xl">
+            <div class="grid w-full min-w-0 grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-4">
+
+                <!-- Summary -->
+                <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow">
+
+                    <div class="mt-2 flex flex-col items-center">
+                        <div class="text-5xl font-bold leading-none tracking-tight text-blue-500 sm:text-6xl">
+                            {{ data?.locum }}
+                        </div>
+                        <div class="text-lg font-medium text-blue-600 dark:text-blue-500">
+                            Locum Enquiries
+                        </div>
+
+                    </div>
+                </div>
+                <!-- Overdue -->
+                <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow">
+
+                    <div class="mt-2 flex flex-col items-center">
+                        <div class="text-5xl font-bold leading-none tracking-tight text-red-500 sm:text-6xl">
+                            {{ data?.clinic }}
+                        </div>
+                        <div class="text-lg font-medium text-red-600 dark:text-red-500">
+                            Clinic Enquiries
+                        </div>
+                    </div>
+                </div>
+                <!-- Issues -->
+                <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow">
+
+                    <div class="mt-2 flex flex-col items-center">
+                        <div class="text-5xl font-bold leading-none tracking-tight text-amber-500 sm:text-6xl">
+                            {{ data?.enquiries }}
+                        </div>
+                        <div class="text-lg font-medium text-amber-600 dark:text-amber-500">
+                            General Enquiries
+                        </div>
+                    </div>
+                </div>
+                <!-- Features -->
+                <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow">
+
+                    <div class="mt-2 flex flex-col items-center">
+                        <div class="text-5xl font-bold leading-none tracking-tight text-green-500 sm:text-6xl">
+                            {{ data?.subscribers }}
+                        </div>
+                        <div class="text-lg font-medium text-green-600 dark:text-green-500">
+                            Subscribers
+                        </div>
+                    </div>
+                </div>
+
+
+
+
+            </div>
+        </div>
+    </div>
+</div>

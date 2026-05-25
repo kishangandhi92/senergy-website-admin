@@ -1,0 +1,219 @@
+<div class="bg-card flex min-w-0 flex-auto flex-col dark:bg-transparent sm:absolute sm:inset-0 sm:overflow-hidden">
+
+    <!-- Header -->
+    <div
+        class="relative flex flex-0 flex-col border-b px-6 py-8 sm:flex-row sm:items-center sm:justify-between md:px-8">
+        <!-- Loader -->
+        @if (isLoading) {
+        <div class="absolute inset-x-0 bottom-0">
+            <mat-progress-bar [mode]="'indeterminate'"></mat-progress-bar>
+        </div>
+        }
+        <!-- Title -->
+        <div class="text-4xl font-extrabold tracking-tight">Operators</div>
+        <!-- Actions -->
+        <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
+            <!-- Search -->
+            <mat-form-field class="fuse-mat-dense fuse-mat-rounded min-w-64" [subscriptSizing]="'dynamic'">
+                <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
+                <input matInput [(ngModel)]="query" [autocomplete]="'off'" [placeholder]="'Search'" />
+            </mat-form-field>
+            <!-- Add product button -->
+            <button class="ml-4" mat-flat-button [color]="'primary'" (click)="openDialog(1)"
+                [disabled]="operatorForm.disabled">
+                <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                <span class="ml-2 mr-1">Add New</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="flex flex-auto overflow-hidden">
+        <!-- Products list -->
+        <div class="flex flex-auto flex-col overflow-hidden sm:overflow-y-auto">
+
+            @if (operators$ | async; as operators) {
+            @if (operators.length > 0) {
+
+            <div class="grid">
+                <div class="inventory-grid text-secondary sticky top-0 z-10 grid gap-4 bg-gray-50 px-6 py-4 text-md font-semibold shadow dark:bg-black dark:bg-opacity-5 md:px-8"
+                    matSort matSortDisableClear>
+                    <div [mat-sort-header]="'empId'">
+                        Employee ID
+                    </div>
+                    <div [mat-sort-header]="'name'">Name</div>
+
+                    <div>
+                        Type
+                    </div>
+                    <div>
+                        Role Assigned
+                    </div>
+                    <div class="hidden lg:block">
+                        Created On
+                    </div>
+                    <div class="hidden lg:block">
+                        Last Modified On
+                    </div>
+                    <div class="hidden sm:block">Actions</div>
+                </div>
+
+                <!-- Rows -->
+                @if (operators$ | async | SearchFilter:query:'name' | sort: _sort?.active:_sort?.direction; as operators
+                ) {
+
+                <div *ngIf="operators.length > 0; else noData">
+                    @for (
+                    operator of operators;
+                    track trackByFn($index, operator)
+                    ) {
+                    <div class="inventory-grid grid items-center gap-4 border-b px-6 py-3 md:px-8">
+                        <!-- SKU -->
+                        <div class="truncate">
+                            {{ operator.empId }}
+                        </div>
+
+                        <!-- Name -->
+                        <div class="truncate">
+                            {{ operator.name }}
+                            <span class="text-xs px-2 bg-blue-600 text-white rounded-full"
+                                *ngIf="user?.id === operator.empId">You</span>
+                        </div>
+
+                        <div class="truncate">
+                            {{ operator.type === "1" ? 'User' : 'Administrator' }}
+                        </div>
+                        <div class="truncate">
+                            {{ operator.roleName }}
+                        </div>
+                        <div class="hidden lg:block">
+                            {{ operator.createdAt | date:"dd/MM/yyyy HH:mm" }}
+                        </div>
+                        <div class="hidden lg:block">
+                            {{ operator.lastModifiedAt | date:"dd/MM/yyyy HH:mm" }}
+                        </div>
+                        <div class="flex gap-2">
+                            <!-- <button class="h-7 min-h-7 min-w-10 px-2 leading-6 border-none" mat-stroked-button
+                                [matTooltip]="'View Privileges'"
+                                (click)="viewPrivileges(operator)">
+                                <mat-icon class="icon-size-6 text-blue-400"
+                                    [svgIcon]="'heroicons_solid:shield-check'"></mat-icon>
+                            </button> -->
+
+                            <button class="h-7 min-h-7 min-w-10 px-2 leading-6 border-none" mat-stroked-button
+                                [matTooltip]="'Update Operator'" [disabled]="user?.id === operator.empId"
+                                (click)="openDialog(2, operator)">
+                                <mat-icon class="icon-size-6 text-teal-400"
+                                    [svgIcon]="'heroicons_solid:pencil-square'"></mat-icon>
+                            </button>
+
+                            <button class="h-7 min-h-7 min-w-10 px-2 leading-6 border-none" mat-stroked-button
+                                [matTooltip]="'Delete Operator'" [disabled]="user?.id === operator.empId"
+                                (click)="deleteSelectedOperator(operator)">
+                                <mat-icon class="icon-size-6 text-red-400"
+                                    [svgIcon]="'heroicons_solid:trash'"></mat-icon>
+                            </button>
+                        </div>
+                    </div>
+
+                    }
+                </div>
+                <ng-template #noData>
+                    <div class="border-t p-8 text-center text-2xl tracking-tight">No records found for the term <span
+                            class="font-semibold ">"{{query }}"</span></div>
+                </ng-template>
+
+                }
+
+            </div>
+            }
+            @else {
+            <div class="border-t p-8 text-center text-4xl tracking-tight sm:p-16">
+                There are no operators!
+            </div>
+            }
+            }
+
+
+        </div>
+    </div>
+</div>
+
+<ng-template #AddOperatorDialog>
+
+    <div class=" flex max-h-160 flex-auto flex-col overflow-y-auto md:w-200 md:min-w-200">
+        <!-- Header -->
+        <div class="flex h-14 flex-0 items-center justify-between bg-primary pl-6 pr-3 text-on-primary sm:pl-8 sm:pr-5">
+            <div class="text-lg font-medium">{{ mode === 1 ? 'Add New Operator' : 'Update Operator'}}</div>
+            <button mat-icon-button (click)="matDialogRef.close()" [tabIndex]="-1">
+                <mat-icon class="text-current" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+            </button>
+        </div>
+    </div>
+
+    <!-- Card form -->
+    <form class="flex w-full flex-0 flex-col items-start overflow-y-auto max-h-96 space-y-3 sm:p-4 mt-3"
+        [formGroup]="operatorForm">
+        <div class="flex flex-row w-full space-x-6">
+            <!-- Title -->
+            <mat-form-field class="w-60">
+                <mat-label>Employee ID</mat-label>
+                <input matInput [formControlName]="'empId'" [readonly]="mode === 2" />
+                @if (operatorForm.get('empId').hasError('required')) {
+                <mat-error> ID is required </mat-error>
+                }
+                @if (operatorForm.get('empId').hasError('employeeIdTaken')) {
+                <mat-error> Employee ID is already taken. </mat-error>
+                }
+
+            </mat-form-field>
+
+            <!-- Title -->
+            <mat-form-field class="w-full">
+                <mat-label>Operator Name</mat-label>
+                <input matInput [formControlName]="'name'" />
+                @if (operatorForm.get('name').hasError('required')) {
+                <mat-error> Name is required </mat-error>
+                }
+            </mat-form-field>
+        </div>
+        <div class="flex flex-row w-full space-x-6 mt-0 items-center">
+
+            <div class="flex flex-col w-1/2">
+                <mat-label class="font-medium">Operator Type <span class="text-red-600">*</span></mat-label>
+                <mat-radio-group class="flex flex-row" [color]="'primary'" [formControlName]="'type'" [value]="'1'">
+                    <mat-radio-button [value]="'2'">
+                        Administrator
+                    </mat-radio-button>
+                    <mat-radio-button [value]="'1'">
+                        User
+                    </mat-radio-button>
+                </mat-radio-group>
+            </div>
+
+            <mat-form-field class="flex items-center w-1/2">
+                <mat-label>Role</mat-label>
+                <mat-select [formControlName]="'role'">
+                    @for (role of roles$ | async; track role) {
+                    <mat-option [value]="role.id">{{role.name}}</mat-option>
+                    }
+                </mat-select>
+            </mat-form-field>
+
+        </div>
+    </form>
+
+    <div class=" flex items-center justify-end border-t bg-gray-50 px-8 py-3 dark:bg-gray-700">
+        <button mat-button (click)="matDialogRef.close()">Cancel</button>
+        <button class="ml-3 px-6" mat-flat-button [color]="'primary'"
+            (click)="mode === 1 ? addOperator(): updateSelectedOperator()"
+            [disabled]="operatorForm.invalid || operatorForm.disabled">
+            @if (!operatorForm.disabled) {
+            <span> Save </span>
+            }
+            @if (operatorForm.disabled) {
+            <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
+            }
+        </button>
+    </div>
+</ng-template>

@@ -1,0 +1,97 @@
+<div class="bg-card flex min-w-0 flex-auto flex-col dark:bg-transparent sm:absolute sm:inset-0 sm:overflow-hidden">
+
+    <!-- Header -->
+    <div
+        class="relative flex flex-0 flex-col border-b px-6 py-8 sm:flex-row sm:items-center sm:justify-between md:px-8">
+        <!-- Loader -->
+        @if (isLoading) {
+        <div class="absolute inset-x-0 bottom-0">
+            <mat-progress-bar [mode]="'indeterminate'"></mat-progress-bar>
+        </div>
+        }
+        <!-- Title -->
+        <div class="text-4xl font-extrabold tracking-tight">Subscribers</div>
+        <!-- Actions -->
+        <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
+            <!-- Search -->
+            <mat-form-field class="fuse-mat-dense fuse-mat-rounded min-w-64" [subscriptSizing]="'dynamic'">
+                <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
+                <input matInput [(ngModel)]="query" [autocomplete]="'off'" [placeholder]="'Search'" />
+            </mat-form-field>
+            <!-- Add product button -->
+            <!-- <button class="ml-4" mat-flat-button [color]="'primary'" (click)="openDialog(1)"
+                [disabled]="addEntityForm.disabled || addEntityForm.disabled">
+                <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                <span class="ml-2 mr-1">Add New</span>
+            </button> -->
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="flex flex-auto overflow-hidden">
+        <!-- Products list -->
+        <div class="flex flex-auto flex-col overflow-hidden sm:overflow-y-auto">
+
+            @if (subscribers$ | async; as subscribers) {
+            @if (subscribers.length > 0) {
+            <div class="grid">
+                <div class="inventory-grid text-secondary sticky top-0 z-10 grid gap-4 bg-gray-50 px-6 py-4 text-md font-semibold shadow dark:bg-black dark:bg-opacity-5 md:px-8"
+                    matSort matSortDisableClear>
+                    <div [mat-sort-header]="'emailId'">Email ID</div>
+                    <div [mat-sort-header]="'subscribedOn'">Subscribed On</div>
+                    <div class="hidden sm:block">Actions</div>
+                </div>
+
+                <!-- Rows -->
+                @if (subscribers$ | async | SearchFilter:query:'emailId'| sort: _sort?.active:_sort?.direction; as subscribers
+                ) {
+
+                <div *ngIf="subscribers.length > 0; else noData">
+                    @for (
+                    user of subscribers;
+                    track trackByFn($index, user)
+                    ) {
+                    <div class="inventory-grid grid items-center gap-4 border-b px-6 py-3 md:px-8">
+
+                        <!-- Name -->
+                        <div class="truncate " [title]="user.emailId">
+                            {{ user.emailId }}
+                        </div>
+
+                        <div class="truncate" [title]="user.subscribedOn">
+                            {{ user.subscribedOn }}
+                        </div>
+
+                        <div class="flex gap-2">
+
+                            <button class="text-red-400" mat-stroked-button
+                                (click)="unsubscribe(user)">Unsubscribe
+                            </button>
+                        </div>
+                    </div>
+
+                    }
+                </div>
+                <ng-template #noData>
+                    <div class="border-t p-8 text-center text-2xl tracking-tight">No records found for the term <span
+                            class="font-semibold ">"{{query }}"</span></div>
+                </ng-template>
+
+                }
+
+            </div>
+            }
+            @else {
+            <div class="border-t p-8 text-center text-4xl tracking-tight sm:p-16">
+                There are no Subscribers!
+            </div>
+            }
+            } @else {
+            <div class="border-t p-8 text-center text-4xl tracking-tight sm:p-16">
+                There are no Subscribers!
+            </div>
+            }
+        </div>
+    </div>
+
+</div>

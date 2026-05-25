@@ -1,0 +1,116 @@
+<div class="flex min-w-0 flex-auto flex-col">
+
+    <div class="bg-card">
+        <!-- Header -->
+        <div
+            class="relative flex flex-0 flex-col border-b px-6 py-8 sm:flex-row sm:items-center sm:justify-between md:px-8">
+            <!-- Loader -->
+            <!-- @if (isLoading) {
+            <div class="absolute inset-x-0 bottom-0">
+                <mat-progress-bar [mode]="'indeterminate'"></mat-progress-bar>
+            </div>
+            } -->
+            <!-- Title -->
+            <div class="truncate">
+                <div class="text-4xl truncate font-extrabold tracking-tight">
+                    Hero Section
+                </div>
+            </div>
+            <!-- Actions -->
+            <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
+
+                <!-- Add product button -->
+                <button [disabled]="entityForm?.invalid || entityForm?.disabled" class="ml-4" mat-flat-button
+                    (click)="updateSelectedEntity()" [color]="'primary'">
+                    @if (!entityForm?.disabled) {
+                    <span class="ml-2 mr-1">Update</span>
+                    }
+                    @if (entityForm?.disabled) {
+                    <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
+                    }
+                </button>
+            </div>
+        </div>
+
+
+    </div>
+
+    <!-- Main -->
+    <div class="flex-auto border-t p-6 ">
+        <div class="mx-auto w-full max-w-screen-xl">
+
+            <fuse-alert class="mb-5" [type]="'info'" [appearance]="'outline'">
+                <span fuseAlertTitle>Photo upload instructions</span>
+                <p class="text-sm color-gray-100">Accepted File Types: <strong>.jpg, .jpeg,
+                        .png</strong> Max
+                    File Size: <strong>{{ maxFileSizeInMb }}MB</strong></p>
+            </fuse-alert>
+
+            <!-- Tabs -->
+            <form [formGroup]="entityForm" class="flex flex-col space-y-5">
+                <div class="flex flex-col sm:flex-row space-y-6  md:space-x-6 ">
+                    <div class="w-full md:w-2/3">
+                        <div class="flex flex-col">
+                            <mat-form-field class="w-full">
+                                <mat-label>Banner Subtitle</mat-label>
+                                <input matInput [formControlName]="'bannerSubtitle'" required maxlength="200" />
+
+                                @if (entityForm.get('bannerSubtitle').hasError('required')) {
+                                <mat-error> Banner Subtitle is required </mat-error>
+                                }
+                            </mat-form-field>
+
+                            <mat-form-field class="w-full">
+                                <mat-label>Banner Title</mat-label>
+                                <input matInput [formControlName]="'bannerTitle'" required maxlength="200" />
+                                @if (entityForm.get('bannerTitle').hasError('required')) {
+                                <mat-error> Banner Title is required </mat-error>
+                                }
+                            </mat-form-field>
+
+                            <mat-form-field class="w-full mt-4">
+                                <mat-label>Banner Description</mat-label>
+                                <textarea matInput [formControlName]="'bannerDescription'" required maxlength="400"
+                                    style="min-height: 100px;"></textarea>
+                                @if (entityForm.get('bannerDescription').hasError('required')) {
+                                <mat-error> Banner Description is required </mat-error>
+                                }
+                            </mat-form-field>
+                        </div>
+                    </div>
+                    <div class="w-full md:w-1/3">
+                        <div class="flex flex-col space-y-5 items-center">
+                            <div class="w-full">
+
+                                <fuse-card *ngIf="uploadedBannerImage" class="filter-article flex w-full flex-col">
+
+                                    <img class="w-full object-cover" style="aspect-ratio: 70 / 40;"
+                                        [src]="baseURL + '/assets/img/hero/' + uploadedBannerImage"
+                                        alt="Banner image" />
+
+
+                                    <div class="m-3 text-center">
+                                        <button class="px-3 text-red-600" mat-button [disabled]="entityForm.disabled"
+                                            (click)="deleteFile(null, PHOTO_TYPE.BANNER, uploadedBannerImage)">
+                                            Delete Photo
+                                        </button>
+                                    </div>
+                                </fuse-card>
+                            </div>
+                            <div class="w-full text-center">
+                                <button class="w-full" [disabled]="entityForm.disabled" type="button"
+                                    [color]="'primary'" mat-flat-button (click)="fileInput0.click()">
+                                    <mat-icon [svgIcon]="'mat_outline:file_upload'"></mat-icon>
+                                    Upload Banner Photo</button>
+
+                                <input hidden type="file" class="form-control" #fileInput0 accept=".jpg,.jpeg,.png"
+                                    (change)="onFileSelect($event, PHOTO_TYPE.BANNER)" />
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

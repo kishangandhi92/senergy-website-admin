@@ -1,0 +1,49 @@
+<div class="flex min-w-0 flex-auto flex-col">
+
+    <div class="bg-card">
+        <!-- Header -->
+        <div
+            class="relative flex flex-0 flex-col border-b px-6 py-8 sm:flex-row sm:items-center sm:justify-between md:px-8">
+
+            <!-- Title -->
+            <div class="truncate">
+                <div class="text-4xl truncate font-extrabold leading-none tracking-tight">
+                    Privacy Policy
+                </div>
+            </div>
+            <!-- Actions -->
+            <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
+
+                <!-- Add product button -->
+                <button [disabled]="entityForm?.invalid || entityForm?.disabled" class="ml-4" mat-flat-button
+                    (click)="updateSelectedEntity()" [color]="'primary'">
+                    @if (!entityForm?.disabled) {
+                    <span class="ml-2 mr-1">Update</span>
+                    }
+                    @if (entityForm?.disabled) {
+                    <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
+                    }
+                </button>
+            </div>
+        </div>
+
+
+    </div>
+
+    <!-- Main -->
+    <div class="flex-auto border-t p-6 sm:p-10">
+
+
+        <form [formGroup]="entityForm" class="flex flex-col space-y-5">
+            <div class="flex flex-row w-full space-x-6">
+                <div class="flex flex-col w-full">
+                    <quill-editor id="quill-editor" [formControlName]="'privacy'"></quill-editor>
+                    @if (entityForm.get('privacy').hasError('required')) {
+                    <mat-error> This field is mandatory </mat-error>
+                    }
+                </div>
+            </div>
+        </form>
+
+    </div>
+</div>

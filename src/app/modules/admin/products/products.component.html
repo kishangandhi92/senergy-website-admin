@@ -1,0 +1,238 @@
+<div class="bg-card flex min-w-0 flex-auto flex-col dark:bg-transparent sm:absolute sm:inset-0 sm:overflow-hidden">
+
+    <!-- Header -->
+    <div
+        class="relative flex flex-0 flex-col border-b px-6 py-8 sm:flex-row sm:items-center sm:justify-between md:px-8">
+        <!-- Loader -->
+        @if (isLoading) {
+        <div class="absolute inset-x-0 bottom-0">
+            <mat-progress-bar [mode]="'indeterminate'"></mat-progress-bar>
+        </div>
+        }
+        <!-- Title -->
+        <div class="text-4xl font-extrabold tracking-tight">Products</div>
+        <!-- Actions -->
+        <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
+            <!-- Search -->
+            <mat-form-field class="fuse-mat-dense fuse-mat-rounded min-w-64" [subscriptSizing]="'dynamic'">
+                <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
+                <input matInput [(ngModel)]="query" [autocomplete]="'off'" [placeholder]="'Search'" />
+            </mat-form-field>
+            <!-- Add product button -->
+            <button class="ml-4" mat-flat-button [color]="'primary'" (click)="openDialog(1)"
+                [disabled]="addEntityForm.disabled || addEntityForm.disabled">
+                <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                <span class="ml-2 mr-1">Add New</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="flex flex-auto overflow-hidden">
+        <!-- Products list -->
+        <div class="flex flex-auto flex-col overflow-hidden sm:overflow-y-auto">
+
+            @if (products$ | async; as products) {
+            @if (products.length > 0) {
+            <div class="grid">
+                <div class="inventory-grid text-secondary sticky top-0 z-10 grid gap-4 bg-gray-50 px-6 py-4 text-md font-semibold shadow dark:bg-black dark:bg-opacity-5 md:px-8"
+                    matSort matSortDisableClear>
+                    <div>Photo</div>
+                    <div [mat-sort-header]="'name'">Name</div>
+                    <div [mat-sort-header]="'description'">Description</div>
+                    <div class="hidden sm:block">Actions</div>
+                </div>
+
+                <!-- Rows -->
+                @if (products$ | async | SearchFilter:query:'name'| sort: _sort?.active:_sort?.direction; as products
+                ) {
+
+                <div *ngIf="products.length > 0; else noData">
+                    @for (
+                    slider of products;
+                    track trackByFn($index, slider)
+                    ) {
+                    <div class="inventory-grid grid items-center gap-4 border-b px-6 py-3 md:px-8">
+
+                        <div class="truncate flex flex-row items-center" [title]="slider.name">
+                            <div class="h-10 flex-0 overflow-hidden rounded-md">
+                                <img class="h-full w-full object-cover"
+                                    src="{{ baseURL }}/assets/img/products/icecream/{{ slider.photo }}" />
+                            </div>
+                        </div>
+                        <div class="truncate " [title]="slider.name">
+                                {{ slider.name }}
+                        </div>
+                        <div class="truncate " [title]="slider.description">
+                                {{ slider.description }}
+                        </div>
+
+                        <div class="flex gap-2">
+
+                            <button class="h-7 min-h-7 min-w-10 px-2 leading-6 border-none" mat-stroked-button
+                                [matTooltip]="'Update Product'" [disabled]="addEntityForm.disabled"
+                                (click)="openDialog(2, slider)">
+                                <mat-icon class="icon-size-6 text-teal-400"
+                                    [svgIcon]="'heroicons_solid:pencil-square'"></mat-icon>
+                            </button>
+
+                            <button class="h-7 min-h-7 min-w-10 px-2 leading-6 border-none" mat-stroked-button
+                                [matTooltip]="'Delete Product'" [disabled]="addEntityForm.disabled"
+                                (click)="deleteSelectedEntity(slider)">
+                                <mat-icon class="icon-size-6 text-red-400"
+                                    [svgIcon]="'heroicons_solid:trash'"></mat-icon>
+                            </button>
+                        </div>
+                    </div>
+
+                    }
+                </div>
+                <ng-template #noData>
+                    <div class="border-t p-8 text-center text-2xl tracking-tight">No records found for the term <span
+                            class="font-semibold ">"{{query }}"</span></div>
+                </ng-template>
+
+                }
+
+            </div>
+            }
+            @else {
+            <div class="border-t p-8 text-center text-4xl tracking-tight sm:p-16">
+                There are no Products!
+            </div>
+            }
+            } @else {
+            <div class="border-t p-8 text-center text-4xl tracking-tight sm:p-16">
+                There are no Products!
+            </div>
+            }
+
+
+        </div>
+    </div>
+
+</div>
+
+<ng-template #AddEntityDialog let-data="data">
+    <div class="flex max-h-160 flex-auto flex-col overflow-hidden">
+        <!-- Header -->
+        <div class="flex h-14 flex-0 items-center justify-between bg-primary pl-6 pr-3 text-on-primary sm:pl-8 sm:pr-5">
+            <div class="text-lg font-medium">{{ mode === 1 ? 'Add New Product' : 'Update Product'}}</div>
+            <button mat-icon-button (click)="matDialogRef.close()" [tabIndex]="-1">
+                <mat-icon class="text-current" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+            </button>
+        </div>
+    </div>
+
+    <!-- Card form -->
+    <form class="flex w-full flex-0 flex-col items-start overflow-y-auto max-h-96 space-y-3 sm:p-4 mt-3"
+        [formGroup]="addEntityForm" enctype="multipart/form-data">
+
+        <div class="flex flex-col w-full">
+            <mat-form-field class="w-full">
+                <mat-label>Name</mat-label>
+                <input matInput [formControlName]="'name'" required maxlength="100" />
+                @if (addEntityForm.get('name').hasError('required')) {
+                <mat-error> Name is required </mat-error>
+                }
+            </mat-form-field>
+
+             <mat-form-field class="w-full">
+                <mat-label>Locale Name</mat-label>
+                 <input matInput [formControlName]="'localeTitle'" required maxlength="200" />
+                @if (addEntityForm.get('localeTitle').hasError('required')) {
+                <mat-error> Locale Name is required </mat-error>
+                }
+            </mat-form-field>
+
+            <mat-form-field class="w-full">
+                <mat-label>Description</mat-label>
+                 <input matInput [formControlName]="'description'" required maxlength="200" />
+                @if (addEntityForm.get('description').hasError('required')) {
+                <mat-error> Description is required </mat-error>
+                }
+            </mat-form-field>
+
+
+            <div class="flex flex-row w-full mt-2">
+                <div class="flex flex-col items-center text-center w-full">
+                    <button class="w-full" [disabled]="addEntityForm.disabled" type="button" [color]="'primary'"
+                        mat-flat-button (click)="wordInput.click()">
+                        <mat-icon [svgIcon]="'mat_outline:file_upload'"></mat-icon>
+                        Upload Photo</button>
+
+                    <p class="text-sm color-gray-100">Accepted File Types: <strong>.jpg,.jpeg,.png.</strong> Max
+                        File Size: <strong>{{ maxFileSizeInMb }}MB</strong></p>
+
+                    @if (addEntityForm.get('photo').hasError('required')) {
+                    <mat-error> Photo is required </mat-error>
+                    }
+
+
+                    <input type="file" hidden #wordInput class="form-control" accept=".jpg,.jpeg,.png,.svg"
+                        (change)="onFileSelect($event, 'photo')" />
+
+                </div>
+                <!-- <div class="flex items-center justify-center w-1/3">
+
+                        <div class="h-16 w-16 flex-0 overflow-hidden rounded-md">
+                            <img class="h-full w-full object-cover" src="{{ photoPath }}" />
+                        </div>
+                    </div> -->
+            </div>
+
+            <div class="flex flex-row">
+                <fuse-card *ngIf="addEntityForm.get('photo').value"
+                    class="filter-info bg-green-50 mt-4 w-full items-center justify-between p-4">
+                    <div class="h-16 w-16 flex-0 overflow-hidden rounded-md">
+                        <img class="h-full w-full object-cover" src="{{ photoPath }}" />
+                    </div>
+                    <div class="flex pl-5 flex-col w-2/3">
+                        <div class="text-lg text-green-800 font-semibold leading-tight">
+                            Photo Attached!
+                        </div>
+                        <input type="text" title="{{ addEntityForm.get('photo').value }}" class="text-ellipsis" readonly
+                            [formControlName]="'photo'" />
+                    </div>
+                    <div class="w-1/3 text-right">
+
+                        <a target="_blank"
+                            href="{{ baseURL }}/assets/img/products/icecream/{{ addEntityForm.get('photo').value }}">
+                            <mat-icon class="ml-6 icon-size-6 text-green-800" [svgIcon]="
+                                                'heroicons_outline:eye'
+                                            "></mat-icon>
+
+                        </a>
+                        <button type="button" (click)="deleteFile()">
+                            <mat-icon class="ml-6 icon-size-6 text-red-600" [svgIcon]="
+                                                'heroicons_outline:trash'
+                                            "></mat-icon>
+
+                        </button>
+                    </div>
+                </fuse-card>
+            </div>
+
+
+        </div>
+
+
+        <input matInput [formControlName]="'autoNo'" [hidden]="true" />
+    </form>
+
+    <div class="flex items-center justify-end border-t bg-gray-50 px-8 py-3 dark:bg-gray-700">
+
+        <button mat-button (click)="matDialogRef.close()">Cancel</button>
+        <button class="ml-3 px-6" mat-flat-button [color]="'primary'"
+            (click)="mode === 1 ? addEntity(): updateSelectedEntity()"
+            [disabled]="addEntityForm.invalid || addEntityForm.disabled">
+            @if (!addEntityForm.disabled) {
+            <span> Save </span>
+            }
+            @if (addEntityForm.disabled) {
+            <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
+            }
+        </button>
+    </div>
+
+</ng-template>

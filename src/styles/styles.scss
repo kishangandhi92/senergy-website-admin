@@ -1,0 +1,86 @@
+/* ----------------------------------------------------------------------------------------------------- */
+/*  @ Import/write your custom styles here.
+/*  @ Styles from this file will override 'vendors.scss' and Fuse's base styles.
+/* ----------------------------------------------------------------------------------------------------- */
+
+//@import "@danielmoncada/angular-datetime-picker/assets/style/picker.min.css";
+
+fuse-vertical-navigation .fuse-vertical-navigation-wrapper .fuse-vertical-navigation-content > fuse-vertical-navigation-group-item {
+    margin-top: 10px !important;
+}
+
+// Success Alert
+mat-snack-bar-container {
+    &.success-alert {
+     .mdc-snackbar__surface {
+        background-color:green !important;
+        color:white;
+    }
+  }
+    &.error-alert {
+     .mdc-snackbar__surface {
+        background-color:rgb(152, 31, 9) !important;
+        color:white;
+    }
+   }
+ }
+
+
+a.fuse-vertical-navigation-item {
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+}
+
+.mat-mdc-dialog-container .mdc-dialog__surface {
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+
+.mat-mdc-form-field-infix {
+    min-height: 32px !important;
+}
+
+.mat-datepicker-toggle {
+    button.mat-mdc-icon-button {
+        min-height: 32px !important;
+        height: 32px !important;
+        width: 32px !important;
+        min-width: 32px !important;
+    }
+}
+
+input[type="text"]:read-only,
+input[type="text"][readonly] {
+    cursor: not-allowed !important;
+    opacity: 0.5;
+}
+
+span.mat-mdc-form-field-required-marker {
+    &:after {
+        color: red;
+    }
+}
+
+.ql-snow .ql-editor {
+    h1, h2, h3, h4, h5, h6 {
+        font-weight: bold;
+    }
+    h1 {
+        font-size: 52px !important;
+    }
+    h2 {
+        font-size: 44px !important;
+    }
+    h3 {
+        font-size: 34px !important;
+    }
+    h4 {
+        font-size: 28px !important;
+    }
+    h5 {
+        font-size: 20px !important;
+    }
+    h6 {
+        font-size: 16px !important;
+    }
+}
