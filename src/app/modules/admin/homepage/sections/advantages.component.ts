@@ -108,7 +108,11 @@ export class AdvantagesComponent implements OnInit {
             return;
         }
 
-        this.featureForms.push(this.createFeatureGroup(this.createEmptyFeature()));
+        this.featureForms.push(
+            this.createFeatureGroup(
+                this.createEmptyFeature(this.getNextFeaturePriority())
+            )
+        );
         this.scrollToLatestFeature();
     }
 
@@ -479,9 +483,9 @@ export class AdvantagesComponent implements OnInit {
     }
 
     // Returns an empty feature object used when the backend has fewer than three items.
-    private createEmptyFeature(): IAdvantagesFeature {
+    private createEmptyFeature(priority: number | null = null): IAdvantagesFeature {
         return {
-            priority: null,
+            priority,
             alt: '',
             icon: '',
             title: '',
@@ -530,6 +534,19 @@ export class AdvantagesComponent implements OnInit {
 
             targetArray.push(control);
         });
+    }
+
+    // Returns the next priority number for a newly added feature.
+    private getNextFeaturePriority(): number {
+        const priorities = this.featureForms.controls
+            .map((control) => Number(control.get('priority')?.value))
+            .filter((priority) => Number.isFinite(priority) && priority > 0);
+
+        if (!priorities.length) {
+            return 1;
+        }
+
+        return Math.max(...priorities) + 1;
     }
 
     // Scrolls the newest feature card into view so the added empty form is immediately visible.
