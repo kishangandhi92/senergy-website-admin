@@ -1,0 +1,216 @@
+<div class="absolute inset-0 flex min-w-0 flex-col overflow-hidden">
+    <div class="bg-card">
+        <div
+            class="relative flex flex-0 flex-col border-b px-6 py-4 sm:flex-row sm:items-center sm:justify-between md:px-8"
+        >
+            <div class="truncate">
+                <div class="truncate text-4xl font-extrabold tracking-tight">
+                    Advantages
+                </div>
+            </div>
+            <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
+                <button
+                    mat-flat-button
+                    color="primary"
+                    type="button"
+                    [disabled]="entityForm.invalid || entityForm.disabled || isLoading || isUploading || isSaving"
+                    (click)="updateAdvantages()"
+                >
+                    @if (!isSaving) {
+                        <mat-icon [svgIcon]="'heroicons_outline:check'"></mat-icon>
+                    }
+                    @if (!isSaving) {
+                        <span class="ml-2">Save Advantages</span>
+                    }
+                    @if (isSaving) {
+                        <mat-progress-spinner [diameter]="20" [mode]="'indeterminate'"></mat-progress-spinner>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex-auto mt-5 overflow-y-auto" cdkScrollable>
+        <div class="mx-auto w-full max-w-screen-xl h-400 max-h-400 min-h-400">
+
+            <form [formGroup]="entityForm">
+                <div class="space-y-5 px-6 pb-6">
+                    <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                        <div class="grid gap-4">
+                            <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                                <mat-label>Section Title</mat-label>
+                                <input matInput formControlName="title" maxlength="150" />
+                                <mat-hint align="end">{{ entityForm.get('title')?.value?.length || 0 }}/150</mat-hint>
+                                <mat-hint>To highlight text add <strong>asterik (*)</strong> at the start and end of the text</mat-hint>
+                                @if (entityForm.get('title')?.hasError('required')) {
+                                    <mat-error>Title is required</mat-error>
+                                }
+                            </mat-form-field>
+
+                            <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                                <mat-label>Section Subtitle</mat-label>
+                                <textarea matInput formControlName="subtitle" rows="3" maxlength="400"></textarea>
+                                <mat-hint align="end">{{ entityForm.get('subtitle')?.value?.length || 0 }}/400</mat-hint>
+                                @if (entityForm.get('subtitle')?.hasError('required')) {
+                                    <mat-error>Subtitle is required</mat-error>
+                                }
+                            </mat-form-field>
+                        </div>
+                    </div>
+
+                    <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                        <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                            <div>
+                                <div class="text-lg font-semibold text-slate-900">Features</div>
+                                <div class="text-sm text-slate-500">
+                                    Minimum 3 features and maximum 10 features.
+                                </div>
+                            </div>
+
+                            <button
+                                mat-stroked-button
+                                color="primary"
+                                type="button"
+                                [disabled]="featureForms.length >= 10"
+                                (click)="addFeature()"
+                            >
+                                <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                                <span class="ml-2">Add Feature</span>
+                            </button>
+                        </div>
+
+                        <div formArrayName="features" class="space-y-4">
+                            @for (featureGroup of featureForms.controls; track $index; let featureIndex = $index) {
+                                <div
+                                    #featureCard
+                                    [formGroupName]="featureIndex"
+                                    class="rounded-2xl border border-slate-200 bg-slate-50 p-3"
+                                >
+                                    <div class="mb-2 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                                        <div>
+                                            <div class="text-base font-semibold text-slate-900">
+                                                Feature {{ featureIndex + 1 }}
+                                            </div>
+                                            <div class="text-sm text-slate-500">
+                                                Configure the icon, title, alt text, and description.
+                                            </div>
+                                        </div>
+
+                                        <button
+                                            mat-stroked-button
+                                            color="warn"
+                                            type="button"
+                                            [disabled]="featureForms.length <= 3"
+                                            (click)="removeFeature(featureIndex)"
+                                        >
+                                            <mat-icon [svgIcon]="'heroicons_outline:trash'"></mat-icon>
+                                            <span class="ml-2">Remove</span>
+                                        </button>
+                                    </div>
+
+                                    <div class="grid items-start gap-3 xl:grid-cols-[minmax(0,1.45fr)_minmax(220px,0.55fr)]">
+                                        <div class="flex flex-col gap-2 self-start">
+                                            <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                                                <mat-label>Feature Title</mat-label>
+                                                <input matInput formControlName="title" maxlength="100" />
+                                                <mat-hint align="end">{{ featureGroup.get('title')?.value?.length || 0 }}/100</mat-hint>
+                                                @if (featureGroup.get('title')?.hasError('required')) {
+                                                    <mat-error>Title is required</mat-error>
+                                                }
+                                            </mat-form-field>
+
+                                            <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                                                <mat-label>Description</mat-label>
+                                                <textarea matInput formControlName="description" rows="2" maxlength="200"></textarea>
+                                                <mat-hint align="end">{{ featureGroup.get('description')?.value?.length || 0 }}/200</mat-hint>
+                                                @if (featureGroup.get('description')?.hasError('required')) {
+                                                    <mat-error>Description is required</mat-error>
+                                                }
+                                            </mat-form-field>
+
+                                            <mat-form-field class="w-32" [subscriptSizing]="'dynamic'">
+                                                <mat-label>Priority</mat-label>
+                                                <input matInput type="number" formControlName="priority" min="1" />
+                                                @if (featureGroup.get('priority')?.hasError('required')) {
+                                                    <mat-error>Priority is required</mat-error>
+                                                }
+                                                @if (featureGroup.get('priority')?.hasError('min')) {
+                                                    <mat-error>Minimum priority is 1</mat-error>
+                                                }
+                                            </mat-form-field>
+                                        </div>
+
+                                        <div class="rounded-2xl border border-slate-200 bg-white p-3">
+                                            <div class="overflow-hidden">
+                                                <img
+                                                    class="block h-[76px] w-full object-contain"
+                                                    [src]="resolveImageUrl(featureGroup.get('icon')?.value)"
+                                                    [alt]="featureGroup.get('alt')?.value || 'Feature icon preview'"
+                                                />
+                                            </div>
+
+                                            <mat-form-field class="mt-2 w-full" [subscriptSizing]="'dynamic'">
+                                                <mat-label>Icon Path</mat-label>
+                                                <input matInput formControlName="icon" readonly />
+                                                @if (featureGroup.get('icon')?.hasError('required')) {
+                                                    <mat-error>Icon is required</mat-error>
+                                                }
+                                            </mat-form-field>
+
+                                            <mat-form-field class="w-full mt-2" [subscriptSizing]="'dynamic'">
+                                                <mat-label>Alt Text</mat-label>
+                                                <input matInput formControlName="alt" maxlength="150" />
+                                                <mat-hint align="end">{{ featureGroup.get('alt')?.value?.length || 0 }}/150</mat-hint>
+                                                @if (featureGroup.get('alt')?.hasError('required')) {
+                                                    <mat-error>Alt text is required</mat-error>
+                                                }
+                                            </mat-form-field>
+
+                                            <div class="mt-2 flex flex-wrap gap-2">
+                                                <button
+                                                    mat-stroked-button
+                                                    color="primary"
+                                                    type="button"
+                                                    [disabled]="entityForm.disabled"
+                                                    (click)="featureIconInput.click()"
+                                                >
+                                                    <mat-icon [svgIcon]="'mat_outline:file_upload'"></mat-icon>
+                                                    <span class="ml-2">Upload Icon</span>
+                                                </button>
+
+                                                <button
+                                                    mat-stroked-button
+                                                    color="warn"
+                                                    type="button"
+                                                    [disabled]="!featureGroup.get('icon')?.value || entityForm.disabled"
+                                                    (click)="clearFeatureIcon(featureIndex)"
+                                                >
+                                                    Clear Icon
+                                                </button>
+                                            </div>
+
+                                            <input
+                                                hidden
+                                                #featureIconInput
+                                                type="file"
+                                                accept=".jpg,.jpeg,.png"
+                                                (change)="onFeatureIconSelect(featureIndex, $event)"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    @if (isUploading) {
+                        <div class="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-5 py-4 text-sm text-slate-500 shadow-sm">
+                            <mat-progress-spinner [diameter]="20" [mode]="'indeterminate'"></mat-progress-spinner>
+                            Uploading feature icon...
+                        </div>
+                    }
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

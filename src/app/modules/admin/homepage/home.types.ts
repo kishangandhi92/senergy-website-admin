@@ -26,6 +26,27 @@ export interface IHeroBannerRecord {
     content: IHeroBannerSection[];
 }
 
+export interface IAdvantagesFeature {
+    priority: number | null;
+    alt: string;
+    icon: string;
+    title: string;
+    description: string;
+}
+
+export interface IAdvantagesSection {
+    title: string;
+    subtitle: string;
+    features: IAdvantagesFeature[];
+}
+
+export interface IAdvantagesRecord {
+    id?: string;
+    pageId?: string;
+    section: string;
+    content: IAdvantagesSection;
+}
+
 export interface IHome {
     bannerTitle: string;
     bannerSubtitle: string;

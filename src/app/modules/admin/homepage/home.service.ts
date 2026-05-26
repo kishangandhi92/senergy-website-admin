@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
-import { IHeroBannerRecord } from './home.types';
+import { IAdvantagesRecord, IHeroBannerRecord } from './home.types';
 import { environment } from 'environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -22,6 +22,24 @@ export class HomeService {
     // Creates the initial hero-banner row when it does not exist yet.
     createBanner(data: IHeroBannerRecord): Observable<any> {
         return this._httpClient.post(`${this.apiUrl}/banner`, { ...data }).pipe(
+            map((response: any) => {
+                return response;
+            })
+        );
+    }
+
+    // Fetches the stored advantages section from the backend.
+    getAdvantages(): Observable<any> {
+        return this._httpClient.get(`${this.apiUrl}/advantages`).pipe(
+            map((response: any) => {
+                return response;
+            })
+        );
+    }
+
+    // Updates the existing advantages row with the latest full JSON payload.
+    updateAdvantages(data: IAdvantagesRecord): Observable<any> {
+        return this._httpClient.put(`${this.apiUrl}/advantages`, { ...data }).pipe(
             map((response: any) => {
                 return response;
             })
