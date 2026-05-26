@@ -150,7 +150,12 @@ export class AuthService {
                     this._authenticated = true;
 
                     // Store the user on the user service
-                    this._userService.user = response.user;
+                    this._userService.user = {
+                            id: response.data.user.emailId,
+                            name: response.data.user.name,
+                            //privilege: response.data.user.privilege,
+                            type: response.data.user.type,
+                        } as User;
 
                     // Return true
                     return of(true);
@@ -223,6 +228,6 @@ export class AuthService {
         }
 
         // If the access token exists, and it didn't expire, sign in using it
-        return of(true);
+        return this.signInUsingToken();
     }
 }

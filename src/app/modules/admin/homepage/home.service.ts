@@ -1,86 +1,62 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, map, switchMap, take, tap } from 'rxjs';
-import { IHome } from './home.types';
+import { Observable, map } from 'rxjs';
+import { IHeroBannerRecord } from './home.types';
 import { environment } from 'environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class HomeService {
-
-    private _content: BehaviorSubject<IHome[] | null> = new BehaviorSubject(
-        null
-    );
-
     private apiUrl = environment.apiBaseUrl + '/api/a/home';
 
-    /**
-     * Getter for tags
-     */
-    get content$(): Observable<IHome[]> {
-        return this._content.asObservable();
-    }
-
-    /**
-     * Constructor
-     */
     constructor(private _httpClient: HttpClient) {}
 
-
-    getDetails(): Observable<any> {
-        return this._httpClient
-            .get(this.apiUrl)
-            .pipe(
-                map((response: any) => {
-                   return response;
-                })
-            );
-    }
-
-
-    /**
-     * Update Home
-     */
-    update(data): Observable<IHome> {
-        return this.content$.pipe(
-            take(1),
-            switchMap((projects) =>
-                this._httpClient
-                    .put(this.apiUrl, { ...data })
-                    .pipe(
-                        map((response: any) => {
-                            return response;
-                        })
-                    )
-            )
+    // Fetches the stored hero-banner row from the backend.
+    getBanner(): Observable<any> {
+        return this._httpClient.get(`${this.apiUrl}/banner`).pipe(
+            map((response: any) => {
+                return response;
+            })
         );
     }
 
+    // Creates the initial hero-banner row when it does not exist yet.
+    createBanner(data: IHeroBannerRecord): Observable<any> {
+        return this._httpClient.post(`${this.apiUrl}/banner`, { ...data }).pipe(
+            map((response: any) => {
+                return response;
+            })
+        );
+    }
 
-    deletePhoto(fileName: string, fileType: string): Observable<boolean> {
+    // Updates the existing hero-banner row with the latest full JSON payload.
+    updateBanner(data: IHeroBannerRecord): Observable<any> {
+        return this._httpClient.put(`${this.apiUrl}/banner`, { ...data }).pipe(
+            map((response: any) => {
+                return response;
+            })
+        );
+    }
+
+    // Deletes an uploaded file from the server using its file name and field type.
+    deletePhoto(fileName: string, fieldType: string): Observable<boolean> {
         return this._httpClient
-            .post(this.apiUrl + '/deletephoto', {fileName, fileType})
+            .post(`${this.apiUrl}/delete`, { fileName, fieldType })
             .pipe(
                 map((response: any) => {
-                   if (response.status) {
-                    return true;
-                   }
-                   return false;
+                    if (response.status) {
+                        return true;
+                    }
+                    return false;
                 })
             );
     }
 
-    uploadFiles(formData: FormData) {
-        return this.content$.pipe(
-            take(1),
-            switchMap((projects) =>
-                this._httpClient
-                    .post(this.apiUrl + '/upload', formData)
-                    .pipe(
-                        map((response: any) => {
-                            return response;
-                        })
-                    )
-            )
+    // Uploads an image file and returns the backend response containing the stored path/name.
+    uploadFiles(formData: FormData): Observable<any> {
+        return this._httpClient.post(`${this.apiUrl}/upload`, formData).pipe(
+            map((response: any) => {
+                return response;
+            })
         );
     }
 }

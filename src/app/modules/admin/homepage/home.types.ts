@@ -1,3 +1,31 @@
+export interface IHeroBannerCta {
+    label: string;
+    link: string;
+    style: 'primary' | 'secondary';
+    target: '_self' | '_blank';
+}
+
+export interface IHeroBannerSection {
+    priority: number;
+    content: {
+        title: string;
+        subtitle: string;
+    };
+    image: {
+        src: string;
+        alt: string;
+    };
+    features: string[];
+    cta: IHeroBannerCta[];
+}
+
+export interface IHeroBannerRecord {
+    id?: string;
+    pageId?: string;
+    section: string;
+    content: IHeroBannerSection[];
+}
+
 export interface IHome {
     bannerTitle: string;
     bannerSubtitle: string;

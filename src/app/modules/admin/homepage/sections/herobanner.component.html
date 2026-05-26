@@ -1,0 +1,422 @@
+<div class="flex min-w-0 flex-auto flex-col">
+    <div class="bg-card">
+        <div
+            class="relative flex flex-0 flex-col border-b px-6 py-8 sm:flex-row sm:items-center sm:justify-between md:px-8"
+        >
+            <div class="truncate">
+                <div class="truncate text-4xl font-extrabold tracking-tight">
+                    Hero Banner
+                </div>
+            </div>
+
+            <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
+                <button
+                    mat-flat-button
+                    color="primary"
+                    type="button"
+                    (click)="openHeroBannerDialog('add')"
+                >
+                    <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                    <span class="ml-2">Add Banner</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex-auto mt-5">
+        <div class="mx-auto w-full max-w-screen-xl">
+            <!-- <div class="p-6 pb-0">
+                <fuse-alert class="mb-5" [type]="'info'" [appearance]="'outline'">
+                    <span fuseAlertTitle>Hero banner management</span>
+                    <p class="text-sm color-gray-100">
+                        Add, update, and delete hero banner items individually. Features support a minimum of 3 and a
+                        maximum of 5 entries.
+                    </p>
+                </fuse-alert>
+            </div> -->
+
+            <form [formGroup]="entityForm">
+                <div class="px-6 pb-6">
+                    <div formArrayName="heroBanners" class="space-y-6">
+                        @if (heroBannerSections.length === 0) {
+                            <div
+                                class="mb-6 flex min-h-[280px] flex-col items-center justify-center gap-2 rounded-3xl border border-dashed border-slate-300 bg-white text-center"
+                            >
+                                <div class="text-lg font-bold text-slate-900">No hero banners added</div>
+                                <div class="max-w-sm text-[0.9375rem] text-slate-500">
+                                    Start by adding the first hero banner item for this section.
+                                </div>
+                            </div>
+                        }
+
+                        @for (bannerGroup of heroBannerSections.controls; track $index; let bannerIndex = $index) {
+                            <div
+                                [formGroupName]="bannerIndex"
+                                class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm"
+                            >
+                                <div class="mb-4 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                                    <div>
+                                        <div class="text-lg font-semibold text-slate-900">
+                                            Banner {{ bannerIndex + 1 }}
+                                        </div>
+                                        <div class="text-sm text-slate-500">
+                                            Priority {{ bannerGroup.get('priority')?.value }}
+                                        </div>
+                                    </div>
+
+                                    <div class="flex flex-wrap gap-3">
+                                        <button
+                                            mat-stroked-button
+                                            color="primary"
+                                            type="button"
+                                            (click)="openHeroBannerDialog('edit', bannerIndex)"
+                                        >
+                                            <mat-icon [svgIcon]="'heroicons_outline:pencil-square'"></mat-icon>
+                                            <span class="ml-2">Edit</span>
+                                        </button>
+
+                                        <button
+                                            mat-stroked-button
+                                            color="warn"
+                                            type="button"
+                                            (click)="deleteHeroBanner(bannerIndex)"
+                                        >
+                                            <mat-icon [svgIcon]="'heroicons_outline:trash'"></mat-icon>
+                                            <span class="ml-2">Delete</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="grid gap-5 xl:grid-cols-[minmax(0,4fr)_minmax(220px,1fr)]">
+                                    <div class="space-y-4">
+                                        <div class="rounded-3xl border border-slate-200 p-5">
+                                            <div class="grid gap-4 md:grid-cols-2">
+                                                <div class="md:col-span-2">
+                                                    <div class="mb-1 text-xs font-bold uppercase tracking-[0.08em] text-slate-500">
+                                                        Title
+                                                    </div>
+                                                    <div class="break-words text-base font-semibold leading-6 text-slate-900">
+                                                        {{ bannerGroup.get('title')?.value }}
+                                                    </div>
+                                                </div>
+
+                                                <div class="md:col-span-2">
+                                                    <div class="mb-1 text-xs font-bold uppercase tracking-[0.08em] text-slate-500">
+                                                        Subtitle
+                                                    </div>
+                                                    <div class="break-words text-[0.9375rem] font-normal leading-[1.375rem] text-slate-600">
+                                                        {{ bannerGroup.get('subtitle')?.value }}
+                                                    </div>
+                                                </div>
+
+                                                <div>
+                                                    <div class="mb-1 text-xs font-bold uppercase tracking-[0.08em] text-slate-500">
+                                                        Image Path
+                                                    </div>
+                                                    <div class="break-words text-[0.9375rem] font-normal leading-[1.375rem] text-slate-600">
+                                                        {{ bannerGroup.get('imageSrc')?.value }}
+                                                    </div>
+                                                </div>
+
+                                                <div>
+                                                    <div class="mb-1 text-xs font-bold uppercase tracking-[0.08em] text-slate-500">
+                                                        Image Alt
+                                                    </div>
+                                                    <div class="break-words text-[0.9375rem] font-normal leading-[1.375rem] text-slate-600">
+                                                        {{ bannerGroup.get('imageAlt')?.value }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="grid gap-4 xl:grid-cols-[minmax(220px,0.8fr)_minmax(0,1.2fr)]">
+                                            <div class="rounded-3xl border border-slate-200 p-5">
+                                                <div class="mb-4">
+                                                    <div class="text-base font-semibold text-slate-900">Features</div>
+                                                    <div class="text-sm text-slate-500">
+                                                        {{ getBannerFeatures(bannerIndex).length }} features configured
+                                                    </div>
+                                                </div>
+
+                                                <div class="flex flex-wrap gap-2">
+                                                    @for (feature of getBannerFeatures(bannerIndex); track $index) {
+                                                        <span
+                                                            class="rounded-full bg-sky-100 px-3 py-1.5 text-[0.8125rem] font-semibold text-sky-800"
+                                                        >
+                                                            {{ feature }}
+                                                        </span>
+                                                    }
+                                                </div>
+                                            </div>
+
+                                            <div class="rounded-3xl border border-slate-200 p-4">
+                                                <div class="mb-3">
+                                                    <div class="text-base font-semibold text-slate-900">Call To Actions</div>
+                                                </div>
+
+                                                <div class="grid gap-3 md:grid-cols-2">
+                                                    @for (cta of getBannerCtas(bannerIndex); track $index) {
+                                                        <div class="rounded-xl border border-slate-200 p-3">
+                                                            <!-- <div class="mb-1 text-xs font-semibold uppercase tracking-[0.06em] text-slate-700">
+                                                                CTA {{ $index + 1 }}
+                                                            </div> -->
+                                                            <div class="mb-1 text-xs font-bold uppercase tracking-[0.08em] text-slate-500">
+                                                                Label
+                                                            </div>
+                                                            <div class="break-words text-sm font-semibold leading-5 text-slate-900">
+                                                                {{ cta.label }}
+                                                            </div>
+                                                            <div class="mb-1 mt-2 text-xs font-bold uppercase tracking-[0.08em] text-slate-500">
+                                                                Link
+                                                            </div>
+                                                            <div class="break-words text-sm font-normal leading-5 text-slate-600">
+                                                                {{ cta.link }}
+                                                            </div>
+                                                            <div class="mt-2 text-[11px] text-slate-500">
+                                                                {{ cta.style }} | {{ cta.target }}
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex min-w-0 flex-col xl:sticky xl:top-4">
+                                        <div class="flex-1 overflow-hidden rounded-3xl border border-slate-200 bg-slate-50 shadow-sm">
+                                            <img
+                                                class="block h-full min-h-[320px] w-full object-cover bg-slate-100"
+                                                [src]="resolveImageUrl(bannerGroup.get('imageSrc')?.value)"
+                                                [alt]="bannerGroup.get('imageAlt')?.value || 'Hero preview image'"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<ng-template #HeroBannerDialog>
+    <div class="flex max-h-160 flex-auto flex-col overflow-hidden">
+        <div class="flex h-14 flex-0 items-center justify-between bg-primary pl-6 pr-3 text-on-primary sm:pl-8 sm:pr-5">
+            <div class="text-lg font-medium">
+                {{ bannerDialogMode === 'add' ? 'Add Hero Banner' : 'Update Hero Banner' }}
+            </div>
+            <button mat-icon-button (click)="closeHeroBannerDialog()" [tabIndex]="-1">
+                <mat-icon class="text-current" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+            </button>
+        </div>
+    </div>
+
+    <form
+        class="flex max-h-[70vh] flex-col gap-5 overflow-y-auto p-5"
+        [formGroup]="heroBannerDialogForm"
+        enctype="multipart/form-data"
+    >
+        <div class="grid gap-4 md:grid-cols-2">
+            <mat-form-field class="md:col-span-2" [subscriptSizing]="'dynamic'">
+                <mat-label>Title</mat-label>
+                <input matInput formControlName="title" maxlength="250" />
+                <mat-hint align="end">{{ heroBannerDialogForm.get('title')?.value?.length || 0 }}/250</mat-hint>
+                <mat-hint>To highlight text add <strong>asterik (*)</strong> at the start and end of the text</mat-hint>
+            </mat-form-field>
+
+            <mat-form-field class="md:col-span-2" [subscriptSizing]="'dynamic'">
+                <mat-label>Subtitle</mat-label>
+                <textarea matInput formControlName="subtitle" maxlength="400" rows="2"></textarea>
+                <mat-hint align="end">{{ heroBannerDialogForm.get('subtitle')?.value?.length || 0 }}/400</mat-hint>
+            </mat-form-field>
+        </div>
+
+        <div class="rounded-3xl border border-slate-200 p-5">
+            <div class="mb-4 flex items-start justify-between gap-4">
+                <div>
+                    <div class="text-base font-semibold text-slate-900">Banner Image</div>
+                    <div class="text-sm text-slate-500">
+                        Upload `.jpg`, `.jpeg`, or `.png` up to {{ maxFileSizeInMb }}MB in size.
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_280px]">
+                <div class="space-y-4">
+                    <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                        <mat-label>Image Source</mat-label>
+                        <input matInput formControlName="imageSrc" readonly placeholder="assets/images/bg/example.png" />
+                    </mat-form-field>
+
+                    <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                        <mat-label>Image Alt Text</mat-label>
+                        <input matInput formControlName="imageAlt" maxlength="200" />
+                        <mat-hint align="end">{{ heroBannerDialogForm.get('imageAlt')?.value?.length || 0 }}/200</mat-hint>
+                    </mat-form-field>
+
+                    <div class="flex flex-wrap gap-3">
+                        <button
+                            class="min-w-36"
+                            mat-flat-button
+                            color="primary"
+                            type="button"
+                            [disabled]="heroBannerDialogForm.disabled"
+                            (click)="heroBannerImageInput.click()"
+                        >
+                            <mat-icon [svgIcon]="'mat_outline:file_upload'"></mat-icon>
+                            <span class="ml-2">Upload Image</span>
+                        </button>
+
+                        <button
+                            mat-stroked-button
+                            color="warn"
+                            type="button"
+                            [disabled]="!heroBannerDialogForm.get('imageSrc')?.value || heroBannerDialogForm.disabled"
+                            (click)="clearHeroBannerImage()"
+                        >
+                            Clear Image
+                        </button>
+                    </div>
+
+                    <input
+                        hidden
+                        #heroBannerImageInput
+                        type="file"
+                        accept=".jpg,.jpeg,.png"
+                        (change)="onHeroBannerImageSelect($event)"
+                    />
+
+                    @if (isUploadingHeroImage) {
+                        <div class="flex items-center gap-3 text-sm text-slate-500">
+                            <mat-progress-spinner [diameter]="20" [mode]="'indeterminate'"></mat-progress-spinner>
+                            Uploading image...
+                        </div>
+                    }
+                </div>
+
+                <div class="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
+                    <img
+                        class="min-h-[220px] h-full w-full object-cover bg-slate-100"
+                        [src]="heroBannerImagePreview || resolveImageUrl(heroBannerDialogForm.get('imageSrc')?.value)"
+                        [alt]="heroBannerDialogForm.get('imageAlt')?.value || 'Banner image preview'"
+                    />
+                </div>
+            </div>
+        </div>
+
+        <div class="rounded-3xl border border-slate-200 p-5">
+            <div class="mb-4 flex items-start justify-between gap-4">
+                <div>
+                    <div class="text-base font-semibold text-slate-900">Features</div>
+                    <div class="text-sm text-slate-500">Minimum 3 features and maximum 5 features.</div>
+                </div>
+
+                <button
+                    mat-stroked-button
+                    color="primary"
+                    type="button"
+                    [disabled]="heroBannerDialogFeatures.length >= 5"
+                    (click)="addFeature()"
+                >
+                    <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                    <span class="ml-2">Add Feature</span>
+                </button>
+            </div>
+
+            <div formArrayName="features" class="space-y-3">
+                @for (featureControl of heroBannerDialogFeatures.controls; track $index; let featureIndex = $index) {
+                    <div class="flex items-center gap-3 max-sm:items-start">
+                        <mat-form-field class="flex-1" [subscriptSizing]="'dynamic'">
+                            <mat-label>Feature {{ featureIndex + 1 }}</mat-label>
+                            <input matInput [formControlName]="featureIndex" maxlength="120" />
+                        </mat-form-field>
+
+                        <button
+                            mat-icon-button
+                            color="warn"
+                            type="button"
+                            [disabled]="heroBannerDialogFeatures.length <= 3"
+                            (click)="removeFeature(featureIndex)"
+                        >
+                            <mat-icon [svgIcon]="'heroicons_outline:trash'"></mat-icon>
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="rounded-3xl border border-slate-200 p-5">
+            <div class="mb-4">
+                <div class="text-base font-semibold text-slate-900">Call To Actions</div>
+                <div class="text-sm text-slate-500">Configure the two CTA buttons for this banner.</div>
+            </div>
+
+            <div formArrayName="cta" class="space-y-4">
+                @for (ctaGroup of heroBannerDialogCtas.controls; track $index; let ctaIndex = $index) {
+                    <div [formGroupName]="ctaIndex" class="rounded-2xl border border-slate-200 p-4">
+                        <div class="mb-4 text-sm font-medium text-slate-900">CTA {{ ctaIndex + 1 }}</div>
+
+                        <div class="grid gap-4 md:grid-cols-2">
+                            <mat-form-field [subscriptSizing]="'dynamic'">
+                                <mat-label>Label</mat-label>
+                                <input matInput formControlName="label" maxlength="120" />
+                            </mat-form-field>
+
+                            <mat-form-field [subscriptSizing]="'dynamic'">
+                                <mat-label>Link</mat-label>
+                                <input matInput formControlName="link" maxlength="255" />
+                            </mat-form-field>
+
+                            <mat-form-field [subscriptSizing]="'dynamic'">
+                                <mat-label>Style</mat-label>
+                                <mat-select formControlName="style">
+                                    <mat-option value="primary">Primary</mat-option>
+                                    <mat-option value="secondary">Secondary</mat-option>
+                                </mat-select>
+                            </mat-form-field>
+
+                            <mat-form-field [subscriptSizing]="'dynamic'">
+                                <mat-label>Target</mat-label>
+                                <mat-select formControlName="target">
+                                    <mat-option value="_self">Same Tab</mat-option>
+                                    <mat-option value="_blank">New Tab</mat-option>
+                                </mat-select>
+                            </mat-form-field>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="-mx-5 -mb-5 mt-2 flex items-center justify-between gap-4 border-t bg-gray-50 px-8 py-3 dark:bg-gray-700">
+            <mat-form-field class="w-28" [subscriptSizing]="'dynamic'">
+                <mat-label>Priority</mat-label>
+                <input matInput type="number" formControlName="priority" min="1" required />
+                @if (heroBannerDialogForm.get('priority')?.hasError('required')) {
+                    <mat-error>Priority is required</mat-error>
+                }
+            </mat-form-field>
+
+            <div class="flex items-center justify-end">
+                <button mat-button type="button" (click)="closeHeroBannerDialog()">Cancel</button>
+                <button
+                    class="ml-3 px-6"
+                    mat-flat-button
+                    color="primary"
+                    type="button"
+                    [disabled]="heroBannerDialogForm.invalid || heroBannerDialogForm.disabled || isUploadingHeroImage"
+                    (click)="saveHeroBanner()"
+                >
+                    @if (!heroBannerDialogForm.disabled && !isUploadingHeroImage) {
+                        <span>{{ bannerDialogMode === 'add' ? 'Add Banner' : 'Update Banner' }}</span>
+                    }
+                    @if (heroBannerDialogForm.disabled || isUploadingHeroImage) {
+                        <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
+                    }
+                </button>
+            </div>
+        </div>
+    </form>
+</ng-template>
