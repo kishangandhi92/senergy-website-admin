@@ -180,13 +180,7 @@ export class HeroBannerComponent implements OnInit {
         }
 
         const bannerData = this.mapFormValueToHeroBanner(this.heroBannerDialogForm.getRawValue());
-        const nextBanners = this.getCurrentBanners();
-
-        if (this.bannerDialogMode === 'add') {
-            nextBanners.unshift(bannerData);
-        } else if (this.selectedBannerIndex !== null) {
-            nextBanners[this.selectedBannerIndex] = bannerData;
-        }
+        const nextBanners = this.buildNextBannersState(bannerData);
 
         this.persistBannerCollection(
             nextBanners,
@@ -660,6 +654,30 @@ export class HeroBannerComponent implements OnInit {
         return this.heroBannerSections.controls.map((control) =>
             this.mapFormValueToHeroBanner(control.getRawValue())
         );
+    }
+
+    // Inserts the new/updated banner into the requested priority position and shifts others accordingly.
+    private buildNextBannersState(banner: IHeroBannerSection): IHeroBannerSection[] {
+        const banners = this.getCurrentBanners();
+
+        if (this.bannerDialogMode === 'edit' && this.selectedBannerIndex !== null) {
+            banners.splice(this.selectedBannerIndex, 1);
+        }
+
+        const targetPriority = Math.min(
+            Math.max(Number(banner.priority) || 1, 1),
+            banners.length + 1
+        );
+
+        banners.splice(targetPriority - 1, 0, {
+            ...banner,
+            priority: targetPriority,
+        });
+
+        return banners.map((item, index) => ({
+            ...item,
+            priority: index + 1,
+        }));
     }
 
     // Wraps the full banner array with record metadata before sending it to the backend.
