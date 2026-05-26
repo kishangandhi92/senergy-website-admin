@@ -126,7 +126,7 @@ export class AuthService {
     signInUsingToken(): Observable<any> {
         // Sign in using the token
         return this._httpClient
-            .post('api/auth/sign-in-with-token', {
+            .post(`${environment.apiBaseUrl}/api/a/sign-in-with-token`, {
                 accessToken: this.accessToken,
             })
             .pipe(
@@ -156,6 +156,15 @@ export class AuthService {
                             //privilege: response.data.user.privilege,
                             type: response.data.user.type,
                         } as User;
+
+                    sessionStorage.setItem(
+                        'user',
+                        JSON.stringify({
+                            id: response.data.user.emailId,
+                            name: response.data.user.name,
+                            type: response.data.user.type,
+                        })
+                    );
 
                     // Return true
                     return of(true);
