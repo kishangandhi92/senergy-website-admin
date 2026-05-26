@@ -245,6 +245,31 @@ export class HeroBannerComponent implements OnInit {
         this.heroBannerDialogFeatures.removeAt(index);
     }
 
+    // Adds another CTA block in the modal until the maximum of three is reached.
+    addCta(): void {
+        if (this.heroBannerDialogCtas.length >= 3) {
+            return;
+        }
+
+        this.heroBannerDialogCtas.push(
+            this.createCtaGroup({
+                label: '',
+                link: '',
+                style: this.heroBannerDialogCtas.length === 0 ? 'primary' : 'secondary',
+                target: this.heroBannerDialogCtas.length === 0 ? '_self' : '_blank',
+            })
+        );
+    }
+
+    // Removes a CTA block while keeping at least one CTA in the modal.
+    removeCta(index: number): void {
+        if (this.heroBannerDialogCtas.length <= 1) {
+            return;
+        }
+
+        this.heroBannerDialogCtas.removeAt(index);
+    }
+
     // Uploads the selected image file and patches the returned path into the modal form.
     onHeroBannerImageSelect(event: Event): void {
         const input = event.target as HTMLInputElement;
@@ -448,12 +473,6 @@ export class HeroBannerComponent implements OnInit {
                     style: 'primary',
                     target: '_self',
                 },
-                {
-                    label: '',
-                    link: '',
-                    style: 'secondary',
-                    target: '_blank',
-                },
             ],
         };
     }
@@ -584,7 +603,7 @@ export class HeroBannerComponent implements OnInit {
         }
 
         const ctas = Array.isArray(item?.cta)
-            ? item.cta.slice(0, 2).map((cta) => ({
+            ? item.cta.slice(0, 3).map((cta) => ({
                   label: cta?.label || '',
                   link: cta?.link || '',
                   style: cta?.style === 'secondary' ? 'secondary' : 'primary',
@@ -592,12 +611,12 @@ export class HeroBannerComponent implements OnInit {
               }))
             : [];
 
-        while (ctas.length < 2) {
+        while (ctas.length < 1) {
             ctas.push({
                 label: '',
                 link: '',
-                style: ctas.length === 0 ? 'primary' : 'secondary',
-                target: ctas.length === 0 ? '_self' : '_blank',
+                style: 'primary',
+                target: '_self',
             });
         }
 

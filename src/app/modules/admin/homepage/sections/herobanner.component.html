@@ -52,7 +52,7 @@
                         @for (bannerGroup of heroBannerSections.controls; track $index; let bannerIndex = $index) {
                             <div
                                 [formGroupName]="bannerIndex"
-                                class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm"
+                                class="bg-card rounded-3xl bg-white p-5 shadow"
                             >
                                 <div class="mb-4 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                                     <div>
@@ -109,7 +109,7 @@
                                                     </div>
                                                 </div>
 
-                                                <div>
+                                                <!-- <div>
                                                     <div class="mb-1 text-xs font-bold uppercase tracking-[0.08em] text-slate-500">
                                                         Image Path
                                                     </div>
@@ -125,7 +125,7 @@
                                                     <div class="break-words text-[0.9375rem] font-normal leading-[1.375rem] text-slate-600">
                                                         {{ bannerGroup.get('imageAlt')?.value }}
                                                     </div>
-                                                </div>
+                                                </div> -->
                                             </div>
                                         </div>
 
@@ -348,15 +348,39 @@
         </div>
 
         <div class="rounded-3xl border border-slate-200 p-5">
-            <div class="mb-4">
-                <div class="text-base font-semibold text-slate-900">Call To Actions</div>
-                <div class="text-sm text-slate-500">Configure the two CTA buttons for this banner.</div>
+            <div class="mb-4 flex items-start justify-between gap-4">
+                <div>
+                    <div class="text-base font-semibold text-slate-900">Call To Actions</div>
+                    <div class="text-sm text-slate-500">Minimum 1 CTA and maximum 3 CTAs for this banner.</div>
+                </div>
+
+                <button
+                    mat-stroked-button
+                    color="primary"
+                    type="button"
+                    [disabled]="heroBannerDialogCtas.length >= 3"
+                    (click)="addCta()"
+                >
+                    <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                    <span class="ml-2">Add CTA</span>
+                </button>
             </div>
 
             <div formArrayName="cta" class="space-y-4">
                 @for (ctaGroup of heroBannerDialogCtas.controls; track $index; let ctaIndex = $index) {
                     <div [formGroupName]="ctaIndex" class="rounded-2xl border border-slate-200 p-4">
-                        <div class="mb-4 text-sm font-medium text-slate-900">CTA {{ ctaIndex + 1 }}</div>
+                        <div class="mb-4 flex items-center justify-between gap-3">
+                            <div class="text-sm font-medium text-slate-900">CTA {{ ctaIndex + 1 }}</div>
+                            <button
+                                mat-icon-button
+                                color="warn"
+                                type="button"
+                                [disabled]="heroBannerDialogCtas.length <= 1"
+                                (click)="removeCta(ctaIndex)"
+                            >
+                                <mat-icon [svgIcon]="'heroicons_outline:trash'"></mat-icon>
+                            </button>
+                        </div>
 
                         <div class="grid gap-4 md:grid-cols-2">
                             <mat-form-field [subscriptSizing]="'dynamic'">
