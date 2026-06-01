@@ -51,7 +51,7 @@ import { Service } from './service.types';
   selector: 'app-services',
   standalone: true,
   imports: [
-     MatProgressBarModule,
+    MatProgressBarModule,
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
@@ -59,9 +59,7 @@ import { Service } from './service.types';
     ReactiveFormsModule,
     MatButtonModule,
     MatSortModule,
-    NgTemplateOutlet,
     MatPaginatorModule,
-    NgClass,
     MatSlideToggleModule,
     MatSelectModule,
     MatOptionModule,
@@ -76,7 +74,7 @@ import { Service } from './service.types';
     MatTableModule,
     FuseCardComponent,
     QuillModule
-  ],
+],
   templateUrl: './services.component.html',
   styleUrl: './services.component.scss'
 })

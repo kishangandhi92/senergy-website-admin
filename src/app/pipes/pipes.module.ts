@@ -4,9 +4,10 @@ import { SearchPipe } from './search-pipe';
 import { SortPipe } from './sorting.pipe';
 
 @NgModule({
-  declarations: [SearchPipe, SortPipe   ],
   imports: [
-    CommonModule
+    CommonModule,
+    SearchPipe,
+    SortPipe
   ],
   exports: [SearchPipe, SortPipe]
 })

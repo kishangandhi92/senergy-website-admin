@@ -26,16 +26,15 @@ import { finalize, Subscription } from 'rxjs';
     animations: fuseAnimations,
     standalone: true,
     imports: [
-        FuseAlertComponent,
-        FormsModule,
-        ReactiveFormsModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatButtonModule,
-        MatIconModule,
-        MatProgressSpinnerModule,
-        RouterLink,
-    ],
+    FuseAlertComponent,
+    FormsModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatIconModule,
+    MatProgressSpinnerModule
+],
 })
 export class AuthResetPasswordComponent implements OnInit, OnDestroy {
     @ViewChild('resetPasswordNgForm') resetPasswordNgForm: NgForm;

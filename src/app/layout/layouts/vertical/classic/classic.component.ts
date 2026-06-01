@@ -28,20 +28,14 @@ import { Subject, takeUntil } from 'rxjs';
     encapsulation: ViewEncapsulation.None,
     standalone: true,
     imports: [
-        FuseLoadingBarComponent,
-        FuseVerticalNavigationComponent,
-        MatButtonModule,
-        MatIconModule,
-
-        FuseFullscreenComponent,
-        SearchComponent,
-        ShortcutsComponent,
-        MessagesComponent,
-        NotificationsComponent,
-        UserComponent,
-        RouterOutlet,
-        QuickChatComponent,
-    ],
+    FuseLoadingBarComponent,
+    FuseVerticalNavigationComponent,
+    MatButtonModule,
+    MatIconModule,
+    FuseFullscreenComponent,
+    UserComponent,
+    RouterOutlet
+],
 })
 export class ClassicLayoutComponent implements OnInit, OnDestroy, AfterViewInit {
     isScreenSmall: boolean;

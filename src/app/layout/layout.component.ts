@@ -33,19 +33,18 @@ import { ThinLayoutComponent } from './layouts/vertical/thin/thin.component';
     encapsulation: ViewEncapsulation.None,
     standalone: true,
     imports: [
-        EmptyLayoutComponent,
-        CenteredLayoutComponent,
-        EnterpriseLayoutComponent,
-        MaterialLayoutComponent,
-        ModernLayoutComponent,
-        ClassicLayoutComponent,
-        ClassyLayoutComponent,
-        CompactLayoutComponent,
-        DenseLayoutComponent,
-        FuturisticLayoutComponent,
-        ThinLayoutComponent,
-        SettingsComponent,
-    ],
+    EmptyLayoutComponent,
+    CenteredLayoutComponent,
+    EnterpriseLayoutComponent,
+    MaterialLayoutComponent,
+    ModernLayoutComponent,
+    ClassicLayoutComponent,
+    ClassyLayoutComponent,
+    CompactLayoutComponent,
+    DenseLayoutComponent,
+    FuturisticLayoutComponent,
+    ThinLayoutComponent
+],
 })
 export class LayoutComponent implements OnInit, OnDestroy {
     config: FuseConfig;

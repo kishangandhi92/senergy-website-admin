@@ -50,20 +50,15 @@ import { ContactService } from './contact.service';
     FormsModule,
     ReactiveFormsModule,
     MatButtonModule,
-    NgTemplateOutlet,
-    NgClass,
     MatOptionModule,
     MatCheckboxModule,
     MatRippleModule,
     MatProgressSpinnerModule,
-    AsyncPipe,
     MatSnackBarModule,
     PipesModule,
     MatTooltipModule,
-    CommonModule,
-    FuseCardComponent,
-    FuseAlertComponent,
-  ],
+    CommonModule
+],
   templateUrl: './contact.component.html',
   styleUrl: './contact.component.scss'
 })
