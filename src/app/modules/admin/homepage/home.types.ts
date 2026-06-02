@@ -84,6 +84,22 @@ export interface IStatsRecord {
     content: IStatItem[];
 }
 
+export interface ICoreSolutionItem {
+    priority: number | null;
+    link: string;
+    image: string;
+    title: string;
+    altText: string;
+    description: string;
+}
+
+export interface ICoreSolutionsRecord {
+    id?: string;
+    pageId?: string;
+    section: string;
+    content: ICoreSolutionItem[];
+}
+
 export interface IHome {
     bannerTitle: string;
     bannerSubtitle: string;

@@ -1,0 +1,279 @@
+<div class="absolute inset-0 flex min-w-0 flex-col overflow-y-auto" cdkScrollable>
+    <div class="bg-card">
+        <div
+            class="relative flex flex-0 flex-col border-b px-6 py-4 sm:flex-row sm:items-center sm:justify-between md:px-8">
+            <div class="truncate">
+                <div class="truncate text-4xl font-extrabold tracking-tight">
+                    Core Solutions
+                </div>
+            </div>
+
+            <div class="mt-2 flex shrink-0 items-center sm:ml-4 sm:mt-0">
+                <button mat-flat-button color="primary" type="button" [disabled]="coreSolutions.length >= 6"
+                    (click)="openCoreSolutionDialog('add')">
+                    <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                    <span class="ml-2">Add Solution</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex-auto mt-5 overflow-y-auto" cdkScrollable>
+        <div class="mx-auto w-full max-w-screen-xl">
+        
+            <form [formGroup]="entityForm">
+                <div class="px-6 pb-6">
+                    <div formArrayName="coreSolutions" class="space-y-6">
+                        @if (coreSolutions.length === 0) {
+                        <div
+                            class="mb-6 flex min-h-[280px] flex-col items-center justify-center gap-2 rounded-3xl border border-dashed border-slate-300 bg-white text-center">
+                            <div class="text-lg font-bold text-slate-900">No core solutions added</div>
+                            <div class="max-w-sm text-[0.9375rem] text-slate-500">
+                                Start by adding the first core solution item for this section.
+                            </div>
+                        </div>
+                        }
+
+                        @for (solutionGroup of coreSolutions.controls; track $index; let solutionIndex = $index) {
+                        <div [formGroupName]="solutionIndex" class="rounded-3xl bg-white p-5 shadow">
+                            <div class="mb-4 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                                <div>
+                                    <div class="text-lg font-semibold text-slate-900">
+                                        Solution {{ solutionIndex + 1 }}
+                                    </div>
+                                    <div class="text-sm text-slate-500">
+                                        Priority {{ solutionGroup.get('priority')?.value }}
+                                    </div>
+                                </div>
+
+                                <div class="flex flex-wrap gap-3">
+                                    <button mat-stroked-button color="primary" type="button"
+                                        (click)="openCoreSolutionDialog('edit', solutionIndex)">
+                                        <mat-icon [svgIcon]="'heroicons_outline:pencil-square'"></mat-icon>
+                                        <span class="ml-2">Edit</span>
+                                    </button>
+
+                                    <button mat-stroked-button color="warn" type="button"
+                                        [disabled]="coreSolutions.length <= 3"
+                                        (click)="deleteCoreSolution(solutionIndex)">
+                                        <mat-icon [svgIcon]="'heroicons_outline:trash'"></mat-icon>
+                                        <span class="ml-2">Delete</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="grid gap-5 xl:grid-cols-[minmax(0,4fr)_minmax(240px,1fr)]">
+                                <div class="space-y-4">
+                                    <div class="rounded-3xl border border-slate-200 p-5">
+                                        <div class="grid gap-4">
+                                            <div>
+                                                <div
+                                                    class="mb-1 text-xs font-bold uppercase tracking-[0.08em] text-slate-500">
+                                                    Title
+                                                </div>
+                                                <div
+                                                    class="break-words text-base font-semibold leading-6 text-slate-900">
+                                                    {{ solutionGroup.get('title')?.value }}
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <div
+                                                    class="mb-1 text-xs font-bold uppercase tracking-[0.08em] text-slate-500">
+                                                    Description
+                                                </div>
+                                                <div
+                                                    class="break-words text-[0.9375rem] font-normal leading-[1.375rem] text-slate-600">
+                                                    {{ solutionGroup.get('description')?.value }}
+                                                </div>
+                                            </div>
+
+                                            <div class="grid gap-4 md:grid-cols-2">
+                                                <div>
+                                                    <div
+                                                        class="mb-1 text-xs font-bold uppercase tracking-[0.08em] text-slate-500">
+                                                        Priority
+                                                    </div>
+                                                    <div
+                                                        class="break-words text-[0.9375rem] font-normal leading-[1.375rem] text-slate-600">
+                                                        {{ solutionGroup.get('priority')?.value }}
+                                                    </div>
+                                                </div>
+
+                                                <div>
+                                                    <div
+                                                        class="mb-1 text-xs font-bold uppercase tracking-[0.08em] text-slate-500">
+                                                        Link
+                                                    </div>
+                                                    <div
+                                                        class="break-words text-[0.9375rem] font-normal leading-[1.375rem] text-slate-600">
+                                                        {{ solutionGroup.get('link')?.value }}
+                                                    </div>
+                                                </div>
+
+                                                <div>
+                                                    <div
+                                                        class="mb-1 text-xs font-bold uppercase tracking-[0.08em] text-slate-500">
+                                                        Alt Text
+                                                    </div>
+                                                    <div
+                                                        class="break-words text-[0.9375rem] font-normal leading-[1.375rem] text-slate-600">
+                                                        {{ solutionGroup.get('altText')?.value }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flex min-w-0 flex-col xl:sticky xl:top-4">
+                                    <div
+                                        class="flex-1 overflow-hidden rounded-3xl border border-slate-200 bg-slate-50 shadow-sm">
+                                        <img class="block h-full min-h-[260px] w-full object-cover bg-slate-100"
+                                            [src]="resolveImageUrl(solutionGroup.get('image')?.value)"
+                                            [alt]="solutionGroup.get('altText')?.value || 'Core solution preview image'" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        }
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<ng-template #CoreSolutionDialog>
+    <div class="flex max-h-160 flex-auto flex-col overflow-hidden">
+        <div class="flex h-14 flex-0 items-center justify-between bg-primary pl-6 pr-3 text-on-primary sm:pl-8 sm:pr-5">
+            <div class="text-lg font-medium">
+                {{ solutionDialogMode === 'add' ? 'Add Core Solution' : 'Update Core Solution' }}
+            </div>
+            <button mat-icon-button (click)="closeCoreSolutionDialog()" [tabIndex]="-1">
+                <mat-icon class="text-current" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+            </button>
+        </div>
+    </div>
+
+    <form class="flex max-h-[70vh] flex-col gap-5 overflow-y-auto p-5" [formGroup]="coreSolutionDialogForm"
+        enctype="multipart/form-data">
+        <div class="grid gap-4">
+            <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                <mat-label>Title</mat-label>
+                <input matInput formControlName="title" maxlength="100" />
+                <mat-hint align="end">{{ coreSolutionDialogForm.get('title')?.value?.length || 0 }}/100</mat-hint>
+                @if (coreSolutionDialogForm.get('title')?.hasError('required')) {
+                <mat-error>Title is required</mat-error>
+                }
+            </mat-form-field>
+
+            <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                <mat-label>Description</mat-label>
+                <textarea matInput formControlName="description" maxlength="200" rows="2"></textarea>
+                <mat-hint align="end">{{ coreSolutionDialogForm.get('description')?.value?.length || 0 }}/200</mat-hint>
+                @if (coreSolutionDialogForm.get('description')?.hasError('required')) {
+                <mat-error>Description is required</mat-error>
+                }
+            </mat-form-field>
+
+            <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                <mat-label>Link</mat-label>
+                <input matInput formControlName="link" maxlength="255" />
+                <mat-hint align="end">{{ coreSolutionDialogForm.get('link')?.value?.length || 0 }}/255</mat-hint>
+                @if (coreSolutionDialogForm.get('link')?.hasError('required')) {
+                <mat-error>Link is required</mat-error>
+                }
+            </mat-form-field>
+        </div>
+
+        <div class="rounded-3xl border border-slate-200 p-5">
+            <div class="mb-4 flex items-start justify-between gap-4">
+                <div>
+                    <div class="text-base font-semibold text-slate-900">Solution Image</div>
+                    <div class="text-sm text-slate-500">
+                        Upload `.jpg`, `.jpeg`, `.webp` or `.png` up to {{ maxFileSizeInKb }}KB in size.
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_280px]">
+                <div class="space-y-4">
+                    <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                        <mat-label>Image Source</mat-label>
+                        <input matInput formControlName="image" readonly placeholder="assets/images/bg/example.png" />
+                        @if (coreSolutionDialogForm.get('image')?.hasError('required')) {
+                        <mat-error>Image is required</mat-error>
+                        }
+                    </mat-form-field>
+
+                    <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                        <mat-label>Image Alt Text</mat-label>
+                        <input matInput formControlName="altText" maxlength="150" />
+                        <mat-hint align="end">{{ coreSolutionDialogForm.get('altText')?.value?.length || 0
+                            }}/150</mat-hint>
+                        @if (coreSolutionDialogForm.get('altText')?.hasError('required')) {
+                        <mat-error>Alt text is required</mat-error>
+                        }
+                    </mat-form-field>
+
+                    <div class="flex flex-wrap gap-3">
+                        <button class="min-w-36" mat-flat-button color="primary" type="button"
+                            [disabled]="coreSolutionDialogForm.disabled" (click)="coreSolutionImageInput.click()">
+                            <mat-icon [svgIcon]="'mat_outline:file_upload'"></mat-icon>
+                            <span class="ml-2">Upload Image</span>
+                        </button>
+
+                        <button mat-stroked-button color="warn" type="button"
+                            [disabled]="!coreSolutionDialogForm.get('image')?.value || coreSolutionDialogForm.disabled"
+                            (click)="clearCoreSolutionImage()">
+                            Clear Image
+                        </button>
+                    </div>
+
+                    <input hidden #coreSolutionImageInput type="file" accept=".jpg,.jpeg,.webp,.png"
+                        (change)="onCoreSolutionImageSelect($event)" />
+
+                    @if (isUploadingSolutionImage) {
+                    <div class="flex items-center gap-3 text-sm text-slate-500">
+                        <mat-progress-spinner [diameter]="20" [mode]="'indeterminate'"></mat-progress-spinner>
+                        Uploading image...
+                    </div>
+                    }
+                </div>
+
+                <div class="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
+                    <img class="block h-full min-h-[220px] w-full object-cover bg-slate-100"
+                        [src]="coreSolutionImagePreview || resolveImageUrl(coreSolutionDialogForm.get('image')?.value)"
+                        [alt]="coreSolutionDialogForm.get('altText')?.value || 'Solution image preview'" />
+                </div>
+            </div>
+        </div>
+
+        <div
+            class="-mx-5 -mb-5 mt-2 flex items-center justify-end gap-4 border-t bg-gray-50 px-8 py-3 dark:bg-gray-700">
+            <mat-form-field class="mr-auto w-28" [subscriptSizing]="'dynamic'">
+                <mat-label>Priority</mat-label>
+                <input matInput type="number" formControlName="priority" min="1" />
+                @if (coreSolutionDialogForm.get('priority')?.hasError('required')) {
+                <mat-error>Priority is required</mat-error>
+                }
+                @if (coreSolutionDialogForm.get('priority')?.hasError('min')) {
+                <mat-error>Minimum priority is 1</mat-error>
+                }
+            </mat-form-field>
+
+            <button mat-button type="button" (click)="closeCoreSolutionDialog()">Cancel</button>
+            <button class="px-6" mat-flat-button color="primary" type="button"
+                [disabled]="coreSolutionDialogForm.invalid || coreSolutionDialogForm.disabled || isUploadingSolutionImage"
+                (click)="saveCoreSolution()">
+                @if (!coreSolutionDialogForm.disabled && !isUploadingSolutionImage) {
+                <span>{{ solutionDialogMode === 'add' ? 'Add Solution' : 'Update Solution' }}</span>
+                }
+                @if (coreSolutionDialogForm.disabled || isUploadingSolutionImage) {
+                <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
+                }
+            </button>
+        </div>
+    </form>
+</ng-template>

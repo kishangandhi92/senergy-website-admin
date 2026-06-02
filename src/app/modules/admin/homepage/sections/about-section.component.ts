@@ -61,13 +61,12 @@ import { IAboutImage, IAboutRecord, IAboutSection } from '../home.types';
     CommonModule,
     MatTableModule,
     QuillModule,
-    FuseAlertComponent,
     CdkScrollable
 ],
     templateUrl: './about-section.component.html',
 })
 export class AboutSectionComponent implements OnInit {
-    entityForm: UntypedFormGroup;
+    entityForm: UntypedFormGroup | undefined;
     isLoading = false;
     isUploading = false;
     isSaving = false;
