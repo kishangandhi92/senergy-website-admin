@@ -47,6 +47,30 @@ export interface IAdvantagesRecord {
     content: IAdvantagesSection;
 }
 
+export interface IAboutImage {
+    alt: string;
+    src: string;
+    type: 'main' | 'secondary';
+}
+
+export interface IAboutSection {
+    title: string;
+    description: string;
+    knowMore: {
+        label: string;
+        link: string;
+        target: '_self' | '_blank';
+    };
+    images: IAboutImage[];
+}
+
+export interface IAboutRecord {
+    id?: string;
+    pageId?: string;
+    section: string;
+    content: IAboutSection;
+}
+
 export interface IHome {
     bannerTitle: string;
     bannerSubtitle: string;

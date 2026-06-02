@@ -1,0 +1,217 @@
+<div class="absolute inset-0 flex min-w-0 flex-col overflow-y-auto" cdkScrollable>
+    <div class="bg-card">
+        <div
+            class="relative flex flex-0 flex-col border-b px-6 py-4 sm:flex-row sm:items-center sm:justify-between md:px-8"
+        >
+            <div class="truncate">
+                <div class="truncate text-4xl font-extrabold tracking-tight">
+                    About
+                </div>
+            </div>
+
+            <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
+                <button
+                    mat-flat-button
+                    color="primary"
+                    type="button"
+                    [disabled]="entityForm.invalid || entityForm.disabled || isLoading || isUploading || isSaving"
+                    (click)="updateAbout()"
+                >
+                    @if (!isSaving) {
+                        <mat-icon [svgIcon]="'heroicons_outline:check'"></mat-icon>
+                    }
+                    @if (!isSaving) {
+                        <span class="ml-2">Save About</span>
+                    }
+                    @if (isSaving) {
+                        <mat-progress-spinner [diameter]="20" [mode]="'indeterminate'"></mat-progress-spinner>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex-auto mt-5">
+        <div class="mx-auto w-full max-w-screen-xl">
+            <div class="p-6 pb-0">
+                <fuse-alert class="mb-5" [type]="'info'" [appearance]="'outline'">
+                    <span fuseAlertTitle>About section</span>
+                    <p class="text-sm color-gray-100">
+                        This section includes one title, one rich-text description, one know-more link, and exactly
+                        three images: one primary and two secondary.
+                    </p>
+                </fuse-alert>
+            </div>
+
+            <form [formGroup]="entityForm">
+                <div class="space-y-5 px-6 pb-6">
+                    <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                        <div class="grid gap-4">
+                            <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                                <mat-label>Section Title</mat-label>
+                                <input matInput formControlName="title" maxlength="200" />
+                                <mat-hint align="end">{{ entityForm.get('title')?.value?.length || 0 }}/200</mat-hint>
+                                <mat-hint>To highlight text add <strong>asterik (*)</strong> at the start and end of the text</mat-hint>
+                                @if (entityForm.get('title')?.hasError('required')) {
+                                    <mat-error>Title is required</mat-error>
+                                }
+                            </mat-form-field>
+
+                            <div class="space-y-2">
+                                <mat-label class="font-medium text-slate-900">
+                                    Description <span class="text-red-600">*</span>
+                                </mat-label>
+                                <div class="overflow-hidden rounded-2xl border border-slate-200">
+                                    <quill-editor
+                                        class="block bg-white"
+                                        [formControlName]="'description'"
+                                    ></quill-editor>
+                                </div>
+                                @if (entityForm.get('description')?.hasError('required') && entityForm.get('description')?.touched) {
+                                    <mat-error>Description is required</mat-error>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                        <div class="mb-4">
+                            <div class="text-lg font-semibold text-slate-900">Know More</div>
+                            <div class="text-sm text-slate-500">
+                                Configure the button label, link, and target for the About section.
+                            </div>
+                        </div>
+
+                        <div class="grid gap-4 lg:grid-cols-3">
+                            <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                                <mat-label>Button Label</mat-label>
+                                <input matInput formControlName="knowMoreLabel" maxlength="150" />
+                                <mat-hint align="end">{{ entityForm.get('knowMoreLabel')?.value?.length || 0 }}/150</mat-hint>
+                                @if (entityForm.get('knowMoreLabel')?.hasError('required')) {
+                                    <mat-error>Button label is required</mat-error>
+                                }
+                            </mat-form-field>
+
+                            <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                                <mat-label>Link</mat-label>
+                                <input matInput formControlName="knowMoreLink" maxlength="255" />
+                                <mat-hint align="end">{{ entityForm.get('knowMoreLink')?.value?.length || 0 }}/255</mat-hint>
+                                @if (entityForm.get('knowMoreLink')?.hasError('required')) {
+                                    <mat-error>Link is required</mat-error>
+                                }
+                            </mat-form-field>
+
+                            <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                                <mat-label>Target</mat-label>
+                                <mat-select formControlName="knowMoreTarget">
+                                    <mat-option value="_self">Same Tab</mat-option>
+                                    <mat-option value="_blank">New Tab</mat-option>
+                                </mat-select>
+                                @if (entityForm.get('knowMoreTarget')?.hasError('required')) {
+                                    <mat-error>Target is required</mat-error>
+                                }
+                            </mat-form-field>
+                        </div>
+                    </div>
+
+                    <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                        <div class="mb-4">
+                            <div class="text-lg font-semibold text-slate-900">Images</div>
+                            <div class="text-sm text-slate-500">
+                                Upload `.jpg`, `.jpeg`, `.webp` or `.png` files up to {{ maxFileSizeInKb }} KB in size.
+                            </div>
+                        </div>
+
+                        <div formArrayName="images" class="grid gap-4 xl:grid-cols-3">
+                            @for (imageGroup of imageForms.controls; track $index; let imageIndex = $index) {
+                                <div
+                                    [formGroupName]="imageIndex"
+                                    class="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+                                >
+                                    <div class="mb-3">
+                                        <div class="text-base font-semibold text-slate-900">
+                                            {{ getImageSlotLabel(imageIndex) }}
+                                        </div>
+                                        <div class="text-sm text-slate-500">
+                                            {{ getImageSlotHint(imageIndex) }}
+                                        </div>
+                                    </div>
+
+                                    <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+                                        <img
+                                            class="block h-[180px] w-full object-cover bg-slate-100"
+                                            [src]="resolveImageUrl(imageGroup.get('src')?.value)"
+                                            [alt]="imageGroup.get('alt')?.value || 'About image preview'"
+                                        />
+                                    </div>
+
+                                    <div class="mt-3 space-y-3">
+                                        <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                                            <mat-label>Image Path</mat-label>
+                                            <input matInput formControlName="src" readonly />
+                                            @if (imageGroup.get('src')?.hasError('required')) {
+                                                <mat-error>Image is required</mat-error>
+                                            }
+                                        </mat-form-field>
+
+                                        <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                                            <mat-label>Alt Text</mat-label>
+                                            <input matInput formControlName="alt" maxlength="150" />
+                                            <mat-hint align="end">{{ imageGroup.get('alt')?.value?.length || 0 }}/150</mat-hint>
+                                            @if (imageGroup.get('alt')?.hasError('required')) {
+                                                <mat-error>Alt text is required</mat-error>
+                                            }
+                                        </mat-form-field>
+
+                                        <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                                            <mat-label>Image Type</mat-label>
+                                            <input matInput formControlName="type" readonly />
+                                        </mat-form-field>
+
+                                        <div class="flex flex-wrap gap-2">
+                                            <button
+                                                mat-stroked-button
+                                                color="primary"
+                                                type="button"
+                                                [disabled]="entityForm.disabled"
+                                                (click)="aboutImageInput.click()"
+                                            >
+                                                <mat-icon [svgIcon]="'mat_outline:file_upload'"></mat-icon>
+                                                <span class="ml-2">Upload Image</span>
+                                            </button>
+
+                                            <button
+                                                mat-stroked-button
+                                                color="warn"
+                                                type="button"
+                                                [disabled]="!imageGroup.get('src')?.value || entityForm.disabled"
+                                                (click)="clearAboutImage(imageIndex)"
+                                            >
+                                                Clear Image
+                                            </button>
+                                        </div>
+
+                                        <input
+                                            hidden
+                                            #aboutImageInput
+                                            type="file"
+                                            accept=".jpg,.jpeg,.png,.webp"
+                                            (change)="onAboutImageSelect(imageIndex, $event)"
+                                        />
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
+                    @if (isUploading) {
+                        <div class="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-5 py-4 text-sm text-slate-500 shadow-sm">
+                            <mat-progress-spinner [diameter]="20" [mode]="'indeterminate'"></mat-progress-spinner>
+                            Uploading image...
+                        </div>
+                    }
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

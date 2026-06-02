@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
-import { IAdvantagesRecord, IHeroBannerRecord } from './home.types';
+import { IAboutRecord, IAdvantagesRecord, IHeroBannerRecord } from './home.types';
 import { environment } from 'environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -37,9 +37,27 @@ export class HomeService {
         );
     }
 
+    // Fetches the stored about section from the backend.
+    getAbout(): Observable<any> {
+        return this._httpClient.get(`${this.apiUrl}/about`).pipe(
+            map((response: any) => {
+                return response;
+            })
+        );
+    }
+
     // Updates the existing advantages row with the latest full JSON payload.
     updateAdvantages(data: IAdvantagesRecord): Observable<any> {
         return this._httpClient.put(`${this.apiUrl}/advantages`, { ...data }).pipe(
+            map((response: any) => {
+                return response;
+            })
+        );
+    }
+
+    // Updates the existing about row with the latest full JSON payload.
+    updateAbout(data: IAboutRecord): Observable<any> {
+        return this._httpClient.put(`${this.apiUrl}/about`, { ...data }).pipe(
             map((response: any) => {
                 return response;
             })
