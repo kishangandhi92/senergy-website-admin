@@ -1,0 +1,109 @@
+<div class="absolute inset-0 flex min-w-0 flex-col overflow-y-auto" cdkScrollable>
+    <div class="bg-card">
+        <div
+            class="relative flex flex-0 flex-col border-b px-6 py-4 sm:flex-row sm:items-center sm:justify-between md:px-8">
+            <div class="truncate">
+                <div class="truncate text-4xl font-extrabold tracking-tight">
+                    Stats
+                </div>
+            </div>
+
+            <div class="flex shrink-0 items-center gap-3 sm:ml-4 sm:mt-0">
+                <button mat-stroked-button color="primary" type="button"
+                    [disabled]="counterForms.length >= 8 || entityForm.disabled || isLoading || isSaving"
+                    (click)="addCounter()">
+                    <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                    <span class="ml-2">Add Counter</span>
+                </button>
+
+                <button mat-flat-button color="primary" type="button"
+                    [disabled]="entityForm.invalid || entityForm.disabled || isLoading || isSaving"
+                    (click)="updateStats()">
+                    @if (!isSaving) {
+                    <p class="flex items-center">
+                        <mat-icon [svgIcon]="'heroicons_outline:check'"></mat-icon>
+                        <span class="ml-2">Save Stats</span>
+                    </p>
+                    }
+                    @if (isSaving) {
+                    <mat-progress-spinner [diameter]="20" [mode]="'indeterminate'"></mat-progress-spinner>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex-auto overflow-y-auto" cdkScrollable>
+        <div class="mx-auto w-full max-w-screen-xl">
+            <div class="p-6 pb-0">
+                <fuse-alert class="mb-5" [type]="'info'" [appearance]="'outline'">
+                    <span fuseAlertTitle>Stats section</span>
+                    <p class="text-sm color-gray-100">
+                        Configure between 3 and 8 counters for the homepage stats section.
+                    </p>
+                </fuse-alert>
+            </div>
+
+            <form [formGroup]="entityForm">
+                <div class="space-y-4 px-6 pb-6">
+                    <div formArrayName="counters" class="space-y-4">
+                        @for (counterGroup of counterForms.controls; track $index; let counterIndex = $index) {
+                        <div #counterCard [formGroupName]="counterIndex"
+                            class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                            <div class="mb-1 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                                <div>
+                                    <div class="text-lg font-semibold text-slate-900">
+                                        Counter #{{ counterIndex + 1 }}
+                                    </div>
+                                </div>
+
+                                <button mat-stroked-button color="warn" type="button"
+                                    [disabled]="counterForms.length <= 3 || entityForm.disabled || isLoading || isSaving"
+                                    (click)="removeCounter(counterIndex)">
+                                    <mat-icon [svgIcon]="'heroicons_outline:trash'"></mat-icon>
+                                    <span class="ml-2">Remove</span>
+                                </button>
+                            </div>
+
+                            <div class="grid items-start gap-4 lg:grid-cols-[140px_minmax(0,1fr)_minmax(0,1.3fr)]">
+                                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                                    <mat-label>Count</mat-label>
+                                    <input matInput formControlName="count" maxlength="10" />
+                                    <mat-hint align="end">{{ counterGroup.get('count')?.value?.length || 0
+                                        }}/10</mat-hint>
+                                    @if (counterGroup.get('count')?.hasError('required')) {
+                                    <mat-error>Count is required</mat-error>
+                                    }
+                                    @if (counterGroup.get('count')?.hasError('pattern')) {
+                                    <mat-error>Count must contain digits only</mat-error>
+                                    }
+                                </mat-form-field>
+
+                                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                                    <mat-label>Title</mat-label>
+                                    <input matInput formControlName="title" maxlength="100" />
+                                    <mat-hint align="end">{{ counterGroup.get('title')?.value?.length || 0
+                                        }}/100</mat-hint>
+                                    @if (counterGroup.get('title')?.hasError('required')) {
+                                    <mat-error>Title is required</mat-error>
+                                    }
+                                </mat-form-field>
+
+                                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                                    <mat-label>Description</mat-label>
+                                    <input matInput formControlName="description" maxlength="200" />
+                                    <mat-hint align="end">{{ counterGroup.get('description')?.value?.length || 0
+                                        }}/200</mat-hint>
+                                    @if (counterGroup.get('description')?.hasError('required')) {
+                                    <mat-error>Description is required</mat-error>
+                                    }
+                                </mat-form-field>
+                            </div>
+                        </div>
+                        }
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

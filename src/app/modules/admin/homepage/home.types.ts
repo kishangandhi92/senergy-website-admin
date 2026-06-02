@@ -71,6 +71,19 @@ export interface IAboutRecord {
     content: IAboutSection;
 }
 
+export interface IStatItem {
+    count: string;
+    title: string;
+    description: string;
+}
+
+export interface IStatsRecord {
+    id?: string;
+    pageId?: string;
+    section: string;
+    content: IStatItem[];
+}
+
 export interface IHome {
     bannerTitle: string;
     bannerSubtitle: string;

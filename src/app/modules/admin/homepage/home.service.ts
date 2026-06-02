@@ -1,7 +1,12 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
-import { IAboutRecord, IAdvantagesRecord, IHeroBannerRecord } from './home.types';
+import {
+    IAboutRecord,
+    IAdvantagesRecord,
+    IHeroBannerRecord,
+    IStatsRecord,
+} from './home.types';
 import { environment } from 'environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -46,6 +51,15 @@ export class HomeService {
         );
     }
 
+    // Fetches the stored stats section from the backend.
+    getStats(): Observable<any> {
+        return this._httpClient.get(`${this.apiUrl}/stats`).pipe(
+            map((response: any) => {
+                return response;
+            })
+        );
+    }
+
     // Updates the existing advantages row with the latest full JSON payload.
     updateAdvantages(data: IAdvantagesRecord): Observable<any> {
         return this._httpClient.put(`${this.apiUrl}/advantages`, { ...data }).pipe(
@@ -58,6 +72,15 @@ export class HomeService {
     // Updates the existing about row with the latest full JSON payload.
     updateAbout(data: IAboutRecord): Observable<any> {
         return this._httpClient.put(`${this.apiUrl}/about`, { ...data }).pipe(
+            map((response: any) => {
+                return response;
+            })
+        );
+    }
+
+    // Updates the existing stats row with the latest full JSON payload.
+    updateStats(data: IStatsRecord): Observable<any> {
+        return this._httpClient.put(`${this.apiUrl}/stats`, { ...data }).pipe(
             map((response: any) => {
                 return response;
             })

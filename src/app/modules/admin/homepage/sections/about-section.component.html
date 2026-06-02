@@ -9,7 +9,7 @@
                 </div>
             </div>
 
-            <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
+            <div class="flex shrink-0 items-center sm:ml-4 sm:mt-0">
                 <button
                     mat-flat-button
                     color="primary"
@@ -31,17 +31,8 @@
         </div>
     </div>
 
-    <div class="flex-auto mt-5">
+    <div class="flex-auto mt-5 overflow-y-auto" cdkScrollable>
         <div class="mx-auto w-full max-w-screen-xl">
-            <div class="p-6 pb-0">
-                <fuse-alert class="mb-5" [type]="'info'" [appearance]="'outline'">
-                    <span fuseAlertTitle>About section</span>
-                    <p class="text-sm color-gray-100">
-                        This section includes one title, one rich-text description, one know-more link, and exactly
-                        three images: one primary and two secondary.
-                    </p>
-                </fuse-alert>
-            </div>
 
             <form [formGroup]="entityForm">
                 <div class="space-y-5 px-6 pb-6">
@@ -83,7 +74,7 @@
                         </div>
 
                         <div class="grid gap-4 lg:grid-cols-3">
-                            <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                            <mat-form-field class="w-full">
                                 <mat-label>Button Label</mat-label>
                                 <input matInput formControlName="knowMoreLabel" maxlength="150" />
                                 <mat-hint align="end">{{ entityForm.get('knowMoreLabel')?.value?.length || 0 }}/150</mat-hint>
@@ -92,7 +83,7 @@
                                 }
                             </mat-form-field>
 
-                            <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                            <mat-form-field class="w-full">
                                 <mat-label>Link</mat-label>
                                 <input matInput formControlName="knowMoreLink" maxlength="255" />
                                 <mat-hint align="end">{{ entityForm.get('knowMoreLink')?.value?.length || 0 }}/255</mat-hint>
@@ -101,7 +92,7 @@
                                 }
                             </mat-form-field>
 
-                            <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                            <mat-form-field class="w-full">
                                 <mat-label>Target</mat-label>
                                 <mat-select formControlName="knowMoreTarget">
                                     <mat-option value="_self">Same Tab</mat-option>
