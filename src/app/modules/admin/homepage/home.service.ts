@@ -6,6 +6,7 @@ import {
     IAdvantagesRecord,
     IClientsRecord,
     ICoreSolutionsRecord,
+    ICtaRecord,
     IHeroBannerRecord,
     IStatsRecord,
     ITestimonialsRecord,
@@ -90,6 +91,15 @@ export class HomeService {
         );
     }
 
+    // Fetches the stored CTA section from the backend.
+    getCta(): Observable<any> {
+        return this._httpClient.get(`${this.apiUrl}/cta`).pipe(
+            map((response: any) => {
+                return response;
+            })
+        );
+    }
+
     // Updates the existing advantages row with the latest full JSON payload.
     updateAdvantages(data: IAdvantagesRecord): Observable<any> {
         return this._httpClient.put(`${this.apiUrl}/advantages`, { ...data }).pipe(
@@ -138,6 +148,15 @@ export class HomeService {
     // Updates the existing testimonials row with the latest full JSON payload.
     updateTestimonials(data: ITestimonialsRecord): Observable<any> {
         return this._httpClient.put(`${this.apiUrl}/testimonials`, { ...data }).pipe(
+            map((response: any) => {
+                return response;
+            })
+        );
+    }
+
+    // Updates the existing CTA row with the latest full JSON payload.
+    updateCta(data: ICtaRecord): Observable<any> {
+        return this._httpClient.put(`${this.apiUrl}/cta`, { ...data }).pipe(
             map((response: any) => {
                 return response;
             })

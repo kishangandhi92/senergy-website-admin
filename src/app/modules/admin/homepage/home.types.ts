@@ -128,6 +128,22 @@ export interface ITestimonialsRecord {
     content: ITestimonialItem[];
 }
 
+export interface ICtaSection {
+    content: {
+        title: string;
+        subtitle: string;
+    };
+    image: {
+        src: string;
+        alt: string;
+    };
+    cta: IHeroBannerCta[];
+}
+
+export interface ICtaRecord {
+    content: ICtaSection;
+}
+
 export interface IHome {
     bannerTitle: string;
     bannerSubtitle: string;
