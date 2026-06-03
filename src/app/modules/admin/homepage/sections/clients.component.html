@@ -1,0 +1,222 @@
+<div class="absolute inset-0 flex min-w-0 flex-col overflow-y-auto" cdkScrollable>
+    <div class="bg-card">
+        <div
+            class="relative flex flex-0 flex-col border-b px-6 py-4 sm:flex-row sm:items-center sm:justify-between md:px-8"
+        >
+            <div class="truncate">
+                <div class="truncate text-4xl font-extrabold tracking-tight">
+                    Clients
+                </div>
+            </div>
+
+            <div class=" flex shrink-0 items-center sm:ml-4 sm:mt-0">
+                <button
+                    mat-flat-button
+                    color="primary"
+                    type="button"
+                    (click)="openClientDialog('add')"
+                >
+                    <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                    <span class="ml-2">Add Client</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex-auto mt-5 overflow-y-auto" cdkScrollable>
+        <div class="mx-auto w-full max-w-screen-xxl">
+            <form [formGroup]="entityForm">
+                <div class="px-6 pb-6">
+                    <div formArrayName="clients" class="grid gap-5 md:grid-cols-3 xl:grid-cols-4">
+                        @if (clients.length === 0) {
+                            <div
+                                class="col-span-full mb-6 flex min-h-[280px] flex-col items-center justify-center gap-2 rounded-3xl border border-dashed border-slate-300 bg-white text-center"
+                            >
+                                <div class="text-lg font-bold text-slate-900">No clients added</div>
+                                <div class="max-w-sm text-[0.9375rem] text-slate-500">
+                                    Start by adding the first client item for this section.
+                                </div>
+                            </div>
+                        }
+
+                        @for (clientGroup of clients.controls; track $index; let clientIndex = $index) {
+                            <div
+                                [formGroupName]="clientIndex"
+                                class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm"
+                            >
+                                <div class="mb-4 flex items-start justify-between gap-4">
+                                    <div>
+                                        <div class="text-lg font-semibold text-slate-900">
+                                            {{ clientGroup.get('name')?.value || 'Untitled client' }}
+                                        </div>
+                                        <div class="text-sm text-slate-500">
+                                            Priority {{ clientGroup.get('priority')?.value }}
+                                        </div>
+                                    </div>
+
+                                    <div class="flex flex-wrap gap-2">
+                                        <button
+                                            mat-stroked-button
+                                            color="primary"
+                                            type="button"
+                                            (click)="openClientDialog('edit', clientIndex)"
+                                        >
+                                            <mat-icon [svgIcon]="'heroicons_outline:pencil-square'"></mat-icon>
+                                        </button>
+
+                                        <button
+                                            mat-stroked-button
+                                            color="warn"
+                                            type="button"
+                                            (click)="deleteClient(clientIndex)"
+                                        >
+                                            <mat-icon [svgIcon]="'heroicons_outline:trash'"></mat-icon>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
+                                    <img
+                                        class="block h-[180px] w-full object-contain bg-slate-100 p-6"
+                                        [src]="resolveImageUrl(clientGroup.get('image')?.value)"
+                                        [alt]="clientGroup.get('name')?.value || 'Client logo preview'"
+                                    />
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<ng-template #ClientDialog>
+    <div class="flex max-h-160 flex-auto flex-col overflow-hidden">
+        <div class="flex h-14 flex-0 items-center justify-between bg-primary pl-6 pr-3 text-on-primary sm:pl-8 sm:pr-5">
+            <div class="text-lg font-medium">
+                {{ clientDialogMode === 'add' ? 'Add Client' : 'Update Client' }}
+            </div>
+            <button mat-icon-button (click)="closeClientDialog()" [tabIndex]="-1">
+                <mat-icon class="text-current" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+            </button>
+        </div>
+    </div>
+
+    <form
+        class="flex max-h-[70vh] flex-col gap-5 overflow-y-auto p-5"
+        [formGroup]="clientDialogForm"
+        enctype="multipart/form-data"
+    >
+        <div class="grid gap-4">
+            <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                <mat-label>Client Name</mat-label>
+                <input matInput formControlName="name" maxlength="150" />
+                <mat-hint align="end">{{ clientDialogForm.get('name')?.value?.length || 0 }}/150</mat-hint>
+                @if (clientDialogForm.get('name')?.hasError('required')) {
+                    <mat-error>Client name is required</mat-error>
+                }
+            </mat-form-field>
+        </div>
+
+        <div class="rounded-3xl border border-slate-200 p-5">
+            <div class="mb-4 flex items-start justify-between gap-4">
+                <div>
+                    <div class="text-base font-semibold text-slate-900">Client Logo</div>
+                    <div class="text-sm text-slate-500">
+                        Upload `.jpg`, `.jpeg`, `.png`, or `.webp` up to {{ maxFileSizeInKb }}KB in size.
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_280px]">
+                <div class="space-y-4">
+                    <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                        <mat-label>Logo Source</mat-label>
+                        <input matInput formControlName="image" readonly placeholder="assets/images/client/example.png" />
+                        @if (clientDialogForm.get('image')?.hasError('required')) {
+                            <mat-error>Logo is required</mat-error>
+                        }
+                    </mat-form-field>
+
+                    <div class="flex flex-wrap gap-3">
+                        <button
+                            class="min-w-36"
+                            mat-flat-button
+                            color="primary"
+                            type="button"
+                            [disabled]="clientDialogForm.disabled"
+                            (click)="clientImageInput.click()"
+                        >
+                            <mat-icon [svgIcon]="'mat_outline:file_upload'"></mat-icon>
+                            <span class="ml-2">Upload Logo</span>
+                        </button>
+
+                        <button
+                            mat-stroked-button
+                            color="warn"
+                            type="button"
+                            [disabled]="!clientDialogForm.get('image')?.value || clientDialogForm.disabled"
+                            (click)="clearClientImage()"
+                        >
+                            Clear Logo
+                        </button>
+                    </div>
+
+                    <input
+                        hidden
+                        #clientImageInput
+                        type="file"
+                        accept=".jpg,.jpeg,.png,.webp"
+                        (change)="onClientImageSelect($event)"
+                    />
+
+                    @if (isUploadingClientImage) {
+                        <div class="flex items-center gap-3 text-sm text-slate-500">
+                            <mat-progress-spinner [diameter]="20" [mode]="'indeterminate'"></mat-progress-spinner>
+                            Uploading logo...
+                        </div>
+                    }
+                </div>
+
+                <div class="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
+                    <img
+                        class="block h-full min-h-[220px] w-full object-contain bg-slate-100 p-6"
+                        [src]="clientImagePreview || resolveImageUrl(clientDialogForm.get('image')?.value)"
+                        [alt]="clientDialogForm.get('name')?.value || 'Client logo preview'"
+                    />
+                </div>
+            </div>
+        </div>
+
+        <div class="-mx-5 -mb-5 mt-2 flex items-center justify-end gap-4 border-t bg-gray-50 px-8 py-3 dark:bg-gray-700">
+            <mat-form-field class="mr-auto w-28" [subscriptSizing]="'dynamic'">
+                <mat-label>Priority</mat-label>
+                <input matInput type="number" formControlName="priority" min="1" />
+                @if (clientDialogForm.get('priority')?.hasError('required')) {
+                    <mat-error>Priority is required</mat-error>
+                }
+                @if (clientDialogForm.get('priority')?.hasError('min')) {
+                    <mat-error>Minimum priority is 1</mat-error>
+                }
+            </mat-form-field>
+
+            <button mat-button type="button" (click)="closeClientDialog()">Cancel</button>
+            <button
+                class="px-6"
+                mat-flat-button
+                color="primary"
+                type="button"
+                [disabled]="clientDialogForm.invalid || clientDialogForm.disabled || isUploadingClientImage"
+                (click)="saveClient()"
+            >
+                @if (!clientDialogForm.disabled && !isUploadingClientImage) {
+                    <span>{{ clientDialogMode === 'add' ? 'Add Client' : 'Update Client' }}</span>
+                }
+                @if (clientDialogForm.disabled || isUploadingClientImage) {
+                    <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
+                }
+            </button>
+        </div>
+    </form>
+</ng-template>

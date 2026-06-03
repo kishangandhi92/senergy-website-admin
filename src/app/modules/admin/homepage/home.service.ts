@@ -4,6 +4,7 @@ import { Observable, map } from 'rxjs';
 import {
     IAboutRecord,
     IAdvantagesRecord,
+    IClientsRecord,
     ICoreSolutionsRecord,
     IHeroBannerRecord,
     IStatsRecord,
@@ -70,6 +71,15 @@ export class HomeService {
         );
     }
 
+    // Fetches the stored clients section from the backend.
+    getClients(): Observable<any> {
+        return this._httpClient.get(`${this.apiUrl}/clients`).pipe(
+            map((response: any) => {
+                return response;
+            })
+        );
+    }
+
     // Updates the existing advantages row with the latest full JSON payload.
     updateAdvantages(data: IAdvantagesRecord): Observable<any> {
         return this._httpClient.put(`${this.apiUrl}/advantages`, { ...data }).pipe(
@@ -100,6 +110,15 @@ export class HomeService {
     // Updates the existing core-solutions row with the latest full JSON payload.
     updateCoreSolutions(data: ICoreSolutionsRecord): Observable<any> {
         return this._httpClient.put(`${this.apiUrl}/core-solutions`, { ...data }).pipe(
+            map((response: any) => {
+                return response;
+            })
+        );
+    }
+
+    // Updates the existing clients row with the latest full JSON payload.
+    updateClients(data: IClientsRecord): Observable<any> {
+        return this._httpClient.put(`${this.apiUrl}/clients`, { ...data }).pipe(
             map((response: any) => {
                 return response;
             })

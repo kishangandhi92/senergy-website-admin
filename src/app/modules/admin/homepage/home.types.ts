@@ -100,6 +100,19 @@ export interface ICoreSolutionsRecord {
     content: ICoreSolutionItem[];
 }
 
+export interface IClientItem {
+    priority: number | null;
+    name: string;
+    image: string;
+}
+
+export interface IClientsRecord {
+    id?: string;
+    pageId?: string;
+    section: string;
+    content: IClientItem[];
+}
+
 export interface IHome {
     bannerTitle: string;
     bannerSubtitle: string;
