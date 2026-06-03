@@ -1,0 +1,255 @@
+<div class="absolute inset-0 flex min-w-0 flex-col overflow-y-auto" cdkScrollable>
+    <div class="bg-card">
+        <div
+            class="relative flex flex-0 flex-col border-b px-6 py-4 sm:flex-row sm:items-center sm:justify-between md:px-8"
+        >
+            <div class="truncate">
+                <div class="truncate text-4xl font-extrabold tracking-tight">
+                    Testimonials
+                </div>
+            </div>
+
+            <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
+                <button
+                    mat-flat-button
+                    color="primary"
+                    type="button"
+                    (click)="openTestimonialDialog('add')"
+                >
+                    <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                    <span class="ml-2">Add Testimonial</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex-auto mt-5 overflow-y-auto" cdkScrollable>
+        <div class="mx-auto w-full max-w-screen-xxl">
+            <form [formGroup]="entityForm">
+                <div class="px-6 pb-6">
+                    <div formArrayName="testimonials" class="grid gap-5 md:grid-cols-2 ">
+                        @if (testimonials.length === 0) {
+                            <div
+                                class="col-span-full mb-6 flex min-h-[280px] flex-col items-center justify-center gap-2 rounded-3xl border border-dashed border-slate-300 bg-white text-center"
+                            >
+                                <div class="text-lg font-bold text-slate-900">No testimonials added</div>
+                                <div class="max-w-sm text-[0.9375rem] text-slate-500">
+                                    Start by adding the first testimonial item for this section.
+                                </div>
+                            </div>
+                        }
+
+                        @for (testimonialGroup of testimonials.controls; track $index; let testimonialIndex = $index) {
+                            <div
+                                [formGroupName]="testimonialIndex"
+                                class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm"
+                            >
+                                <div class="mb-4 flex items-start justify-between gap-4">
+                                    <div class="flex items-start gap-3">
+                                        <img
+                                            class="h-14 w-14 rounded-full border border-slate-200 object-cover bg-slate-100"
+                                            [src]="resolveImageUrl(testimonialGroup.get('image')?.value)"
+                                            [alt]="testimonialGroup.get('name')?.value || 'Testimonial image'"
+                                        />
+                                        <div>
+                                            <div class="text-lg font-semibold text-slate-900">
+                                                {{ testimonialGroup.get('name')?.value || 'Untitled testimonial' }}
+                                            </div>
+                                            <div class="text-sm text-slate-500">
+                                                 #{{ testimonialGroup.get('priority')?.value }} | {{ testimonialGroup.get('role')?.value || 'Role not set' }}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex flex-wrap gap-2">
+                                        <button
+                                            mat-stroked-button
+                                            color="primary"
+                                            type="button"
+                                            (click)="openTestimonialDialog('edit', testimonialIndex)"
+                                        >
+                                            <mat-icon [svgIcon]="'heroicons_outline:pencil-square'"></mat-icon>
+                                            <span class="ml-2">Edit</span>
+                                        </button>
+
+                                        <button
+                                            mat-stroked-button
+                                            color="warn"
+                                            type="button"
+                                            (click)="deleteTestimonial(testimonialIndex)"
+                                        >
+                                            <mat-icon [svgIcon]="'heroicons_outline:trash'"></mat-icon>
+                                            <span class="ml-2">Delete</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                                    
+                                    <div class="text-[0.9375rem] leading-6 text-slate-700">
+                                        {{ testimonialGroup.get('message')?.value }}
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<ng-template #TestimonialDialog>
+    <div class="flex max-h-160 flex-auto flex-col overflow-hidden">
+        <div class="flex h-14 flex-0 items-center justify-between bg-primary pl-6 pr-3 text-on-primary sm:pl-8 sm:pr-5">
+            <div class="text-lg font-medium">
+                {{ testimonialDialogMode === 'add' ? 'Add Testimonial' : 'Update Testimonial' }}
+            </div>
+            <button mat-icon-button (click)="closeTestimonialDialog()" [tabIndex]="-1">
+                <mat-icon class="text-current" [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+            </button>
+        </div>
+    </div>
+
+    <form
+        class="flex max-h-[70vh] flex-col gap-5 overflow-y-auto p-5"
+        [formGroup]="testimonialDialogForm"
+        enctype="multipart/form-data"
+    >
+        <div class="grid gap-4">
+            <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                <mat-label>Name</mat-label>
+                <input matInput formControlName="name" maxlength="150" />
+                <mat-hint align="end">{{ testimonialDialogForm.get('name')?.value?.length || 0 }}/150</mat-hint>
+                @if (testimonialDialogForm.get('name')?.hasError('required')) {
+                    <mat-error>Name is required</mat-error>
+                }
+            </mat-form-field>
+
+            <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                <mat-label>Role</mat-label>
+                <input matInput formControlName="role" maxlength="150" />
+                <mat-hint align="end">{{ testimonialDialogForm.get('role')?.value?.length || 0 }}/150</mat-hint>
+                @if (testimonialDialogForm.get('role')?.hasError('required')) {
+                    <mat-error>Role is required</mat-error>
+                }
+            </mat-form-field>
+
+            <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                <mat-label>Message</mat-label>
+                <textarea matInput formControlName="message" maxlength="250" rows="4"></textarea>
+                <mat-hint align="end">{{ testimonialDialogForm.get('message')?.value?.length || 0 }}/250</mat-hint>
+                @if (testimonialDialogForm.get('message')?.hasError('required')) {
+                    <mat-error>Message is required</mat-error>
+                }
+            </mat-form-field>
+        </div>
+
+        <div class="rounded-3xl border border-slate-200 p-5">
+            <div class="mb-4 flex items-start justify-between gap-4">
+                <div>
+                    <div class="text-base font-semibold text-slate-900">Person Image</div>
+                    <div class="text-sm text-slate-500">
+                        Upload `.jpg`, `.jpeg`, `.png`, or `.webp` up to {{ maxFileSizeInKb }}KB in size, or use the default placeholder.
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_240px]">
+                <div class="space-y-4">
+                    <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                        <mat-label>Image Source</mat-label>
+                        <input matInput formControlName="image" readonly placeholder="Leave empty to use placeholder avatar" />
+                    </mat-form-field>
+
+                    <div class="flex flex-wrap gap-3">
+                        <button
+                            class="min-w-36"
+                            mat-flat-button
+                            color="primary"
+                            type="button"
+                            [disabled]="testimonialDialogForm.disabled"
+                            (click)="testimonialImageInput.click()"
+                        >
+                            <mat-icon [svgIcon]="'mat_outline:file_upload'"></mat-icon>
+                            <span class="ml-2">Upload Image</span>
+                        </button>
+
+                        <button
+                            mat-stroked-button
+                            color="accent"
+                            type="button"
+                            [disabled]="testimonialDialogForm.disabled"
+                            (click)="usePlaceholderImage()"
+                        >
+                            Use Placeholder
+                        </button>
+
+                        <button
+                            mat-stroked-button
+                            color="warn"
+                            type="button"
+                            [disabled]="!testimonialDialogForm.get('image')?.value || testimonialDialogForm.disabled"
+                            (click)="clearTestimonialImage()"
+                        >
+                            Clear Image
+                        </button>
+                    </div>
+
+                    <input
+                        hidden
+                        #testimonialImageInput
+                        type="file"
+                        accept=".jpg,.jpeg,.png,.webp"
+                        (change)="onTestimonialImageSelect($event)"
+                    />
+
+                    @if (isUploadingTestimonialImage) {
+                        <div class="flex items-center gap-3 text-sm text-slate-500">
+                            <mat-progress-spinner [diameter]="20" [mode]="'indeterminate'"></mat-progress-spinner>
+                            Uploading image...
+                        </div>
+                    }
+                </div>
+
+                <div class="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
+                    <img
+                        class="block h-full min-h-[220px] w-full object-cover bg-slate-100"
+                        [src]="testimonialImagePreview || resolveImageUrl(testimonialDialogForm.get('image')?.value)"
+                        [alt]="testimonialDialogForm.get('name')?.value || 'Testimonial image preview'"
+                    />
+                </div>
+            </div>
+        </div>
+
+        <div class="-mx-5 -mb-5 mt-2 flex items-center justify-end gap-4 border-t bg-gray-50 px-8 py-3 dark:bg-gray-700">
+            <mat-form-field class="mr-auto w-28" [subscriptSizing]="'dynamic'">
+                <mat-label>Priority</mat-label>
+                <input matInput type="number" formControlName="priority" min="1" />
+                @if (testimonialDialogForm.get('priority')?.hasError('required')) {
+                    <mat-error>Priority is required</mat-error>
+                }
+                @if (testimonialDialogForm.get('priority')?.hasError('min')) {
+                    <mat-error>Minimum priority is 1</mat-error>
+                }
+            </mat-form-field>
+
+            <button mat-button type="button" (click)="closeTestimonialDialog()">Cancel</button>
+            <button
+                class="px-6"
+                mat-flat-button
+                color="primary"
+                type="button"
+                [disabled]="testimonialDialogForm.invalid || testimonialDialogForm.disabled || isUploadingTestimonialImage"
+                (click)="saveTestimonial()"
+            >
+                @if (!testimonialDialogForm.disabled && !isUploadingTestimonialImage) {
+                    <span>{{ testimonialDialogMode === 'add' ? 'Add Testimonial' : 'Update Testimonial' }}</span>
+                }
+                @if (testimonialDialogForm.disabled || isUploadingTestimonialImage) {
+                    <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
+                }
+            </button>
+        </div>
+    </form>
+</ng-template>

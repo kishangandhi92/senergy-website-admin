@@ -113,6 +113,21 @@ export interface IClientsRecord {
     content: IClientItem[];
 }
 
+export interface ITestimonialItem {
+    priority: number | null;
+    name: string;
+    role: string;
+    image: string;
+    message: string;
+}
+
+export interface ITestimonialsRecord {
+    id?: string;
+    pageId?: string;
+    section: string;
+    content: ITestimonialItem[];
+}
+
 export interface IHome {
     bannerTitle: string;
     bannerSubtitle: string;

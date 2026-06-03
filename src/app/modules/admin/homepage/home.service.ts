@@ -8,6 +8,7 @@ import {
     ICoreSolutionsRecord,
     IHeroBannerRecord,
     IStatsRecord,
+    ITestimonialsRecord,
 } from './home.types';
 import { environment } from 'environments/environment';
 
@@ -80,6 +81,15 @@ export class HomeService {
         );
     }
 
+    // Fetches the stored testimonials section from the backend.
+    getTestimonials(): Observable<any> {
+        return this._httpClient.get(`${this.apiUrl}/testimonials`).pipe(
+            map((response: any) => {
+                return response;
+            })
+        );
+    }
+
     // Updates the existing advantages row with the latest full JSON payload.
     updateAdvantages(data: IAdvantagesRecord): Observable<any> {
         return this._httpClient.put(`${this.apiUrl}/advantages`, { ...data }).pipe(
@@ -119,6 +129,15 @@ export class HomeService {
     // Updates the existing clients row with the latest full JSON payload.
     updateClients(data: IClientsRecord): Observable<any> {
         return this._httpClient.put(`${this.apiUrl}/clients`, { ...data }).pipe(
+            map((response: any) => {
+                return response;
+            })
+        );
+    }
+
+    // Updates the existing testimonials row with the latest full JSON payload.
+    updateTestimonials(data: ITestimonialsRecord): Observable<any> {
+        return this._httpClient.put(`${this.apiUrl}/testimonials`, { ...data }).pipe(
             map((response: any) => {
                 return response;
             })
