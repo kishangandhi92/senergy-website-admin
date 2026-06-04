@@ -153,8 +153,8 @@
         <div class="grid gap-4">
             <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
                 <mat-label>Client Name</mat-label>
-                <input matInput formControlName="name" maxlength="150" />
-                <mat-hint align="end">{{ clientDialogForm.get('name')?.value?.length || 0 }}/150</mat-hint>
+                <input matInput formControlName="name" maxlength="100" />
+                <mat-hint align="end">{{ clientDialogForm.get('name')?.value?.length || 0 }}/100</mat-hint>
                 @if (clientDialogForm.get('name')?.hasError('required')) {
                     <mat-error>Client name is required</mat-error>
                 }
