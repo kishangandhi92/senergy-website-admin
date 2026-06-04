@@ -31,7 +31,11 @@ import { PipesModule } from 'app/pipes/pipes.module';
 import { environment } from 'environments/environment';
 import { QuillModule } from 'ngx-quill';
 import { HomeService } from '../home.service';
-import { ICoreSolutionItem, ICoreSolutionsRecord } from '../home.types';
+import {
+    ICoreSolutionItem,
+    ICoreSolutionsRecord,
+    ICoreSolutionsSection,
+} from '../home.types';
 
 @Component({
     selector: 'app-home-core-solutions',
@@ -63,7 +67,9 @@ import { ICoreSolutionItem, ICoreSolutionsRecord } from '../home.types';
     templateUrl: './core-solutions.component.html',
 })
 export class CoreSolutionsComponent implements OnInit {
-    @ViewChild('CoreSolutionDialog') coreSolutionDialog: TemplateRef<any> | undefined;
+    @ViewChild('CoreSolutionDialog') coreSolutionDialog:
+        | TemplateRef<any>
+        | undefined;
 
     entityForm: UntypedFormGroup | undefined;
     coreSolutionDialogForm: UntypedFormGroup | undefined;
@@ -102,6 +108,26 @@ export class CoreSolutionsComponent implements OnInit {
     // Exposes the page-level core solutions list form array to the template.
     get coreSolutions(): UntypedFormArray {
         return this.entityForm.get('coreSolutions') as UntypedFormArray;
+    }
+
+    // Saves the common section heading content while keeping the current solutions list unchanged.
+    updateCoreSolutionsSection(): void {
+        if (
+            this.entityForm.invalid ||
+            this.isLoading ||
+            this.isSaving ||
+            this.isUploadingSolutionImage
+        ) {
+            this.entityForm.markAllAsTouched();
+            return;
+        }
+
+        this.persistCoreSolutionsCollection(
+            this.getCurrentSolutions(),
+            'Core solutions section updated successfully',
+            'Failed to update core solutions section.',
+            'Oh no! Server error occurred while updating core solutions section'
+        );
     }
 
     // Opens the modal in add or edit mode and pre-fills values when editing.
@@ -364,6 +390,8 @@ export class CoreSolutionsComponent implements OnInit {
     // Creates the page-level form that stores the list of solutions shown on screen.
     private generateFormGroup(): void {
         this.entityForm = this._formBuilder.group({
+            title: ['', [Validators.required, Validators.maxLength(100)]],
+            subtitle: ['', [Validators.required, Validators.maxLength(200)]],
             coreSolutions: this._formBuilder.array([]),
         });
     }
@@ -372,8 +400,8 @@ export class CoreSolutionsComponent implements OnInit {
     private generateCoreSolutionDialogForm(): void {
         this.coreSolutionDialogForm = this._formBuilder.group({
             priority: [1, [Validators.required, Validators.min(1)]],
-            title: ['', [Validators.required, Validators.maxLength(120)]],
-            description: ['', [Validators.required, Validators.maxLength(260)]],
+            title: ['', [Validators.required, Validators.maxLength(100)]],
+            description: ['', [Validators.required, Validators.maxLength(200)]],
             image: ['', [Validators.required]],
             altText: ['', [Validators.required, Validators.maxLength(150)]],
             link: ['', [Validators.required, Validators.maxLength(255)]],
@@ -412,7 +440,10 @@ export class CoreSolutionsComponent implements OnInit {
         solution: ICoreSolutionItem
     ): UntypedFormGroup {
         return this._formBuilder.group({
-            priority: [solution.priority, [Validators.required, Validators.min(1)]],
+            priority: [
+                solution.priority,
+                [Validators.required, Validators.min(1)],
+            ],
             link: [solution.link, [Validators.required]],
             image: [solution.image, [Validators.required]],
             title: [solution.title, [Validators.required]],
@@ -434,6 +465,21 @@ export class CoreSolutionsComponent implements OnInit {
             altText: formValue.altText || '',
             description: formValue.description || '',
         };
+    }
+
+    // Patches the page-level title/subtitle and rebuilds the visible solutions list.
+    private patchCoreSolutionsForm(data: ICoreSolutionsSection): void {
+        this.entityForm.patchValue({
+            title: data.title,
+            subtitle: data.subtitle,
+        });
+
+        this.replaceFormArray(
+            this.coreSolutions,
+            data.solutions.map((solution) =>
+                this.createCoreSolutionGroup(solution)
+            )
+        );
     }
 
     // Replaces all items inside a form array with a fresh set of controls.
@@ -460,19 +506,18 @@ export class CoreSolutionsComponent implements OnInit {
                     this.coreSolutionsPageId = record.pageId || '1';
                     this.coreSolutionsSectionKey =
                         record.section || 'core-solutions';
-                    this.replaceFormArray(
-                        this.coreSolutions,
-                        record.content.map((solution) =>
-                            this.createCoreSolutionGroup(solution)
-                        )
-                    );
+                    this.patchCoreSolutionsForm(record.content);
                 } else {
-                    this.replaceFormArray(this.coreSolutions, []);
+                    this.patchCoreSolutionsForm(
+                        this.createDefaultCoreSolutionsSection()
+                    );
                     this._snackBar.showError('Failed to fetch core solutions.');
                 }
             },
             () => {
-                this.replaceFormArray(this.coreSolutions, []);
+                this.patchCoreSolutionsForm(
+                    this.createDefaultCoreSolutionsSection()
+                );
                 this._snackBar.showError(
                     'Oh no! Server error occurred while fetching core solutions'
                 );
@@ -486,15 +531,33 @@ export class CoreSolutionsComponent implements OnInit {
     // Extracts the row metadata and solutions content array from the API response.
     private extractCoreSolutionsRecord(response: any): ICoreSolutionsRecord {
         const data = response?.data || {};
-        const content = Array.isArray(data?.content) ? data.content : [];
+        const rawContent = data?.content;
+        const content = Array.isArray(rawContent)
+            ? rawContent
+            : rawContent?.solutions;
 
         return {
             id: data?.id ? String(data.id) : '',
             pageId: data?.pageId ? String(data.pageId) : '1',
             section: data?.section || 'core-solutions',
-            content: this.sortSolutionsByPriority(content)
-                .map((item) => this.normalizeCoreSolutionItem(item))
-                .filter(Boolean),
+            content: {
+                title: rawContent?.title || '',
+                subtitle: rawContent?.subtitle || '',
+                solutions: this.sortSolutionsByPriority(
+                    Array.isArray(content) ? content : []
+                )
+                    .map((item) => this.normalizeCoreSolutionItem(item))
+                    .filter(Boolean),
+            },
+        };
+    }
+
+    // Returns the default empty section structure used for fallback states.
+    private createDefaultCoreSolutionsSection(): ICoreSolutionsSection {
+        return {
+            title: '',
+            subtitle: '',
+            solutions: [],
         };
     }
 
@@ -590,10 +653,14 @@ export class CoreSolutionsComponent implements OnInit {
             id: this.coreSolutionsRecordId || undefined,
             pageId: this.coreSolutionsPageId || '1',
             section: this.coreSolutionsSectionKey || 'core-solutions',
-            content: content.map((item, index) => ({
-                ...item,
-                priority: index + 1,
-            })),
+            content: {
+                title: this.entityForm.get('title')?.value || '',
+                subtitle: this.entityForm.get('subtitle')?.value || '',
+                solutions: content.map((item, index) => ({
+                    ...item,
+                    priority: index + 1,
+                })),
+            },
         };
     }
 
@@ -608,6 +675,14 @@ export class CoreSolutionsComponent implements OnInit {
         if (!this.coreSolutionsRecordId) {
             this._snackBar.showError(
                 'Core solutions record was not loaded, so update cannot be completed.'
+            );
+            return;
+        }
+
+        if (this.entityForm.invalid) {
+            this.entityForm.markAllAsTouched();
+            this._snackBar.showError(
+                'Please complete the section title and subtitle before saving core solutions.'
             );
             return;
         }

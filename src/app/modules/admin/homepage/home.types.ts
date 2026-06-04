@@ -95,11 +95,17 @@ export interface ICoreSolutionItem {
     description: string;
 }
 
+export interface ICoreSolutionsSection {
+    title: string;
+    subtitle: string;
+    solutions: ICoreSolutionItem[];
+}
+
 export interface ICoreSolutionsRecord {
     id?: string;
     pageId?: string;
     section: string;
-    content: ICoreSolutionItem[];
+    content: ICoreSolutionsSection;
 }
 
 export interface IClientItem {
