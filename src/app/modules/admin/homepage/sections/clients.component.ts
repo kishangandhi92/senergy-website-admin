@@ -230,6 +230,10 @@ export class ClientsComponent implements OnInit {
 
     // Uploads the selected logo file and patches the returned path into the modal form.
     onClientImageSelect(event: Event): void {
+        if (!this.clientDialogForm?.get('isImageAvailable')?.value) {
+            return;
+        }
+
         const input = event.target as HTMLInputElement;
         if (!input.files?.length) {
             return;
@@ -373,7 +377,8 @@ export class ClientsComponent implements OnInit {
         this.clientDialogForm = this._formBuilder.group({
             priority: [1, [Validators.required, Validators.min(1)]],
             name: ['', [Validators.required, Validators.maxLength(150)]],
-            image: ['', [Validators.required]],
+            isImageAvailable: [true],
+            image: [''],
         });
 
         this.resetClientDialogForm();
@@ -383,12 +388,14 @@ export class ClientsComponent implements OnInit {
     private resetClientDialogForm(): void {
         const emptyClient = this.createEmptyClient();
         this.clientDialogForm?.reset(emptyClient);
+        this.applyClientImageAvailabilityState(emptyClient.isImageAvailable);
         this.clientImagePreview = '';
     }
 
     // Prefills the modal form with the values from an existing client item.
     private patchClientDialogForm(client: IClientItem): void {
         this.clientDialogForm?.patchValue(client);
+        this.applyClientImageAvailabilityState(client.isImageAvailable);
         this.clientImagePreview = this.resolveImageUrl(client.image);
     }
 
@@ -397,6 +404,7 @@ export class ClientsComponent implements OnInit {
         return {
             priority: 1,
             name: '',
+            isImageAvailable: true,
             image: '',
         };
     }
@@ -406,7 +414,8 @@ export class ClientsComponent implements OnInit {
         return this._formBuilder.group({
             priority: [client.priority, [Validators.required, Validators.min(1)]],
             name: [client.name, [Validators.required]],
-            image: [client.image, [Validators.required]],
+            isImageAvailable: [client.isImageAvailable],
+            image: [client.image],
         });
     }
 
@@ -418,6 +427,7 @@ export class ClientsComponent implements OnInit {
                     ? Number(formValue.priority)
                     : null,
             name: formValue?.name || '',
+            isImageAvailable: !!formValue?.isImageAvailable,
             image: formValue?.image || '',
         };
     }
@@ -507,13 +517,19 @@ export class ClientsComponent implements OnInit {
 
     // Normalizes one raw client item so the UI always works with a complete safe structure.
     private normalizeClientItem(item: any): IClientItem {
+        const isImageAvailable =
+            typeof item?.isImageAvailable === 'boolean'
+                ? item.isImageAvailable
+                : !!item?.image;
+
         return {
             priority:
                 item?.priority === 0 || item?.priority
                     ? Number(item.priority)
                     : null,
             name: item?.name || '',
-            image: item?.image || '',
+            isImageAvailable,
+            image: isImageAvailable ? item?.image || '' : '',
         };
     }
 
@@ -704,5 +720,28 @@ export class ClientsComponent implements OnInit {
                 );
             }
         );
+    }
+
+    // Toggles logo validation based on whether the current client has an available logo.
+    onClientImageAvailabilityChange(isImageAvailable: boolean): void {
+        this.applyClientImageAvailabilityState(isImageAvailable);
+    }
+
+    // Applies the required validator only when the client is expected to have a logo.
+    private applyClientImageAvailabilityState(isImageAvailable: boolean): void {
+        const imageControl = this.clientDialogForm?.get('image');
+        if (!imageControl) {
+            return;
+        }
+
+        if (isImageAvailable) {
+            imageControl.setValidators([Validators.required]);
+        } else {
+            imageControl.clearValidators();
+            imageControl.setValue('', { emitEvent: false });
+            this.clientImagePreview = '';
+        }
+
+        imageControl.updateValueAndValidity({ emitEvent: false });
     }
 }

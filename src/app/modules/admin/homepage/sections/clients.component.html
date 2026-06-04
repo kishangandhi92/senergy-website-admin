@@ -159,77 +159,86 @@
                     <mat-error>Client name is required</mat-error>
                 }
             </mat-form-field>
+
+            <mat-checkbox
+                formControlName="isImageAvailable"
+                (change)="onClientImageAvailabilityChange($event.checked)"
+            >
+                Is Client Logo Available?
+            </mat-checkbox>
         </div>
 
-        <div class="rounded-3xl border border-slate-200 p-5">
-            <div class="mb-4 flex items-start justify-between gap-4">
-                <div>
-                    <div class="text-base font-semibold text-slate-900">Client Logo</div>
-                    <div class="text-sm text-slate-500">
-                        Upload `.jpg`, `.jpeg`, `.png`, or `.webp` up to {{ maxFileSizeInKb }}KB in size.
-                    </div>
-                </div>
-            </div>
-
-            <div class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_280px]">
-                <div class="space-y-4">
-                    <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
-                        <mat-label>Logo Source</mat-label>
-                        <input matInput formControlName="image" readonly placeholder="assets/images/client/example.png" />
-                        @if (clientDialogForm.get('image')?.hasError('required')) {
-                            <mat-error>Logo is required</mat-error>
-                        }
-                    </mat-form-field>
-
-                    <div class="flex flex-wrap gap-3">
-                        <button
-                            class="min-w-36"
-                            mat-flat-button
-                            color="primary"
-                            type="button"
-                            [disabled]="clientDialogForm.disabled"
-                            (click)="clientImageInput.click()"
-                        >
-                            <mat-icon [svgIcon]="'mat_outline:file_upload'"></mat-icon>
-                            <span class="ml-2">Upload Logo</span>
-                        </button>
-
-                        <button
-                            mat-stroked-button
-                            color="warn"
-                            type="button"
-                            [disabled]="!clientDialogForm.get('image')?.value || clientDialogForm.disabled"
-                            (click)="clearClientImage()"
-                        >
-                            Clear Logo
-                        </button>
-                    </div>
-
-                    <input
-                        hidden
-                        #clientImageInput
-                        type="file"
-                        accept=".jpg,.jpeg,.png,.webp"
-                        (change)="onClientImageSelect($event)"
-                    />
-
-                    @if (isUploadingClientImage) {
-                        <div class="flex items-center gap-3 text-sm text-slate-500">
-                            <mat-progress-spinner [diameter]="20" [mode]="'indeterminate'"></mat-progress-spinner>
-                            Uploading logo...
+        @if (clientDialogForm.get('isImageAvailable')?.value) {
+            <div class="rounded-3xl border border-slate-200 p-5">
+                <div class="mb-4 flex items-start justify-between gap-4">
+                    <div>
+                        <div class="text-base font-semibold text-slate-900">Client Logo</div>
+                        <div class="text-sm text-slate-500">
+                            Upload `.jpg`, `.jpeg`, `.png`, or `.webp` up to {{ maxFileSizeInKb }}KB in size when a logo is available.
                         </div>
-                    }
+                    </div>
                 </div>
 
-                <div class="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
-                    <img
-                        class="block h-full min-h-[220px] w-full object-contain bg-slate-100 p-6"
-                        [src]="clientImagePreview || resolveImageUrl(clientDialogForm.get('image')?.value)"
-                        [alt]="clientDialogForm.get('name')?.value || 'Client logo preview'"
-                    />
+                <div class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_280px]">
+                    <div class="space-y-4">
+                        <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                            <mat-label>Logo Source</mat-label>
+                            <input matInput formControlName="image" readonly placeholder="assets/images/client/example.png" />
+                            @if (clientDialogForm.get('image')?.hasError('required')) {
+                                <mat-error>Logo is required</mat-error>
+                            }
+                        </mat-form-field>
+
+                        <div class="flex flex-wrap gap-3">
+                            <button
+                                class="min-w-36"
+                                mat-flat-button
+                                color="primary"
+                                type="button"
+                                [disabled]="clientDialogForm.disabled"
+                                (click)="clientImageInput.click()"
+                            >
+                                <mat-icon [svgIcon]="'mat_outline:file_upload'"></mat-icon>
+                                <span class="ml-2">Upload Logo</span>
+                            </button>
+
+                            <button
+                                mat-stroked-button
+                                color="warn"
+                                type="button"
+                                [disabled]="!clientDialogForm.get('image')?.value || clientDialogForm.disabled"
+                                (click)="clearClientImage()"
+                            >
+                                Clear Logo
+                            </button>
+                        </div>
+
+                        <input
+                            hidden
+                            #clientImageInput
+                            type="file"
+                            accept=".jpg,.jpeg,.png,.webp"
+                            (change)="onClientImageSelect($event)"
+                        />
+
+                        @if (isUploadingClientImage) {
+                            <div class="flex items-center gap-3 text-sm text-slate-500">
+                                <mat-progress-spinner [diameter]="20" [mode]="'indeterminate'"></mat-progress-spinner>
+                                Uploading logo...
+                            </div>
+                        }
+                    </div>
+
+                    <div class="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
+                        <img
+                            class="block h-full min-h-[220px] w-full object-contain bg-slate-100 p-6"
+                            [src]="clientImagePreview || resolveImageUrl(clientDialogForm.get('image')?.value)"
+                            [alt]="clientDialogForm.get('name')?.value || 'Client logo preview'"
+                        />
+                    </div>
                 </div>
             </div>
-        </div>
+        }
 
         <div class="-mx-5 -mb-5 mt-2 flex items-center justify-end gap-4 border-t bg-gray-50 px-8 py-3 dark:bg-gray-700">
             <mat-form-field class="mr-auto w-28" [subscriptSizing]="'dynamic'">

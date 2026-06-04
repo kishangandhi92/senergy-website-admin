@@ -111,6 +111,7 @@ export interface ICoreSolutionsRecord {
 export interface IClientItem {
     priority: number | null;
     name: string;
+    isImageAvailable: boolean;
     image: string;
 }
 
