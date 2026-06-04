@@ -303,6 +303,7 @@ export class AdvantagesComponent implements OnInit {
     // Creates the page form with title, subtitle, and repeatable feature groups.
     private generateFormGroup(): void {
         this.entityForm = this._formBuilder.group({
+            roundelText: ['', [Validators.required]],
             title: ['', [Validators.required]],
             subtitle: ['', [Validators.required]],
             features: this._formBuilder.array([]),
@@ -342,6 +343,7 @@ export class AdvantagesComponent implements OnInit {
     // Patches the fetched advantages data into the form and rebuilds the feature form array.
     private patchFormValues(data: IAdvantagesSection): void {
         this.entityForm.patchValue({
+            roundelText: data.roundelText,
             title: data.title,
             subtitle: data.subtitle,
         });
@@ -381,6 +383,7 @@ export class AdvantagesComponent implements OnInit {
             : [];
 
         return {
+            roundelText: formValue?.roundelText || '',
             title: formValue?.title || '',
             subtitle: formValue?.subtitle || '',
             features: features.map((feature) => this.normalizeFeature(feature)),
@@ -442,6 +445,7 @@ export class AdvantagesComponent implements OnInit {
         }
 
         return {
+            roundelText: payload?.roundelText || '',
             title: payload?.title || '',
             subtitle: payload?.subtitle || '',
             features: features.map((feature) => this.normalizeFeature(feature)),
@@ -492,6 +496,7 @@ export class AdvantagesComponent implements OnInit {
     // Returns the default empty section structure used for fallback states.
     private createEmptyAdvantagesSection(): IAdvantagesSection {
         return {
+            roundelText: '',
             title: '',
             subtitle: '',
             features: [

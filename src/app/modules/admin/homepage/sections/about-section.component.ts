@@ -252,6 +252,7 @@ export class AboutSectionComponent implements OnInit {
     // Creates the page form with the fixed fields and a three-slot image array.
     private generateFormGroup(): void {
         this.entityForm = this._formBuilder.group({
+            roundelText: ['', [Validators.required, Validators.maxLength(100)]],
             title: ['', [Validators.required, Validators.maxLength(200)]],
             description: ['', [Validators.required, this.validateRichTextRequired]],
             knowMoreLabel: ['', [Validators.required, Validators.maxLength(150)]],
@@ -292,6 +293,7 @@ export class AboutSectionComponent implements OnInit {
     // Patches the fetched about data into the form and rebuilds the fixed image form array.
     private patchFormValues(data: IAboutSection): void {
         this.entityForm.patchValue({
+            roundelText: data.roundelText,
             title: data.title,
             description: data.description,
             knowMoreLabel: data.knowMore.label,
@@ -330,6 +332,7 @@ export class AboutSectionComponent implements OnInit {
         const images = Array.isArray(formValue?.images) ? formValue.images.slice(0, 3) : [];
 
         return {
+            roundelText: formValue?.roundelText || '',
             title: formValue?.title || '',
             description: this.normalizeRichTextHtml(formValue?.description || ''),
             knowMore: {
@@ -399,6 +402,7 @@ export class AboutSectionComponent implements OnInit {
         }
 
         return {
+            roundelText: payload?.roundelText || '',
             title: payload?.title || '',
             description: this.normalizeRichTextHtml(payload?.description || ''),
             knowMore: {
@@ -429,6 +433,7 @@ export class AboutSectionComponent implements OnInit {
     // Returns the default empty section structure used for fallback states.
     private createDefaultAboutSection(): IAboutSection {
         return {
+            roundelText: '',
             title: '',
             description: '',
             knowMore: {

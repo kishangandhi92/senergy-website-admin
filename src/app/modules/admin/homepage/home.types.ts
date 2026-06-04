@@ -35,6 +35,7 @@ export interface IAdvantagesFeature {
 }
 
 export interface IAdvantagesSection {
+    roundelText: string;
     title: string;
     subtitle: string;
     features: IAdvantagesFeature[];
@@ -54,6 +55,7 @@ export interface IAboutImage {
 }
 
 export interface IAboutSection {
+    roundelText: string;
     title: string;
     description: string;
     knowMore: {
