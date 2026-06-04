@@ -31,7 +31,11 @@ import { PipesModule } from 'app/pipes/pipes.module';
 import { environment } from 'environments/environment';
 import { QuillModule } from 'ngx-quill';
 import { HomeService } from '../home.service';
-import { ITestimonialItem, ITestimonialsRecord } from '../home.types';
+import {
+    ITestimonialItem,
+    ITestimonialsRecord,
+    ITestimonialsSection,
+} from '../home.types';
 
 @Component({
     selector: 'app-home-testimonials',
@@ -103,6 +107,26 @@ export class TestimonialsComponent implements OnInit {
     // Exposes the page-level testimonials list form array to the template.
     get testimonials(): UntypedFormArray {
         return this.entityForm?.get('testimonials') as UntypedFormArray;
+    }
+
+    // Saves the common testimonial section content while keeping the current testimonials list unchanged.
+    updateTestimonialsSection(): void {
+        if (
+            this.entityForm.invalid ||
+            this.isLoading ||
+            this.isSaving ||
+            this.isUploadingTestimonialImage
+        ) {
+            this.entityForm.markAllAsTouched();
+            return;
+        }
+
+        this.persistTestimonialsCollection(
+            this.getCurrentTestimonials(),
+            'Testimonials section updated successfully',
+            'Failed to update testimonials section.',
+            'Oh no! Server error occurred while updating testimonials section'
+        );
     }
 
     // Opens the modal in add or edit mode and pre-fills values when editing.
@@ -357,6 +381,8 @@ export class TestimonialsComponent implements OnInit {
     // Creates the page-level form that stores the list of testimonials shown on screen.
     private generateFormGroup(): void {
         this.entityForm = this._formBuilder.group({
+            roundelText: ['', [Validators.required, Validators.maxLength(100)]],
+            title: ['', [Validators.required, Validators.maxLength(150)]],
             testimonials: this._formBuilder.array([]),
         });
     }
@@ -423,6 +449,21 @@ export class TestimonialsComponent implements OnInit {
         };
     }
 
+    // Patches the page-level roundel/title and rebuilds the visible testimonials list.
+    private patchTestimonialsForm(data: ITestimonialsSection): void {
+        this.entityForm.patchValue({
+            roundelText: data.roundelText,
+            title: data.title,
+        });
+
+        this.replaceFormArray(
+            this.testimonials,
+            data.testimonials.map((testimonial) =>
+                this.createTestimonialGroup(testimonial)
+            )
+        );
+    }
+
     // Replaces all items inside a form array with a fresh set of controls.
     private replaceFormArray(
         targetArray: UntypedFormArray,
@@ -446,19 +487,18 @@ export class TestimonialsComponent implements OnInit {
                     this.testimonialsRecordId = record.id || '';
                     this.testimonialsPageId = record.pageId || '1';
                     this.testimonialsSectionKey = record.section || 'testimonials';
-                    this.replaceFormArray(
-                        this.testimonials,
-                        record.content.map((testimonial) =>
-                            this.createTestimonialGroup(testimonial)
-                        )
-                    );
+                    this.patchTestimonialsForm(record.content);
                 } else {
-                    this.replaceFormArray(this.testimonials, []);
+                    this.patchTestimonialsForm(
+                        this.createDefaultTestimonialsSection()
+                    );
                     this._snackBar.showError('Failed to fetch testimonials.');
                 }
             },
             () => {
-                this.replaceFormArray(this.testimonials, []);
+                this.patchTestimonialsForm(
+                    this.createDefaultTestimonialsSection()
+                );
                 this._snackBar.showError(
                     'Oh no! Server error occurred while fetching testimonials'
                 );
@@ -472,15 +512,33 @@ export class TestimonialsComponent implements OnInit {
     // Extracts the row metadata and testimonials content array from the API response.
     private extractTestimonialsRecord(response: any): ITestimonialsRecord {
         const data = response?.data || {};
-        const content = Array.isArray(data?.content) ? data.content : [];
+        const rawContent = data?.content;
+        const content = Array.isArray(rawContent)
+            ? rawContent
+            : rawContent?.testimonials;
 
         return {
             id: data?.id ? String(data.id) : '',
             pageId: data?.pageId ? String(data.pageId) : '1',
             section: data?.section || 'testimonials',
-            content: this.sortTestimonialsByPriority(content)
-                .map((item) => this.normalizeTestimonialItem(item))
-                .filter(Boolean),
+            content: {
+                roundelText: rawContent?.roundelText || '',
+                title: rawContent?.title || '',
+                testimonials: this.sortTestimonialsByPriority(
+                    Array.isArray(content) ? content : []
+                )
+                    .map((item) => this.normalizeTestimonialItem(item))
+                    .filter(Boolean),
+            },
+        };
+    }
+
+    // Returns the default empty section structure used for fallback states.
+    private createDefaultTestimonialsSection(): ITestimonialsSection {
+        return {
+            roundelText: '',
+            title: '',
+            testimonials: [],
         };
     }
 
@@ -566,10 +624,14 @@ export class TestimonialsComponent implements OnInit {
             id: this.testimonialsRecordId || undefined,
             pageId: this.testimonialsPageId || '1',
             section: this.testimonialsSectionKey || 'testimonials',
-            content: content.map((item, index) => ({
-                ...item,
-                priority: index + 1,
-            })),
+            content: {
+                roundelText: this.entityForm.get('roundelText')?.value || '',
+                title: this.entityForm.get('title')?.value || '',
+                testimonials: content.map((item, index) => ({
+                    ...item,
+                    priority: index + 1,
+                })),
+            },
         };
     }
 
@@ -584,6 +646,14 @@ export class TestimonialsComponent implements OnInit {
         if (!this.testimonialsRecordId) {
             this._snackBar.showError(
                 'Testimonials record was not loaded, so update cannot be completed.'
+            );
+            return;
+        }
+
+        if (this.entityForm.invalid) {
+            this.entityForm.markAllAsTouched();
+            this._snackBar.showError(
+                'Please complete the section roundel text and title before saving testimonials.'
             );
             return;
         }

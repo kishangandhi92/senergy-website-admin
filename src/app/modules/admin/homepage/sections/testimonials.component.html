@@ -9,11 +9,30 @@
                 </div>
             </div>
 
-            <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
+            <div class="mt-6 flex shrink-0 flex-wrap items-center gap-3 sm:ml-4 sm:mt-0">
                 <button
                     mat-flat-button
                     color="primary"
                     type="button"
+                    [disabled]="entityForm.invalid || entityForm.disabled || isLoading || isSaving || isUploadingTestimonialImage"
+                    (click)="updateTestimonialsSection()"
+                >
+                    @if (!isSaving) {
+                        <mat-icon [svgIcon]="'heroicons_outline:check'"></mat-icon>
+                    }
+                    @if (!isSaving) {
+                        <span class="ml-2">Save Section</span>
+                    }
+                    @if (isSaving) {
+                        <mat-progress-spinner [diameter]="20" [mode]="'indeterminate'"></mat-progress-spinner>
+                    }
+                </button>
+
+                <button
+                    mat-flat-button
+                    color="primary"
+                    type="button"
+                    [disabled]="isLoading || isSaving"
                     (click)="openTestimonialDialog('add')"
                 >
                     <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
@@ -27,6 +46,29 @@
         <div class="mx-auto w-full max-w-screen-xxl">
             <form [formGroup]="entityForm">
                 <div class="px-6 pb-6">
+                    <div class="mb-6 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                        <div class="grid gap-4">
+                            <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                                <mat-label>Section Roundel Text</mat-label>
+                                <input matInput formControlName="roundelText" maxlength="100" />
+                                <mat-hint align="end">{{ entityForm.get('roundelText')?.value?.length || 0 }}/100</mat-hint>
+                                @if (entityForm.get('roundelText')?.hasError('required')) {
+                                    <mat-error>Roundel text is required</mat-error>
+                                }
+                            </mat-form-field>
+
+                            <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                                <mat-label>Section Title</mat-label>
+                                <input matInput formControlName="title" maxlength="150" />
+                                <mat-hint align="end">{{ entityForm.get('title')?.value?.length || 0 }}/150</mat-hint>
+                                <mat-hint>To highlight text add <strong>asterik (*)</strong> at the start and end of the text</mat-hint>
+                                @if (entityForm.get('title')?.hasError('required')) {
+                                    <mat-error>Title is required</mat-error>
+                                }
+                            </mat-form-field>
+                        </div>
+                    </div>
+
                     <div formArrayName="testimonials" class="grid gap-5 md:grid-cols-2 ">
                         @if (testimonials.length === 0) {
                             <div

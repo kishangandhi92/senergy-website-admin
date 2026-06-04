@@ -135,11 +135,17 @@ export interface ITestimonialItem {
     message: string;
 }
 
+export interface ITestimonialsSection {
+    roundelText: string;
+    title: string;
+    testimonials: ITestimonialItem[];
+}
+
 export interface ITestimonialsRecord {
     id?: string;
     pageId?: string;
     section: string;
-    content: ITestimonialItem[];
+    content: ITestimonialsSection;
 }
 
 export interface ICtaSection {
