@@ -40,8 +40,8 @@
                         <div class="grid gap-4">
                             <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
                                 <mat-label>Title</mat-label>
-                                <input matInput formControlName="title" maxlength="200" />
-                                <mat-hint align="end">{{ entityForm.get('title')?.value?.length || 0 }}/200</mat-hint>
+                                <input matInput formControlName="title" maxlength="100" />
+                                <mat-hint align="end">{{ entityForm.get('title')?.value?.length || 0 }}/100</mat-hint>
                                 @if (entityForm.get('title')?.hasError('required')) {
                                     <mat-error>Title is required</mat-error>
                                 }
@@ -49,8 +49,8 @@
 
                             <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
                                 <mat-label>Subtitle</mat-label>
-                                <textarea matInput formControlName="subtitle" rows="3" maxlength="300"></textarea>
-                                <mat-hint align="end">{{ entityForm.get('subtitle')?.value?.length || 0 }}/300</mat-hint>
+                                <input matInput formControlName="subtitle" maxlength="200" />
+                                <mat-hint align="end">{{ entityForm.get('subtitle')?.value?.length || 0 }}/200</mat-hint>
                                 @if (entityForm.get('subtitle')?.hasError('required')) {
                                     <mat-error>Subtitle is required</mat-error>
                                 }

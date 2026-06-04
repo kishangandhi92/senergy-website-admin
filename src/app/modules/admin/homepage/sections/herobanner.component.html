@@ -238,7 +238,7 @@
                 <div>
                     <div class="text-base font-semibold text-slate-900">Banner Image</div>
                     <div class="text-sm text-slate-500">
-                        Upload `.jpg`, `.jpeg`, or `.png` up to {{ maxFileSizeInMb }}MB in size.
+                        Upload `.jpg`, `.jpeg`, `.png`, or `.webp` up to {{ maxFileSizeInMb }}MB in size.
                     </div>
                 </div>
             </div>
@@ -284,7 +284,7 @@
                         hidden
                         #heroBannerImageInput
                         type="file"
-                        accept=".jpg,.jpeg,.png"
+                        accept=".jpg,.jpeg,.png,.webp"
                         (change)="onHeroBannerImageSelect($event)"
                     />
 
