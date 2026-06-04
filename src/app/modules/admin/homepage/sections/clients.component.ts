@@ -31,7 +31,7 @@ import { PipesModule } from 'app/pipes/pipes.module';
 import { environment } from 'environments/environment';
 import { QuillModule } from 'ngx-quill';
 import { HomeService } from '../home.service';
-import { IClientItem, IClientsRecord } from '../home.types';
+import { IClientItem, IClientsRecord, IClientsSection } from '../home.types';
 
 @Component({
     selector: 'app-home-clients',
@@ -102,6 +102,26 @@ export class ClientsComponent implements OnInit {
     // Exposes the page-level clients list form array to the template.
     get clients(): UntypedFormArray {
         return this.entityForm?.get('clients') as UntypedFormArray;
+    }
+
+    // Saves the common section heading content while keeping the current clients list unchanged.
+    updateClientsSection(): void {
+        if (
+            this.entityForm.invalid ||
+            this.isLoading ||
+            this.isSaving ||
+            this.isUploadingClientImage
+        ) {
+            this.entityForm.markAllAsTouched();
+            return;
+        }
+
+        this.persistClientsCollection(
+            this.getCurrentClients(),
+            'Clients section updated successfully',
+            'Failed to update clients section.',
+            'Oh no! Server error occurred while updating clients section'
+        );
     }
 
     // Opens the modal in add or edit mode and pre-fills values when editing.
@@ -342,6 +362,8 @@ export class ClientsComponent implements OnInit {
     // Creates the page-level form that stores the list of clients shown on screen.
     private generateFormGroup(): void {
         this.entityForm = this._formBuilder.group({
+            title: ['', [Validators.required, Validators.maxLength(100)]],
+            subtitle: ['', [Validators.required, Validators.maxLength(200)]],
             clients: this._formBuilder.array([]),
         });
     }
@@ -400,6 +422,19 @@ export class ClientsComponent implements OnInit {
         };
     }
 
+    // Patches the page-level title/subtitle and rebuilds the visible clients list.
+    private patchClientsForm(data: IClientsSection): void {
+        this.entityForm.patchValue({
+            title: data.title,
+            subtitle: data.subtitle,
+        });
+
+        this.replaceFormArray(
+            this.clients,
+            data.clients.map((client) => this.createClientGroup(client))
+        );
+    }
+
     // Replaces all items inside a form array with a fresh set of controls.
     private replaceFormArray(
         targetArray: UntypedFormArray,
@@ -423,17 +458,14 @@ export class ClientsComponent implements OnInit {
                     this.clientsRecordId = record.id || '';
                     this.clientsPageId = record.pageId || '1';
                     this.clientsSectionKey = record.section || 'clients';
-                    this.replaceFormArray(
-                        this.clients,
-                        record.content.map((client) => this.createClientGroup(client))
-                    );
+                    this.patchClientsForm(record.content);
                 } else {
-                    this.replaceFormArray(this.clients, []);
+                    this.patchClientsForm(this.createDefaultClientsSection());
                     this._snackBar.showError('Failed to fetch clients.');
                 }
             },
             () => {
-                this.replaceFormArray(this.clients, []);
+                this.patchClientsForm(this.createDefaultClientsSection());
                 this._snackBar.showError(
                     'Oh no! Server error occurred while fetching clients'
                 );
@@ -447,15 +479,29 @@ export class ClientsComponent implements OnInit {
     // Extracts the row metadata and clients content array from the API response.
     private extractClientsRecord(response: any): IClientsRecord {
         const data = response?.data || {};
-        const content = Array.isArray(data?.content) ? data.content : [];
+        const rawContent = data?.content;
+        const content = Array.isArray(rawContent) ? rawContent : rawContent?.clients;
 
         return {
             id: data?.id ? String(data.id) : '',
             pageId: data?.pageId ? String(data.pageId) : '1',
             section: data?.section || 'clients',
-            content: this.sortClientsByPriority(content)
-                .map((item) => this.normalizeClientItem(item))
-                .filter(Boolean),
+            content: {
+                title: rawContent?.title || '',
+                subtitle: rawContent?.subtitle || '',
+                clients: this.sortClientsByPriority(Array.isArray(content) ? content : [])
+                    .map((item) => this.normalizeClientItem(item))
+                    .filter(Boolean),
+            },
+        };
+    }
+
+    // Returns the default empty section structure used for fallback states.
+    private createDefaultClientsSection(): IClientsSection {
+        return {
+            title: '',
+            subtitle: '',
+            clients: [],
         };
     }
 
@@ -544,10 +590,14 @@ export class ClientsComponent implements OnInit {
             id: this.clientsRecordId || undefined,
             pageId: this.clientsPageId || '1',
             section: this.clientsSectionKey || 'clients',
-            content: content.map((item, index) => ({
-                ...item,
-                priority: index + 1,
-            })),
+            content: {
+                title: this.entityForm.get('title')?.value || '',
+                subtitle: this.entityForm.get('subtitle')?.value || '',
+                clients: content.map((item, index) => ({
+                    ...item,
+                    priority: index + 1,
+                })),
+            },
         };
     }
 
@@ -562,6 +612,14 @@ export class ClientsComponent implements OnInit {
         if (!this.clientsRecordId) {
             this._snackBar.showError(
                 'Clients record was not loaded, so update cannot be completed.'
+            );
+            return;
+        }
+
+        if (this.entityForm.invalid) {
+            this.entityForm.markAllAsTouched();
+            this._snackBar.showError(
+                'Please complete the section title and subtitle before saving clients.'
             );
             return;
         }

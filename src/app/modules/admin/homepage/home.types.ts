@@ -114,11 +114,17 @@ export interface IClientItem {
     image: string;
 }
 
+export interface IClientsSection {
+    title: string;
+    subtitle: string;
+    clients: IClientItem[];
+}
+
 export interface IClientsRecord {
     id?: string;
     pageId?: string;
     section: string;
-    content: IClientItem[];
+    content: IClientsSection;
 }
 
 export interface ITestimonialItem {

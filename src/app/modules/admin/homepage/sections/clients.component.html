@@ -9,11 +9,30 @@
                 </div>
             </div>
 
-            <div class=" flex shrink-0 items-center sm:ml-4 sm:mt-0">
+            <div class="flex shrink-0 flex-wrap items-center gap-3 sm:ml-4 sm:mt-0">
                 <button
                     mat-flat-button
                     color="primary"
                     type="button"
+                    [disabled]="entityForm.invalid || entityForm.disabled || isLoading || isSaving || isUploadingClientImage"
+                    (click)="updateClientsSection()"
+                >
+                    @if (!isSaving) {
+                        <mat-icon [svgIcon]="'heroicons_outline:check'"></mat-icon>
+                    }
+                    @if (!isSaving) {
+                        <span class="ml-2">Save Section</span>
+                    }
+                    @if (isSaving) {
+                        <mat-progress-spinner [diameter]="20" [mode]="'indeterminate'"></mat-progress-spinner>
+                    }
+                </button>
+
+                <button
+                    mat-flat-button
+                    color="primary"
+                    type="button"
+                    [disabled]="isLoading || isSaving"
                     (click)="openClientDialog('add')"
                 >
                     <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
@@ -27,6 +46,29 @@
         <div class="mx-auto w-full max-w-screen-xxl">
             <form [formGroup]="entityForm">
                 <div class="px-6 pb-6">
+                    <div class="mb-6 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                        <div class="grid gap-4">
+                            <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                                <mat-label>Section Title</mat-label>
+                                <input matInput formControlName="title" maxlength="100" />
+                                <mat-hint align="end">{{ entityForm.get('title')?.value?.length || 0 }}/100</mat-hint>
+                                <mat-hint>To highlight text add <strong>asterik (*)</strong> at the start and end of the text</mat-hint>
+                                @if (entityForm.get('title')?.hasError('required')) {
+                                    <mat-error>Title is required</mat-error>
+                                }
+                            </mat-form-field>
+
+                            <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                                <mat-label>Section Subtitle</mat-label>
+                                <input matInput formControlName="subtitle" maxlength="200" />
+                                <mat-hint align="end">{{ entityForm.get('subtitle')?.value?.length || 0 }}/200</mat-hint>
+                                @if (entityForm.get('subtitle')?.hasError('required')) {
+                                    <mat-error>Subtitle is required</mat-error>
+                                }
+                            </mat-form-field>
+                        </div>
+                    </div>
+
                     <div formArrayName="clients" class="grid gap-5 md:grid-cols-3 xl:grid-cols-4">
                         @if (clients.length === 0) {
                             <div
