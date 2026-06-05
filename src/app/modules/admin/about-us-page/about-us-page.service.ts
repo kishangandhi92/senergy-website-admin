@@ -2,7 +2,11 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { environment } from 'environments/environment';
-import { IAboutIntroRecord, IMissionVisionRecord } from './about-us-page.types';
+import {
+    IAboutIntroRecord,
+    ICoreExpertiseRecord,
+    IMissionVisionRecord,
+} from './about-us-page.types';
 
 @Injectable({ providedIn: 'root' })
 export class AboutUsPageService {
@@ -46,5 +50,48 @@ export class AboutUsPageService {
                     return response;
                 })
             );
+    }
+
+    // Fetches the stored Core Expertise section from the backend.
+    getCoreExpertise(): Observable<any> {
+        return this._httpClient.get(`${this.apiUrl}/core-expertise`).pipe(
+            map((response: any) => {
+                return response;
+            })
+        );
+    }
+
+    // Updates the Core Expertise section with the latest JSON payload.
+    updateCoreExpertise(data: ICoreExpertiseRecord): Observable<any> {
+        return this._httpClient
+            .put(`${this.apiUrl}/core-expertise`, { ...data })
+            .pipe(
+                map((response: any) => {
+                    return response;
+                })
+            );
+    }
+
+    // Deletes an uploaded file from the server using its file name and field type.
+    deletePhoto(fileName: string, fieldType: string): Observable<boolean> {
+        return this._httpClient
+            .post(`${this.apiUrl}/delete`, { fileName, fieldType })
+            .pipe(
+                map((response: any) => {
+                    if (response.status) {
+                        return true;
+                    }
+                    return false;
+                })
+            );
+    }
+
+    // Uploads an image file and returns the backend response containing the stored path/name.
+    uploadFiles(formData: FormData): Observable<any> {
+        return this._httpClient.post(`${this.apiUrl}/upload`, formData).pipe(
+            map((response: any) => {
+                return response;
+            })
+        );
     }
 }

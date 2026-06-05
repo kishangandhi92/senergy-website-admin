@@ -36,3 +36,21 @@ export interface IMissionVisionRecord {
     section: string;
     content: IMissionVisionSection;
 }
+
+export interface ICoreExpertiseItem {
+    priority: number | null;
+    icon: string;
+    title: string;
+}
+
+export interface ICoreExpertiseSection {
+    title: string;
+    expertise: ICoreExpertiseItem[];
+}
+
+export interface ICoreExpertiseRecord {
+    id?: string;
+    pageId?: string;
+    section: string;
+    content: ICoreExpertiseSection;
+}

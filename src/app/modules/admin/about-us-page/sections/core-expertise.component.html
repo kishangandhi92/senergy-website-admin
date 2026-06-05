@@ -1,15 +1,189 @@
 <div class="absolute inset-0 flex min-w-0 flex-col overflow-y-auto" cdkScrollable>
     <div class="bg-card">
-        <div class="relative flex flex-0 flex-col border-b px-6 py-4 md:px-8">
-            <div class="truncate text-4xl font-extrabold tracking-tight">
-                Core Expertise
+        <div
+            class="relative flex flex-0 flex-col border-b px-6 py-4 sm:flex-row sm:items-center sm:justify-between md:px-8"
+        >
+            <div class="truncate">
+                <div class="truncate text-4xl font-extrabold tracking-tight">
+                    Core Expertise
+                </div>
+            </div>
+
+            <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
+                <button
+                    mat-flat-button
+                    color="primary"
+                    type="button"
+                    [disabled]="entityForm?.invalid || isLoading || isSaving || isUploading"
+                    (click)="updateCoreExpertise()"
+                >
+                    @if (!isSaving) {
+                        <div class="flex items-center">
+                            <mat-icon [svgIcon]="'heroicons_outline:check'"></mat-icon>
+                            <span class="ml-2">Save Core Expertise</span>
+                        </div>
+                    }
+                    @if (isSaving) {
+                        <mat-progress-spinner [diameter]="20" [mode]="'indeterminate'"></mat-progress-spinner>
+                    }
+                </button>
             </div>
         </div>
     </div>
 
-    <div class="flex-auto p-6">
-        <div class="rounded-3xl border border-dashed border-slate-300 bg-white p-8 text-slate-500 shadow-sm">
-            Empty section scaffold for Core Expertise.
+    <div #pageScrollContainer class="flex-auto mt-5 overflow-y-auto" cdkScrollable>
+        <div class="mx-auto w-full max-w-screen-xl">
+            <form [formGroup]="entityForm">
+                <div class="space-y-5 px-6 pb-6">
+                    <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                        <div class="grid gap-4">
+                            <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                                <mat-label>Section Title</mat-label>
+                                <input matInput formControlName="title" maxlength="100" />
+                                <mat-hint align="end">{{ entityForm?.get('title')?.value?.length || 0 }}/100</mat-hint>
+                                <mat-hint>To highlight text add <strong>asterik (*)</strong> at the start and end of the text</mat-hint>
+                                @if (entityForm?.get('title')?.hasError('required')) {
+                                    <mat-error>Title is required</mat-error>
+                                }
+                            </mat-form-field>
+                        </div>
+                    </div>
+
+                    <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                        <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                            <div>
+                                <div class="text-lg font-semibold text-slate-900">Expertise Cards</div>
+                                <div class="text-sm text-slate-500">
+                                    Configure title, priority, and icon for each expertise card. Minimum 3 cards and maximum 9 cards.
+                                </div>
+                            </div>
+
+                            <button
+                                mat-stroked-button
+                                color="primary"
+                                type="button"
+                                [disabled]="expertiseForms.length >= 9 || entityForm?.disabled"
+                                (click)="addExpertise()"
+                            >
+                                <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                                <span class="ml-2">Add Card</span>
+                            </button>
+                        </div>
+
+                        <div formArrayName="expertise" class="grid gap-4 lg:grid-cols-2">
+                            @for (expertiseGroup of expertiseForms.controls; track $index; let expertiseIndex = $index) {
+                                <div
+                                    #expertiseCard
+                                    [formGroupName]="expertiseIndex"
+                                    class="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+                                >
+                                    <div class="mb-4 flex items-start justify-between gap-4">
+                                        <div class="text-base font-semibold text-slate-900">
+                                            Expertise {{ expertiseIndex + 1 }}
+                                        </div>
+
+                                        <div class="flex items-start gap-2">
+                                            <mat-form-field class="w-24" [subscriptSizing]="'dynamic'">
+                                                <mat-label>Priority</mat-label>
+                                                <input
+                                                    matInput
+                                                    type="number"
+                                                    formControlName="priority"
+                                                    min="1"
+                                                    (change)="reorderExpertiseFromPriority(expertiseIndex)"
+                                                />
+                                                @if (expertiseGroup.get('priority')?.hasError('required')) {
+                                                    <mat-error>Required</mat-error>
+                                                }
+                                                @if (expertiseGroup.get('priority')?.hasError('min')) {
+                                                    <mat-error>Min 1</mat-error>
+                                                }
+                                            </mat-form-field>
+
+                                            <button
+                                                mat-icon-button
+                                                color="warn"
+                                                type="button"
+                                                [disabled]="expertiseForms.length <= 3 || entityForm?.disabled"
+                                                (click)="removeExpertise(expertiseIndex)"
+                                            >
+                                                <mat-icon [svgIcon]="'heroicons_outline:trash'"></mat-icon>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_180px]">
+                                        <div class="space-y-4">
+                                            <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                                                <mat-label>Card Title</mat-label>
+                                                <input matInput formControlName="title" maxlength="200" />
+                                                <mat-hint align="end">{{ expertiseGroup.get('title')?.value?.length || 0 }}/200</mat-hint>
+                                                @if (expertiseGroup.get('title')?.hasError('required')) {
+                                                    <mat-error>Title is required</mat-error>
+                                                }
+                                            </mat-form-field>
+
+                                            <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                                                <mat-label>Icon Path</mat-label>
+                                                <input matInput formControlName="icon" readonly />
+                                                @if (expertiseGroup.get('icon')?.hasError('required')) {
+                                                    <mat-error>Icon is required</mat-error>
+                                                }
+                                            </mat-form-field>
+
+                                            <div class="flex flex-wrap gap-3">
+                                                <button
+                                                    mat-stroked-button
+                                                    color="primary"
+                                                    type="button"
+                                                    [disabled]="entityForm?.disabled"
+                                                    (click)="expertiseIconInput.click()"
+                                                >
+                                                    <mat-icon [svgIcon]="'mat_outline:file_upload'"></mat-icon>
+                                                    <span class="ml-2">Upload Icon</span>
+                                                </button>
+
+                                                <button
+                                                    mat-stroked-button
+                                                    color="warn"
+                                                    type="button"
+                                                    [disabled]="!expertiseGroup.get('icon')?.value || entityForm?.disabled"
+                                                    (click)="clearExpertiseIcon(expertiseIndex)"
+                                                >
+                                                    Clear Icon
+                                                </button>
+                                            </div>
+
+                                            <input
+                                                hidden
+                                                #expertiseIconInput
+                                                type="file"
+                                                accept=".jpg,.jpeg,.png,.webp"
+                                                (change)="onExpertiseIconSelect(expertiseIndex, $event)"
+                                            />
+                                        </div>
+
+                                        <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+                                            <img
+                                                class="block h-[180px] w-full object-contain bg-slate-100 p-4"
+                                                [src]="resolveImageUrl(expertiseGroup.get('icon')?.value)"
+                                                [alt]="expertiseGroup.get('title')?.value || 'Core expertise icon preview'"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        @if (isUploading) {
+                            <div class="mt-4 flex items-center gap-3 text-sm text-slate-500">
+                                <mat-progress-spinner [diameter]="20" [mode]="'indeterminate'"></mat-progress-spinner>
+                                Uploading icon...
+                            </div>
+                        }
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 </div>
