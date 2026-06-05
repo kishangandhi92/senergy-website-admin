@@ -6,6 +6,7 @@ import {
     IAboutIntroRecord,
     ICoreExpertiseRecord,
     IMissionVisionRecord,
+    ITeamGalleryRecord,
 } from './about-us-page.types';
 import { ICtaRecord } from '../homepage/home.types';
 
@@ -66,6 +67,26 @@ export class AboutUsPageService {
     updateCoreExpertise(data: ICoreExpertiseRecord): Observable<any> {
         return this._httpClient
             .put(`${this.apiUrl}/core-expertise`, { ...data })
+            .pipe(
+                map((response: any) => {
+                    return response;
+                })
+            );
+    }
+
+    // Fetches the stored Team Gallery section from the backend.
+    getTeamGallery(): Observable<any> {
+        return this._httpClient.get(`${this.apiUrl}/team-gallery`).pipe(
+            map((response: any) => {
+                return response;
+            })
+        );
+    }
+
+    // Updates the Team Gallery section with the latest full JSON payload.
+    updateTeamGallery(data: ITeamGalleryRecord): Observable<any> {
+        return this._httpClient
+            .put(`${this.apiUrl}/team-gallery`, { ...data })
             .pipe(
                 map((response: any) => {
                     return response;

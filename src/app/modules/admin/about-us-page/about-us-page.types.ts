@@ -54,3 +54,23 @@ export interface ICoreExpertiseRecord {
     section: string;
     content: ICoreExpertiseSection;
 }
+
+export interface ITeamGalleryItem {
+    priority: number | null;
+    photo: string;
+    thumb: string;
+    title: string;
+}
+
+export interface ITeamGallerySection {
+    title: string;
+    badge: string;
+    gallery: ITeamGalleryItem[];
+}
+
+export interface ITeamGalleryRecord {
+    id?: string;
+    pageId?: string;
+    section: string;
+    content: ITeamGallerySection;
+}

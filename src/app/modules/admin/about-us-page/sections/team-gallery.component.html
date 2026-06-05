@@ -1,15 +1,230 @@
 <div class="absolute inset-0 flex min-w-0 flex-col overflow-y-auto" cdkScrollable>
     <div class="bg-card">
-        <div class="relative flex flex-0 flex-col border-b px-6 py-4 md:px-8">
-            <div class="truncate text-4xl font-extrabold tracking-tight">
-                Team Gallery
+        <div
+            class="relative flex flex-0 flex-col border-b px-6 py-4 sm:flex-row sm:items-center sm:justify-between md:px-8">
+            <div class="truncate">
+                <div class="truncate text-4xl font-extrabold tracking-tight">
+                    Team Gallery
+                </div>
+            </div>
+
+            <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
+                <button mat-flat-button color="primary" type="button"
+                    [disabled]="entityForm?.invalid || isLoading || isSaving || isUploadingGalleryAsset"
+                    (click)="updateTeamGallerySection()">
+                    @if (!isSaving) {
+                    <div class="flex items-center">
+                        <mat-icon [svgIcon]="'heroicons_outline:check'"></mat-icon>
+                        <span class="ml-2">Save Team Gallery</span>
+                    </div>
+                    }
+                    @if (isSaving) {
+                    <mat-progress-spinner [diameter]="20" [mode]="'indeterminate'"></mat-progress-spinner>
+                    }
+                </button>
             </div>
         </div>
     </div>
 
-    <div class="flex-auto p-6">
-        <div class="rounded-3xl border border-dashed border-slate-300 bg-white p-8 text-slate-500 shadow-sm">
-            Empty section scaffold for Team Gallery.
+    <div class="flex-auto mt-5 overflow-y-auto" cdkScrollable>
+        <div class="mx-auto w-full max-w-screen-xl">
+            <form [formGroup]="entityForm">
+                <div class="space-y-5 px-6 pb-6">
+                    <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                        <div class="grid gap-4 lg:grid-cols-2">
+                            <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                                <mat-label>Badge Text</mat-label>
+                                <input matInput formControlName="badge" maxlength="50" />
+                                <mat-hint align="end">{{ entityForm?.get('badge')?.value?.length || 0 }}/50</mat-hint>
+                                @if (entityForm?.get('badge')?.hasError('required')) {
+                                <mat-error>Badge text is required</mat-error>
+                                }
+                            </mat-form-field>
+                            <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                                <mat-label>Section Title</mat-label>
+                                <input matInput formControlName="title" maxlength="100" />
+                                <mat-hint align="end">{{ entityForm?.get('title')?.value?.length || 0 }}/100</mat-hint>
+                                <mat-hint>To highlight text add <strong>asterik (*)</strong> at the start and end of the
+                                    text</mat-hint>
+                                @if (entityForm?.get('title')?.hasError('required')) {
+                                <mat-error>Title is required</mat-error>
+                                }
+                            </mat-form-field>
+
+
+                        </div>
+                    </div>
+
+                    <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                        <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                            <div>
+                                <div class="text-lg font-semibold text-slate-900">Gallery Images</div>
+                                <div class="text-sm text-slate-500">
+                                    Add up to {{ maxGalleryItems }} gallery images. 
+                                </div>
+                            </div>
+
+                            <button mat-stroked-button color="primary" type="button"
+                                [disabled]="galleryItems.length >= maxGalleryItems || isLoading || isSaving || isUploadingGalleryAsset"
+                                (click)="openGalleryItemDialog('add')">
+                                <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                                <span class="ml-2">Add Image</span>
+                            </button>
+                        </div>
+
+                        @if (!galleryItems.length) {
+                        <div
+                            class="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center text-sm text-slate-500">
+                            No gallery images added yet.
+                        </div>
+                        }
+
+                        @if (galleryItems.length) {
+                        <div formArrayName="gallery" class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                            @for (galleryGroup of galleryItems.controls; track $index; let galleryIndex = $index) {
+                            <div [formGroupName]="galleryIndex"
+                                class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+                                <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+                                    <div>
+                                        <div class="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                                            Priority {{ galleryGroup.get('priority')?.value || galleryIndex + 1 }}
+                                        </div>
+                                        <div class="text-base font-semibold text-slate-900">
+                                            {{ galleryGroup.get('title')?.value || 'Untitled Image' }}
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-center gap-2">
+                                        <button mat-icon-button color="primary" type="button"
+                                            [disabled]="isLoading || isSaving || isUploadingGalleryAsset"
+                                            (click)="openGalleryItemDialog('edit', galleryIndex)">
+                                            <mat-icon [svgIcon]="'heroicons_outline:pencil-square'"></mat-icon>
+                                        </button>
+
+                                        <button mat-icon-button color="warn" type="button"
+                                            [disabled]="isLoading || isSaving || isUploadingGalleryAsset"
+                                            (click)="deleteGalleryItem(galleryIndex)">
+                                            <mat-icon [svgIcon]="'heroicons_outline:trash'"></mat-icon>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="grid gap-3 p-4">
+                                    <div class="overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
+                                        <img class="block h-[220px] w-full object-cover"
+                                            [src]="resolveImageUrl(galleryGroup.get('photo')?.value)"
+                                            [alt]="galleryGroup.get('title')?.value || 'Gallery photo preview'" />
+                                    </div>
+
+                                    <div class="rounded-2xl bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                                        <div><strong>Photo Path:</strong> {{ galleryGroup.get('photo')?.value || '-' }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            }
+                        </div>
+                        }
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 </div>
+
+<ng-template #GalleryItemDialog>
+    <form [formGroup]="galleryItemDialogForm" class="flex max-h-[90vh] flex-col overflow-hidden">
+        <div class="border-b border-slate-200 px-6 py-4">
+            <div class="text-2xl font-bold text-slate-900">
+                {{ galleryDialogMode === 'add' ? 'Add Gallery Image' : 'Edit Gallery Image' }}
+            </div>
+            <div class="mt-1 text-sm text-slate-500">
+                Upload `.jpg`, `.jpeg`, `.png`, or `.webp` images up to {{ maxFileSizeInMb }} MB each.
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto px-6 py-5">
+            <div class="grid gap-4 lg:grid-cols-2">
+                <mat-form-field class="w-full">
+                    <mat-label>Image Title</mat-label>
+                    <input matInput formControlName="title" maxlength="150" />
+                    <mat-hint align="end">{{ galleryItemDialogForm?.get('title')?.value?.length || 0 }}/150</mat-hint>
+                    @if (galleryItemDialogForm?.get('title')?.hasError('required')) {
+                    <mat-error>Title is required</mat-error>
+                    }
+                </mat-form-field>
+
+                <mat-form-field class="w-full">
+                    <mat-label>Priority</mat-label>
+                    <input matInput type="number" formControlName="priority" min="1" [max]="maxGalleryItems" />
+                    @if (galleryItemDialogForm?.get('priority')?.hasError('required')) {
+                    <mat-error>Priority is required</mat-error>
+                    }
+                    @if (galleryItemDialogForm?.get('priority')?.hasError('min')) {
+                    <mat-error>Priority must be at least 1</mat-error>
+                    }
+                </mat-form-field>
+            </div>
+
+            <div class="mt-2 grid gap-5 xl:grid-cols-2">
+                <div class="rounded-3xl border border-slate-200 bg-slate-50 p-4 xl:col-span-2">
+                    <div class="mb-3 text-base font-semibold text-slate-900">Full Photo</div>
+
+                    <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+                        <img class="block h-[260px] w-full object-cover"
+                            [src]="resolveImageUrl(galleryItemDialogForm?.get('photo')?.value)"
+                            [alt]="galleryItemDialogForm?.get('title')?.value || 'Gallery photo preview'" />
+                    </div>
+
+                    <mat-form-field class="mt-4 w-full" [subscriptSizing]="'dynamic'">
+                        <mat-label>Photo Path</mat-label>
+                        <input matInput formControlName="photo" readonly />
+                        @if (galleryItemDialogForm?.get('photo')?.hasError('required')) {
+                        <mat-error>Photo is required</mat-error>
+                        }
+                    </mat-form-field>
+
+                    <div class="flex flex-wrap gap-3">
+                        <button mat-stroked-button color="primary" type="button"
+                            [disabled]="isSaving || isUploadingGalleryAsset" (click)="photoInput.click()">
+                            <mat-icon [svgIcon]="'mat_outline:file_upload'"></mat-icon>
+                            <span class="ml-2">Upload Photo</span>
+                        </button>
+
+                        <button mat-stroked-button color="warn" type="button"
+                            [disabled]="!galleryItemDialogForm?.get('photo')?.value || isSaving || isUploadingGalleryAsset"
+                            (click)="clearGalleryImage()">
+                            Clear Photo
+                        </button>
+                    </div>
+
+                    <input hidden #photoInput type="file" accept=".jpg,.jpeg,.png,.webp"
+                        (change)="onGalleryImageSelect($event)" />
+                </div>
+            </div>
+
+            @if (isUploadingGalleryAsset) {
+            <div class="mt-5 flex items-center gap-3 text-sm text-slate-500">
+                <mat-progress-spinner [diameter]="20" [mode]="'indeterminate'"></mat-progress-spinner>
+                Uploading image...
+            </div>
+            }
+        </div>
+
+        <div class="flex items-center justify-end gap-3 border-t border-slate-200 px-6 py-4">
+            <button mat-stroked-button type="button" [disabled]="isSaving" (click)="closeGalleryItemDialog()">
+                Cancel
+            </button>
+
+            <button mat-flat-button color="primary" type="button"
+                [disabled]="galleryItemDialogForm?.invalid || isSaving || isUploadingGalleryAsset"
+                (click)="saveGalleryItem()">
+                @if (!isSaving) {
+                <span>{{ galleryDialogMode === 'add' ? 'Add Image' : 'Save Changes' }}</span>
+                }
+                @if (isSaving) {
+                <mat-progress-spinner [diameter]="20" [mode]="'indeterminate'"></mat-progress-spinner>
+                }
+            </button>
+        </div>
+    </form>
+</ng-template>
