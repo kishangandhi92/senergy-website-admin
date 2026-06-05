@@ -19,3 +19,20 @@ export interface IAboutIntroRecord {
     section: string;
     content: IAboutIntroSection;
 }
+
+export interface IMissionVisionItem {
+    title: string;
+    description: string;
+}
+
+export interface IMissionVisionSection {
+    mission: IMissionVisionItem;
+    vision: IMissionVisionItem;
+}
+
+export interface IMissionVisionRecord {
+    id?: string;
+    pageId?: string;
+    section: string;
+    content: IMissionVisionSection;
+}

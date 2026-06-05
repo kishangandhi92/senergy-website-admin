@@ -1,15 +1,93 @@
 <div class="absolute inset-0 flex min-w-0 flex-col overflow-y-auto" cdkScrollable>
     <div class="bg-card">
-        <div class="relative flex flex-0 flex-col border-b px-6 py-4 md:px-8">
-            <div class="truncate text-4xl font-extrabold tracking-tight">
-                Mission and Vision
+        <div
+            class="relative flex flex-0 flex-col border-b px-6 py-4 sm:flex-row sm:items-center sm:justify-between md:px-8"
+        >
+            <div class="truncate">
+                <div class="truncate text-4xl font-extrabold tracking-tight">
+                    Mission and Vision
+                </div>
+            </div>
+
+            <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
+                <button
+                    mat-flat-button
+                    color="primary"
+                    type="button"
+                    [disabled]="entityForm?.invalid || isLoading || isSaving"
+                    (click)="updateMissionVision()"
+                >
+                    @if (!isSaving) {
+                        <div class="flex items-center">
+                            <mat-icon [svgIcon]="'heroicons_outline:check'"></mat-icon>
+                            <span class="ml-2">Save Mission and Vision</span>
+                        </div>
+                    }
+                    @if (isSaving) {
+                        <mat-progress-spinner [diameter]="20" [mode]="'indeterminate'"></mat-progress-spinner>
+                    }
+                </button>
             </div>
         </div>
     </div>
 
-    <div class="flex-auto p-6">
-        <div class="rounded-3xl border border-dashed border-slate-300 bg-white p-8 text-slate-500 shadow-sm">
-            Empty section scaffold for Mission and Vision.
+    <div class="flex-auto mt-5 overflow-y-auto" cdkScrollable>
+        <div class="mx-auto w-full max-w-screen-xl">
+            <form [formGroup]="entityForm">
+                <div class="grid gap-5 px-6 pb-6 lg:grid-cols-2">
+                    <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                        <div class="mb-4">
+                            <div class="text-lg font-semibold text-slate-900">Mission</div>
+                        </div>
+
+                        <div class="grid gap-4">
+                            <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                                <mat-label> Title</mat-label>
+                                <input matInput formControlName="missionTitle" maxlength="100" />
+                                <mat-hint align="end">{{ entityForm?.get('missionTitle')?.value?.length || 0 }}/100</mat-hint>
+                                @if (entityForm?.get('missionTitle')?.hasError('required')) {
+                                    <mat-error>Mission title is required</mat-error>
+                                }
+                            </mat-form-field>
+
+                            <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                                <mat-label> Description</mat-label>
+                                <input matInput formControlName="missionDescription" maxlength="200" />
+                                <mat-hint align="end">{{ entityForm?.get('missionDescription')?.value?.length || 0 }}/200</mat-hint>
+                                @if (entityForm?.get('missionDescription')?.hasError('required')) {
+                                    <mat-error>Mission description is required</mat-error>
+                                }
+                            </mat-form-field>
+                        </div>
+                    </div>
+
+                    <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                        <div class="mb-4">
+                            <div class="text-lg font-semibold text-slate-900">Vision</div>
+                        </div>
+
+                        <div class="grid gap-4">
+                            <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                                <mat-label> Title</mat-label>
+                                <input matInput formControlName="visionTitle" maxlength="100" />
+                                <mat-hint align="end">{{ entityForm?.get('visionTitle')?.value?.length || 0 }}/100</mat-hint>
+                                @if (entityForm?.get('visionTitle')?.hasError('required')) {
+                                    <mat-error>Vision title is required</mat-error>
+                                }
+                            </mat-form-field>
+
+                            <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                                <mat-label> Description</mat-label>
+                                <input matInput formControlName="visionDescription" maxlength="200" />
+                                <mat-hint align="end">{{ entityForm?.get('visionDescription')?.value?.length || 0 }}/200</mat-hint>
+                                @if (entityForm?.get('visionDescription')?.hasError('required')) {
+                                    <mat-error>Vision description is required</mat-error>
+                                }
+                            </mat-form-field>
+                        </div>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 </div>
