@@ -7,6 +7,7 @@ import {
     ICoreExpertiseRecord,
     IMissionVisionRecord,
 } from './about-us-page.types';
+import { ICtaRecord } from '../homepage/home.types';
 
 @Injectable({ providedIn: 'root' })
 export class AboutUsPageService {
@@ -71,6 +72,26 @@ export class AboutUsPageService {
                 })
             );
     }
+
+    // Fetches the stored CTA section from the backend.
+    getCta(): Observable<any> {
+        return this._httpClient.get(`${this.apiUrl}/cta`).pipe(
+            map((response: any) => {
+                return response;
+            })
+        );
+    }
+
+    // Updates the existing CTA row with the latest full JSON payload.
+        updateCta(data: ICtaRecord): Observable<any> {
+            return this._httpClient.put(`${this.apiUrl}/cta`, { ...data }).pipe(
+                map((response: any) => {
+                    return response;
+                })
+            );
+        }
+    
+
 
     // Deletes an uploaded file from the server using its file name and field type.
     deletePhoto(fileName: string, fieldType: string): Observable<boolean> {

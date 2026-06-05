@@ -139,12 +139,6 @@ export const appRoutes: Route[] = [
 
                     },
                     {
-                        path: 'about',
-                        loadChildren: () =>
-                            import('app/modules/admin/about/about.routes')
-
-                    },
-                    {
                         path: 'about-us-page',
                         loadChildren: () =>
                             import('app/modules/admin/about-us-page/about-us-page.routes')
