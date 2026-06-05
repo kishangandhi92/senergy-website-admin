@@ -1,0 +1,119 @@
+<div class="absolute inset-0 flex min-w-0 flex-col overflow-y-auto" cdkScrollable>
+    <div class="bg-card">
+        <div
+            class="relative flex flex-0 flex-col border-b px-6 py-4 sm:flex-row sm:items-center sm:justify-between md:px-8"
+        >
+            <div class="truncate">
+                <div class="truncate text-4xl font-extrabold tracking-tight">
+                    About Intro
+                </div>
+            </div>
+
+            <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
+                <button
+                    mat-flat-button
+                    color="primary"
+                    type="button"
+                    [disabled]="entityForm?.invalid || isLoading || isSaving"
+                    (click)="updateAboutIntro()"
+                >
+                    @if (!isSaving) {
+                        <div class="flex items-center">
+                            <mat-icon [svgIcon]="'heroicons_outline:check'"></mat-icon>
+                            <span class="ml-2">Save About Intro</span>
+                        </div>
+                    }
+                    @if (isSaving) {
+                        <mat-progress-spinner [diameter]="20" [mode]="'indeterminate'"></mat-progress-spinner>
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex-auto mt-5 overflow-y-auto" cdkScrollable>
+        <div class="mx-auto w-full max-w-screen-xl">
+            <form [formGroup]="entityForm">
+                <div class="space-y-5 px-6 pb-6">
+                    <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                        <div class="grid gap-4">
+                            <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                                <mat-label>Badge</mat-label>
+                                <input matInput formControlName="badge" maxlength="100" />
+                                <mat-hint align="end">{{ entityForm?.get('badge')?.value?.length || 0 }}/100</mat-hint>
+                                @if (entityForm?.get('badge')?.hasError('required')) {
+                                    <mat-error>Badge is required</mat-error>
+                                }
+                            </mat-form-field>
+
+                            <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                                <mat-label>Title</mat-label>
+                                <input matInput formControlName="title" maxlength="200" />
+                                <mat-hint align="end">{{ entityForm?.get('title')?.value?.length || 0 }}/200</mat-hint>
+                                <mat-hint>To highlight text add <strong>asterik (*)</strong> at the start and end of the text</mat-hint>
+                                @if (entityForm?.get('title')?.hasError('required')) {
+                                    <mat-error>Title is required</mat-error>
+                                }
+                            </mat-form-field>
+
+                            <div class="space-y-2">
+                                <mat-label class="font-medium text-slate-900">
+                                    Description <span class="text-red-600">*</span>
+                                </mat-label>
+                                <div class="overflow-hidden rounded-2xl border border-slate-200">
+                                    <quill-editor
+                                        class="block bg-white"
+                                        [formControlName]="'description'"
+                                    ></quill-editor>
+                                </div>
+                                @if (entityForm?.get('description')?.hasError('required') && entityForm?.get('description')?.touched) {
+                                    <mat-error>Description is required</mat-error>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                        <div class="mb-4">
+                            <div class="text-lg font-semibold text-slate-900">Button</div>
+                            <div class="text-sm text-slate-500">
+                                Configure the fixed CTA button for the About Intro section.
+                            </div>
+                        </div>
+
+                        <div class="grid gap-4 lg:grid-cols-3">
+                            <mat-form-field class="w-full">
+                                <mat-label>Button Label</mat-label>
+                                <input matInput formControlName="buttonLabel" maxlength="120" />
+                                <mat-hint align="end">{{ entityForm?.get('buttonLabel')?.value?.length || 0 }}/120</mat-hint>
+                                @if (entityForm?.get('buttonLabel')?.hasError('required')) {
+                                    <mat-error>Button label is required</mat-error>
+                                }
+                            </mat-form-field>
+
+                            <mat-form-field class="w-full">
+                                <mat-label>Button Link</mat-label>
+                                <input matInput formControlName="buttonLink" maxlength="255" />
+                                <mat-hint align="end">{{ entityForm?.get('buttonLink')?.value?.length || 0 }}/255</mat-hint>
+                                @if (entityForm?.get('buttonLink')?.hasError('required')) {
+                                    <mat-error>Button link is required</mat-error>
+                                }
+                            </mat-form-field>
+
+                            <mat-form-field class="w-full">
+                                <mat-label>Button Target</mat-label>
+                                <mat-select formControlName="buttonTarget">
+                                    <mat-option value="_self">Same Tab</mat-option>
+                                    <mat-option value="_blank">New Tab</mat-option>
+                                </mat-select>
+                                @if (entityForm?.get('buttonTarget')?.hasError('required')) {
+                                    <mat-error>Button target is required</mat-error>
+                                }
+                            </mat-form-field>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

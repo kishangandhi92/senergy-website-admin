@@ -145,6 +145,12 @@ export const appRoutes: Route[] = [
 
                     },
                     {
+                        path: 'about-us-page',
+                        loadChildren: () =>
+                            import('app/modules/admin/about-us-page/about-us-page.routes')
+
+                    },
+                    {
                         path: 'privacy',
                         loadChildren: () =>
                             import('app/modules/admin/privacy/privacy.routes')
