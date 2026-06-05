@@ -72,7 +72,7 @@
                             <div>
                                 <div class="text-lg font-semibold text-slate-900">Features</div>
                                 <div class="text-sm text-slate-500">
-                                    Minimum 3 features and maximum 10 features.
+                                    Minimum 3 features and maximum 10 features. Drag cards to reorder them.
                                 </div>
                             </div>
 
@@ -88,20 +88,35 @@
                             </button>
                         </div>
 
-                        <div formArrayName="features" class="space-y-4">
+                        <div
+                            formArrayName="features"
+                            class="space-y-4"
+                            cdkDropList
+                            cdkDropListOrientation="vertical"
+                            [cdkDropListDisabled]="entityForm.disabled"
+                            (cdkDropListDropped)="dropFeature($event)"
+                        >
                             @for (featureGroup of featureForms.controls; track $index; let featureIndex = $index) {
                                 <div
                                     #featureCard
                                     [formGroupName]="featureIndex"
+                                    cdkDrag
                                     class="rounded-2xl border border-slate-200 bg-slate-50 p-3"
                                 >
                                     <div class="mb-2 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                                        <div>
+                                        <div class="flex items-center gap-3">
+                                            <button
+                                                mat-icon-button
+                                                type="button"
+                                                cdkDragHandle
+                                                [disabled]="entityForm.disabled"
+                                                matTooltip="Drag to reorder"
+                                            >
+                                                <mat-icon [svgIcon]="'heroicons_outline:bars-3'"></mat-icon>
+                                            </button>
+
                                             <div class="text-base font-semibold text-slate-900">
                                                 Feature {{ featureIndex + 1 }}
-                                            </div>
-                                            <div class="text-sm text-slate-500">
-                                                Configure the icon, title, alt text, and description.
                                             </div>
                                         </div>
 
@@ -137,16 +152,9 @@
                                                 }
                                             </mat-form-field>
 
-                                            <mat-form-field class="w-32" [subscriptSizing]="'dynamic'">
-                                                <mat-label>Priority</mat-label>
-                                                <input matInput type="number" formControlName="priority" min="1" />
-                                                @if (featureGroup.get('priority')?.hasError('required')) {
-                                                    <mat-error>Priority is required</mat-error>
-                                                }
-                                                @if (featureGroup.get('priority')?.hasError('min')) {
-                                                    <mat-error>Minimum priority is 1</mat-error>
-                                                }
-                                            </mat-form-field>
+                                            <div class="inline-flex w-fit items-center rounded-full bg-slate-200 px-3 py-1 text-sm font-medium text-slate-700">
+                                                Priority {{ featureIndex + 1 }}
+                                            </div>
                                         </div>
 
                                         <div class="rounded-2xl border border-slate-200 bg-white p-3">

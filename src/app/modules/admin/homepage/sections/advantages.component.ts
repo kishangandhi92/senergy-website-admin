@@ -1,4 +1,5 @@
 import { AsyncPipe, CommonModule, NgClass, NgTemplateOutlet } from '@angular/common';
+import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 import { Component, ElementRef, OnInit, QueryList, ViewChildren } from '@angular/core';
 import {
     FormsModule,
@@ -61,8 +62,9 @@ import {
     MatTooltipModule,
     CommonModule,
     MatTableModule,
-    QuillModule
-],
+    QuillModule,
+    DragDropModule,
+    ],
     templateUrl: './advantages.component.html',
 })
 export class AdvantagesComponent implements OnInit {
@@ -109,7 +111,27 @@ export class AdvantagesComponent implements OnInit {
                 this.createEmptyFeature(this.getNextFeaturePriority())
             )
         );
+        this.syncFeaturePriorities();
+        this.entityForm.markAsDirty();
         this.scrollToLatestFeature();
+    }
+
+    // Reorders features from drag-and-drop and mirrors that order into their saved priorities.
+    dropFeature(event: CdkDragDrop<UntypedFormGroup[]>): void {
+        if (
+            event.previousIndex === event.currentIndex ||
+            this.isLoading ||
+            this.isUploading ||
+            this.isSaving
+        ) {
+            return;
+        }
+
+        const reorderedControls = [...this.featureForms.controls] as UntypedFormGroup[];
+        moveItemInArray(reorderedControls, event.previousIndex, event.currentIndex);
+        this.syncFeaturePriorities(reorderedControls);
+        this.replaceFormArray(this.featureForms, reorderedControls);
+        this.entityForm.markAsDirty();
     }
 
     // Removes a feature card while keeping the required minimum of three.
@@ -147,6 +169,7 @@ export class AdvantagesComponent implements OnInit {
             }
 
             this.featureForms.removeAt(index);
+            this.syncFeaturePriorities();
 
             if (this.entityForm.invalid) {
                 this._snackBar.showError(
@@ -352,6 +375,7 @@ export class AdvantagesComponent implements OnInit {
             this.featureForms,
             data.features.map((feature) => this.createFeatureGroup(feature))
         );
+        this.syncFeaturePriorities();
     }
 
     // Re-enables the page form and all nested feature controls after save or upload operations finish.
@@ -368,25 +392,21 @@ export class AdvantagesComponent implements OnInit {
 
     // Builds the PUT payload by combining the persisted row metadata with the latest form values.
     private buildAdvantagesPayload(): IAdvantagesRecord {
+        const formValue = this.entityForm.getRawValue();
+
         return {
             id: this.advantagesRecord?.id,
             pageId: this.advantagesRecord?.pageId,
             section: this.advantagesRecord?.section || 'advantages',
-            content: this.mapFormValueToAdvantagesSection(this.entityForm.getRawValue()),
-        };
-    }
-
-    // Converts the current reactive form value into the exact JSON shape expected in the content object.
-    private mapFormValueToAdvantagesSection(formValue: any): IAdvantagesSection {
-        const features = Array.isArray(formValue?.features)
-            ? formValue.features.slice(0, 10)
-            : [];
-
-        return {
-            roundelText: formValue?.roundelText || '',
-            title: formValue?.title || '',
-            subtitle: formValue?.subtitle || '',
-            features: features.map((feature) => this.normalizeFeature(feature)),
+            content: {
+                roundelText: formValue?.roundelText || '',
+                title: formValue?.title || '',
+                subtitle: formValue?.subtitle || '',
+                features: this.featureForms.controls.slice(0, 10).map((control, index) => ({
+                    ...this.normalizeFeature(control.getRawValue()),
+                    priority: index + 1,
+                })),
+            },
         };
     }
 
@@ -401,11 +421,13 @@ export class AdvantagesComponent implements OnInit {
         this._homeService.updateAdvantages(payload).subscribe(
             (response: any) => {
                 if (response?.status) {
+                    const savedRecordPayload = response?.data ?? payload;
                     this.advantagesRecord = this.normalizeAdvantagesRecord(
-                        response?.data || payload
+                        savedRecordPayload
                     );
                     this.enableEntityForm();
                     this.patchFormValues(this.advantagesRecord.content);
+                    this.entityForm.markAsPristine();
                     this.enableEntityForm();
                     this._snackBar.showSuccess(successMessage);
                 } else {
@@ -539,15 +561,16 @@ export class AdvantagesComponent implements OnInit {
 
     // Returns the next priority number for a newly added feature.
     private getNextFeaturePriority(): number {
-        const priorities = this.featureForms.controls
-            .map((control) => Number(control.get('priority')?.value))
-            .filter((priority) => Number.isFinite(priority) && priority > 0);
+        return this.featureForms.length + 1;
+    }
 
-        if (!priorities.length) {
-            return 1;
-        }
-
-        return Math.max(...priorities) + 1;
+    // Keeps the hidden priority values aligned with the visible feature order.
+    private syncFeaturePriorities(
+        controls: UntypedFormGroup[] = this.featureForms.controls as UntypedFormGroup[]
+    ): void {
+        controls.forEach((control, index) => {
+            control.get('priority')?.setValue(index + 1, { emitEvent: false });
+        });
     }
 
     // Scrolls the newest feature card into view so the added empty form is immediately visible.
