@@ -1,5 +1,12 @@
 import { AsyncPipe, CommonModule, NgClass, NgTemplateOutlet } from '@angular/common';
-import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
+import {
+    CdkDragDrop,
+    CdkDragEnd,
+    CdkDragEnter,
+    CdkDragStart,
+    DragDropModule,
+    moveItemInArray,
+} from '@angular/cdk/drag-drop';
 import { Component, ElementRef, OnInit, QueryList, ViewChildren } from '@angular/core';
 import {
     FormsModule,
@@ -42,30 +49,61 @@ import {
     selector: 'app-home-advantages',
     standalone: true,
     imports: [
-    MatProgressBarModule,
-    MatFormFieldModule,
-    MatIconModule,
-    MatInputModule,
-    FormsModule,
-    ReactiveFormsModule,
-    MatButtonModule,
-    MatSortModule,
-    MatPaginatorModule,
-    MatSlideToggleModule,
-    MatSelectModule,
-    MatOptionModule,
-    MatCheckboxModule,
-    MatRippleModule,
-    MatProgressSpinnerModule,
-    MatSnackBarModule,
-    PipesModule,
-    MatTooltipModule,
-    CommonModule,
-    MatTableModule,
-    QuillModule,
-    DragDropModule,
+        MatProgressBarModule,
+        MatFormFieldModule,
+        MatIconModule,
+        MatInputModule,
+        FormsModule,
+        ReactiveFormsModule,
+        MatButtonModule,
+        MatSortModule,
+        MatPaginatorModule,
+        MatSlideToggleModule,
+        MatSelectModule,
+        MatOptionModule,
+        MatCheckboxModule,
+        MatRippleModule,
+        MatProgressSpinnerModule,
+        MatSnackBarModule,
+        PipesModule,
+        MatTooltipModule,
+        CommonModule,
+        MatTableModule,
+        QuillModule,
+        DragDropModule,
     ],
     templateUrl: './advantages.component.html',
+    styles: [
+        `
+            :host ::ng-deep .advantages-drop-list.cdk-drop-list-dragging
+                .advantages-card:not(.cdk-drag-placeholder) {
+                transition:
+                    transform 220ms cubic-bezier(0.2, 0, 0, 1),
+                    box-shadow 220ms ease,
+                    opacity 220ms ease;
+            }
+
+            :host ::ng-deep .advantages-card.cdk-drag-preview {
+                border-radius: 1rem;
+                box-shadow:
+                    0 22px 50px -12px rgba(15, 23, 42, 0.32),
+                    0 8px 18px -10px rgba(15, 23, 42, 0.2);
+                opacity: 0.96;
+                transform: rotate(1deg);
+            }
+
+            :host ::ng-deep .advantages-card.cdk-drag-placeholder {
+                opacity: 0.2;
+                border-style: dashed;
+                border-color: rgb(14 165 233);
+                background: rgb(240 249 255);
+            }
+
+            :host ::ng-deep .advantages-card.cdk-drag-animating {
+                transition: transform 220ms cubic-bezier(0.2, 0, 0, 1);
+            }
+        `,
+    ],
 })
 export class AdvantagesComponent implements OnInit {
     @ViewChildren('featureCard') featureCards!: QueryList<ElementRef<HTMLDivElement>>;
@@ -75,6 +113,8 @@ export class AdvantagesComponent implements OnInit {
     isUploading = false;
     isSaving = false;
     advantagesRecord: IAdvantagesRecord | null = null;
+    draggedFeatureIndex: number | null = null;
+    previewFeatureIndex: number | null = null;
 
     public readonly baseURL = environment.apiBaseUrl;
     public readonly maxFileSizeInKb = FILE_UPLOAD.MAX_ICON_FILE_SIZE_IN_KB;
@@ -118,6 +158,8 @@ export class AdvantagesComponent implements OnInit {
 
     // Reorders features from drag-and-drop and mirrors that order into their saved priorities.
     dropFeature(event: CdkDragDrop<UntypedFormGroup[]>): void {
+        this.clearDragPreview();
+
         if (
             event.previousIndex === event.currentIndex ||
             this.isLoading ||
@@ -132,6 +174,30 @@ export class AdvantagesComponent implements OnInit {
         this.syncFeaturePriorities(reorderedControls);
         this.replaceFormArray(this.featureForms, reorderedControls);
         this.entityForm.markAsDirty();
+    }
+
+    // Marks which feature is currently being dragged so the template can show live drop guidance.
+    startFeatureDrag(index: number, _event: CdkDragStart): void {
+        if (this.entityForm.disabled) {
+            return;
+        }
+
+        this.draggedFeatureIndex = index;
+        this.previewFeatureIndex = index;
+    }
+
+    // Updates the currently hovered drop position while dragging across the list.
+    previewFeatureDrop(index: number, _event: CdkDragEnter): void {
+        if (this.draggedFeatureIndex === null) {
+            return;
+        }
+
+        this.previewFeatureIndex = index;
+    }
+
+    // Clears drag state once the card is released or the drag interaction ends.
+    endFeatureDrag(_event: CdkDragEnd): void {
+        this.clearDragPreview();
     }
 
     // Removes a feature card while keeping the required minimum of three.
@@ -571,6 +637,12 @@ export class AdvantagesComponent implements OnInit {
         controls.forEach((control, index) => {
             control.get('priority')?.setValue(index + 1, { emitEvent: false });
         });
+    }
+
+    // Resets the transient drag preview state used purely for UI feedback.
+    private clearDragPreview(): void {
+        this.draggedFeatureIndex = null;
+        this.previewFeatureIndex = null;
     }
 
     // Scrolls the newest feature card into view so the added empty form is immediately visible.

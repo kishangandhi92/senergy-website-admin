@@ -74,6 +74,11 @@
                                 <div class="text-sm text-slate-500">
                                     Minimum 3 features and maximum 10 features. Drag cards to reorder them.
                                 </div>
+                                @if (draggedFeatureIndex !== null && previewFeatureIndex !== null) {
+                                    <div class="mt-2 inline-flex items-center rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-700">
+                                        Dropping now will set this feature to Priority {{ previewFeatureIndex + 1 }}
+                                    </div>
+                                }
                             </div>
 
                             <button
@@ -90,7 +95,7 @@
 
                         <div
                             formArrayName="features"
-                            class="space-y-4"
+                            class="advantages-drop-list space-y-4"
                             cdkDropList
                             cdkDropListOrientation="vertical"
                             [cdkDropListDisabled]="entityForm.disabled"
@@ -101,7 +106,15 @@
                                     #featureCard
                                     [formGroupName]="featureIndex"
                                     cdkDrag
-                                    class="rounded-2xl border border-slate-200 bg-slate-50 p-3"
+                                    class="advantages-card rounded-2xl border border-slate-200 bg-slate-50 p-3 transition-all duration-200"
+                                    [ngClass]="{
+                                        'border-sky-400 bg-sky-50 ring-2 ring-sky-200':
+                                            draggedFeatureIndex !== null && previewFeatureIndex === featureIndex,
+                                        'opacity-90 shadow-lg': draggedFeatureIndex === featureIndex
+                                    }"
+                                    (cdkDragStarted)="startFeatureDrag(featureIndex, $event)"
+                                    (cdkDragEntered)="previewFeatureDrop(featureIndex, $event)"
+                                    (cdkDragEnded)="endFeatureDrag($event)"
                                 >
                                     <div class="mb-2 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                                         <div class="flex items-center gap-3">
@@ -118,6 +131,12 @@
                                             <div class="text-base font-semibold text-slate-900">
                                                 Feature {{ featureIndex + 1 }}
                                             </div>
+
+                                            @if (draggedFeatureIndex !== null && previewFeatureIndex === featureIndex) {
+                                                <div class="rounded-full bg-sky-600 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white">
+                                                    Drop here for Priority {{ featureIndex + 1 }}
+                                                </div>
+                                            }
                                         </div>
 
                                         <button
