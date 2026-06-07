@@ -1,88 +1,216 @@
-<div class="flex min-w-0 flex-auto flex-col">
-
+<div class="absolute inset-0 flex min-w-0 flex-col overflow-y-auto" cdkScrollable>
     <div class="bg-card">
-        <!-- Header -->
         <div
-            class="relative flex flex-0 flex-col border-b px-6 py-8 sm:flex-row sm:items-center sm:justify-between md:px-8">
-            <!-- Loader -->
-            <!-- @if (isLoading) {
-            <div class="absolute inset-x-0 bottom-0">
-                <mat-progress-bar [mode]="'indeterminate'"></mat-progress-bar>
-            </div>
-            } -->
-            <!-- Title -->
+            class="relative flex flex-0 flex-col border-b px-6 py-4 sm:flex-row sm:items-center sm:justify-between md:px-8"
+        >
+            @if (isLoading) {
+                <div class="absolute inset-x-0 bottom-0">
+                    <mat-progress-bar [mode]="'indeterminate'"></mat-progress-bar>
+                </div>
+            }
+
             <div class="truncate">
-                <div class="text-4xl truncate font-extrabold tracking-tight">
+                <div class="truncate text-4xl font-extrabold tracking-tight">
                     Contact Details
                 </div>
             </div>
-            <!-- Actions -->
-            <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
 
-                <!-- Add product button -->
-                <button [disabled]="entityForm?.invalid || entityForm?.disabled" class="ml-4" mat-flat-button
-                    (click)="updateDetails()" [color]="'primary'">
-                    @if (!entityForm?.disabled) {
-                    <span class="ml-2 mr-1">Update</span>
+            <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
+                <button
+                    mat-flat-button
+                    color="primary"
+                    type="button"
+                    [disabled]="entityForm?.invalid || entityForm?.disabled || isLoading || isSaving"
+                    (click)="updateDetails()"
+                >
+                    @if (!isSaving) {
+                        <mat-icon [svgIcon]="'heroicons_outline:check'"></mat-icon>
                     }
-                    @if (entityForm?.disabled) {
-                    <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
+                    @if (!isSaving) {
+                        <span class="ml-2 mr-1">Update</span>
+                    }
+                    @if (isSaving) {
+                        <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
                     }
                 </button>
             </div>
         </div>
-
-
     </div>
 
-    <!-- Main -->
-    <div class="flex-auto border-t p-6 sm:p-10">
-         <form [formGroup]="entityForm" class="flex flex-col space-y-1">
-            <div class="flex flex-row w-full space-x-6">
-                <mat-form-field class="w-1/2">
-                    <mat-label>Email ID</mat-label>
-                    <input matInput [formControlName]="'email'" type="email" required maxlength="50" />
-                    @if (entityForm.get('email').hasError('required')) {
-                    <mat-error>Email ID is required </mat-error>
-                    }
-                    @if (entityForm.get('email').hasError('email')) {
-                    <mat-error>Email ID is invalid </mat-error>
-                    }
-                </mat-form-field>
-                 <mat-form-field class="w-1/2">
-                    <mat-label>Phone Number</mat-label>
-                    <input matInput [formControlName]="'phone'" required maxlength="20" />
-                    @if (entityForm.get('phone').hasError('required')) {
-                    <mat-error> Phone Number is required </mat-error>
-                    }
-                    @if (entityForm.get('phone').hasError('pattern')) {
-                    <mat-error> Phone Number is invalid </mat-error>
-                    }
-                </mat-form-field>
-            </div>
-            <div class="flex flex-row w-full space-x-6">
-                <mat-form-field class="w-full">
-                    <mat-label>Address</mat-label>
-                    <textarea matInput [formControlName]="'address'" required maxlength="300"></textarea>
-                    @if (entityForm.get('address').hasError('required')) {
-                    <mat-error> Address is required </mat-error>
-                    }
-                </mat-form-field>
-            </div>
-            <div class="flex flex-row w-full space-x-6">
-                <mat-form-field class="w-full">
-                    <mat-label>Map Link</mat-label>
-                    <input matInput [formControlName]="'mapLink'" required maxlength="200" />
-                    @if (entityForm.get('mapLink').hasError('required')) {
-                    <mat-error> Map Link is required </mat-error>
-                    }
-                    @if (entityForm.get('mapLink').hasError('pattern')) {
-                    <mat-error> Map Link is invalid </mat-error>
-                    }
-                    <mat-hint>Include the full Google Maps URL (max 200 characters).</mat-hint>
-                </mat-form-field>
-            </div>
-         </form>
-    </div>
+    <div class="flex-auto mt-5 overflow-y-auto" cdkScrollable>
+        <form [formGroup]="entityForm" class="mx-auto flex max-w-screen-xl flex-col gap-5">
+            <div class="grid gap-5 lg:grid-cols-2">
+                <div class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+                    <div class="mb-4 flex items-center justify-between gap-4">
+                        <div>
+                            <div class="text-lg font-semibold text-slate-900">Email IDs</div>
+                            <div class="text-sm text-slate-500">Add one or more contact emails.</div>
+                        </div>
 
+                        <button
+                            mat-stroked-button
+                            color="primary"
+                            type="button"
+                            [disabled]="entityForm.disabled"
+                            (click)="addEmail()"
+                        >
+                            <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                            <span class="ml-2">Add</span>
+                        </button>
+                    </div>
+
+                    <div formArrayName="emailIds" class="space-y-3">
+                        @for (emailControl of emailForms.controls; track emailControl; let emailIndex = $index) {
+                            <div class="flex items-start gap-3">
+                                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                                    <mat-label>Email ID {{ emailIndex + 1 }}</mat-label>
+                                    <input matInput type="email" [formControlName]="emailIndex" maxlength="250" />
+                                    @if (emailControl.hasError('required')) {
+                                        <mat-error>Email ID is required</mat-error>
+                                    }
+                                    @if (emailControl.hasError('email')) {
+                                        <mat-error>Email ID is invalid</mat-error>
+                                    }
+                                </mat-form-field>
+
+                                <button
+                                    mat-icon-button
+                                    color="warn"
+                                    type="button"
+                                    [disabled]="emailForms.length <= 1 || entityForm.disabled"
+                                    matTooltip="Remove email"
+                                    (click)="removeEmail(emailIndex)"
+                                >
+                                    <mat-icon [svgIcon]="'heroicons_outline:trash'"></mat-icon>
+                                </button>
+                            </div>
+                        }
+                    </div>
+
+                    @if (emailForms.hasError('commaSeparatedMaxLength')) {
+                        <div class="mt-2 text-sm text-warn">
+                            All email IDs combined must be 250 characters or less.
+                        </div>
+                    }
+                </div>
+
+                <div class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+                    <div class="mb-4 flex items-center justify-between gap-4">
+                        <div>
+                            <div class="text-lg font-semibold text-slate-900">Contact Numbers</div>
+                            <div class="text-sm text-slate-500">Add one or more phone numbers.</div>
+                        </div>
+
+                        <button
+                            mat-stroked-button
+                            color="primary"
+                            type="button"
+                            [disabled]="entityForm.disabled"
+                            (click)="addContactNumber()"
+                        >
+                            <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                            <span class="ml-2">Add</span>
+                        </button>
+                    </div>
+
+                    <div formArrayName="contactNumbers" class="space-y-3">
+                        @for (numberControl of contactNumberForms.controls; track numberControl; let numberIndex = $index) {
+                            <div class="flex items-start gap-3">
+                                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                                    <mat-label>Contact Number {{ numberIndex + 1 }}</mat-label>
+                                    <input matInput [formControlName]="numberIndex" maxlength="250" />
+                                    @if (numberControl.hasError('required')) {
+                                        <mat-error>Contact number is required</mat-error>
+                                    }
+                                    @if (numberControl.hasError('pattern')) {
+                                        <mat-error>Contact number is invalid</mat-error>
+                                    }
+                                </mat-form-field>
+
+                                <button
+                                    mat-icon-button
+                                    color="warn"
+                                    type="button"
+                                    [disabled]="contactNumberForms.length <= 1 || entityForm.disabled"
+                                    matTooltip="Remove contact number"
+                                    (click)="removeContactNumber(numberIndex)"
+                                >
+                                    <mat-icon [svgIcon]="'heroicons_outline:trash'"></mat-icon>
+                                </button>
+                            </div>
+                        }
+                    </div>
+
+                    @if (contactNumberForms.hasError('commaSeparatedMaxLength')) {
+                        <div class="mt-2 text-sm text-warn">
+                            All contact numbers combined must be 250 characters or less.
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+                <div class="grid gap-5 md:grid-cols-2">
+                    <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                        <mat-label>Work Timings</mat-label>
+                        <input matInput formControlName="workTimings" maxlength="250" />
+                        <mat-hint align="end">{{ entityForm.get('workTimings')?.value?.length || 0 }}/250</mat-hint>
+                        @if (entityForm.get('workTimings')?.hasError('required')) {
+                            <mat-error>Work timings are required</mat-error>
+                        }
+                    </mat-form-field>
+
+                    <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                        <mat-label>Google Maps Link</mat-label>
+                        <input matInput formControlName="googleMapsLink" maxlength="250" />
+                        <mat-hint align="end">{{ entityForm.get('googleMapsLink')?.value?.length || 0 }}/250</mat-hint>
+                        @if (entityForm.get('googleMapsLink')?.hasError('required')) {
+                            <mat-error>Google Maps link is required</mat-error>
+                        }
+                    </mat-form-field>
+
+                    <mat-form-field class="w-full md:col-span-2" [subscriptSizing]="'dynamic'">
+                        <mat-label>Address</mat-label>
+                        <input matInput formControlName="address" maxlength="250" />
+                        <mat-hint align="end">{{ entityForm.get('address')?.value?.length || 0 }}/250</mat-hint>
+                        @if (entityForm.get('address')?.hasError('required')) {
+                            <mat-error>Address is required</mat-error>
+                        }
+                    </mat-form-field>
+
+                    <mat-form-field class="w-full md:col-span-2" [subscriptSizing]="'dynamic'">
+                        <mat-label>Embed Map Link</mat-label>
+                        <textarea
+                            matInput
+                            formControlName="embedMapLink"
+                            rows="4"
+                            maxlength="250"
+                        ></textarea>
+                        <mat-hint align="end">{{ entityForm.get('embedMapLink')?.value?.length || 0 }}/250</mat-hint>
+                        @if (entityForm.get('embedMapLink')?.hasError('required')) {
+                            <mat-error>Embed map link is required</mat-error>
+                        }
+                    </mat-form-field>
+
+                    <div class="md:col-span-2">
+                        <div class="mb-2 text-sm font-medium text-slate-700">Map Preview</div>
+                        <div class="overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
+                            @if (safeEmbedMapUrl) {
+                                <iframe
+                                    class="h-72 w-full border-0"
+                                    [src]="safeEmbedMapUrl"
+                                    loading="lazy"
+                                    referrerpolicy="no-referrer-when-downgrade"
+                                ></iframe>
+                            } @else {
+                                <div class="flex h-40 items-center justify-center px-6 text-center text-sm text-slate-500">
+                                    Enter a valid Google Maps embed URL to preview the map here.
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
 </div>

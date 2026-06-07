@@ -144,6 +144,13 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 icon: 'mat_outline:work',
                 link: '/configurations/careers',
             },
+            {
+                id: 'configurations.contact',
+                title: 'Contact Page',
+                type: 'basic',
+                icon: 'mat_outline:contact_phone',
+                link: '/configurations/contact',
+            }
             // {
             //     id: 'configurations.about',
             //     title: 'About Page',
@@ -158,13 +165,7 @@ export const defaultNavigation: FuseNavigationItem[] = [
             //     icon: 'mat_outline:lock',
             //     link: '/configurations/privacy',
             // },
-            // {
-            //     id: 'configurations.contact',
-            //     title: 'Contact Details',
-            //     type: 'basic',
-            //     icon: 'mat_outline:contact_phone',
-            //     link: '/configurations/contact',
-            // }
+            
         ],
     }
 

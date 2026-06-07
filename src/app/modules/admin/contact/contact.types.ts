@@ -1,6 +1,8 @@
 export interface Contact {
-    phone: string;
-    email: string;
+    emailIds: string;
+    contactNumbers: string;
+    workTimings: string;
     address: string;
-    mapLink: string;
+    googleMapsLink: string;
+    embedMapLink: string;
 }

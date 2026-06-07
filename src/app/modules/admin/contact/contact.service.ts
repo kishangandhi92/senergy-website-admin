@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, map, switchMap, take, tap } from 'rxjs';
+import { BehaviorSubject, Observable, map } from 'rxjs';
 import { Contact } from './contact.types';
 import { environment } from 'environments/environment';
 
@@ -40,18 +40,11 @@ export class ContactService {
     /**
      * Update About
      */
-    update(data): Observable<Contact> {
-        return this.content$.pipe(
-            take(1),
-            switchMap((projects) =>
-                this._httpClient
-                    .put(this.apiUrl, { ...data })
-                    .pipe(
-                        map((response: any) => {
-                            return response;
-                        })
-                    )
-            )
+    update(data: Contact): Observable<any> {
+        return this._httpClient.put(this.apiUrl, { ...data }).pipe(
+            map((response: any) => {
+                return response;
+            })
         );
     }
 
