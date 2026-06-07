@@ -117,7 +117,7 @@ export class ContactComponent implements OnInit, OnDestroy {
             workTimings: ['', [Validators.required, Validators.maxLength(250)]],
             address: ['', [Validators.required]],
             googleMapsLink: ['', [Validators.required, Validators.maxLength(250)]],
-            embedMapLink: ['', [Validators.required, Validators.maxLength(250)]],
+            embedMapLink: ['', [Validators.required, Validators.maxLength(500)]],
         });
     }
 
