@@ -74,11 +74,6 @@
                                 <div class="text-sm text-slate-500">
                                     Minimum 3 features and maximum 10 features. Drag cards to reorder them.
                                 </div>
-                                @if (draggedFeatureIndex !== null && previewFeatureIndex !== null) {
-                                    <div class="mt-2 inline-flex items-center rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-700">
-                                        Dropping now will set this feature to Priority {{ previewFeatureIndex + 1 }}
-                                    </div>
-                                }
                             </div>
 
                             <button
@@ -101,7 +96,7 @@
                             [cdkDropListDisabled]="entityForm.disabled"
                             (cdkDropListDropped)="dropFeature($event)"
                         >
-                            @for (featureGroup of featureForms.controls; track $index; let featureIndex = $index) {
+                            @for (featureGroup of featureForms.controls; track featureGroup; let featureIndex = $index) {
                                 <div
                                     #featureCard
                                     [formGroupName]="featureIndex"

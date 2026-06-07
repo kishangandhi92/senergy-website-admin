@@ -1,4 +1,12 @@
 import { CdkScrollable } from '@angular/cdk/scrolling';
+import {
+    CdkDragDrop,
+    CdkDragEnd,
+    CdkDragEnter,
+    CdkDragStart,
+    DragDropModule,
+    moveItemInArray,
+} from '@angular/cdk/drag-drop';
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import {
@@ -15,6 +23,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { FILE_UPLOAD } from 'app/constants/upload';
 import { SnackBarService } from 'app/core/general/snackbar.service';
@@ -40,8 +49,41 @@ import {
         MatInputModule,
         MatProgressSpinnerModule,
         MatSnackBarModule,
+        MatTooltipModule,
+        DragDropModule,
     ],
     templateUrl: './core-expertise.component.html',
+    styles: [
+        `
+            :host ::ng-deep .core-expertise-drop-list.cdk-drop-list-dragging
+                .core-expertise-card:not(.cdk-drag-placeholder) {
+                transition:
+                    transform 220ms cubic-bezier(0.2, 0, 0, 1),
+                    box-shadow 220ms ease,
+                    opacity 220ms ease;
+            }
+
+            :host ::ng-deep .core-expertise-card.cdk-drag-preview {
+                border-radius: 1rem;
+                box-shadow:
+                    0 22px 50px -12px rgba(15, 23, 42, 0.32),
+                    0 8px 18px -10px rgba(15, 23, 42, 0.2);
+                opacity: 0.96;
+                transform: rotate(1deg);
+            }
+
+            :host ::ng-deep .core-expertise-card.cdk-drag-placeholder {
+                opacity: 0.2;
+                border-style: dashed;
+                border-color: rgb(14 165 233);
+                background: rgb(240 249 255);
+            }
+
+            :host ::ng-deep .core-expertise-card.cdk-drag-animating {
+                transition: transform 220ms cubic-bezier(0.2, 0, 0, 1);
+            }
+        `,
+    ],
 })
 export class CoreExpertiseComponent implements OnInit {
     @ViewChild('pageScrollContainer') pageScrollContainer?: ElementRef<HTMLDivElement>;
@@ -52,6 +94,8 @@ export class CoreExpertiseComponent implements OnInit {
     isSaving = false;
     isUploading = false;
     coreExpertiseRecord: ICoreExpertiseRecord | null = null;
+    draggedExpertiseIndex: number | null = null;
+    previewExpertiseIndex: number | null = null;
 
     public readonly baseURL = environment.apiBaseUrl;
     public readonly maxFileSizeInKb = FILE_UPLOAD.MAX_ICON_FILE_SIZE_IN_KB;
@@ -88,8 +132,54 @@ export class CoreExpertiseComponent implements OnInit {
                 this.createEmptyCoreExpertiseItem(this.getNextExpertisePriority())
             )
         );
+        this.reorderExpertiseSequentially();
+        this.entityForm?.markAsDirty();
 
         this.scrollToLatestExpertise();
+    }
+
+    // Reorders expertise cards from drag-and-drop and keeps saved priorities aligned with the visual order.
+    dropExpertise(event: CdkDragDrop<UntypedFormGroup[]>): void {
+        this.clearDragPreview();
+
+        if (
+            event.previousIndex === event.currentIndex ||
+            this.isLoading ||
+            this.isSaving ||
+            this.isUploading
+        ) {
+            return;
+        }
+
+        const reorderedControls = [...this.expertiseForms.controls] as UntypedFormGroup[];
+        moveItemInArray(reorderedControls, event.previousIndex, event.currentIndex);
+        this.syncExpertisePriorities(reorderedControls);
+        this.replaceFormArray(this.expertiseForms, reorderedControls);
+        this.entityForm?.markAsDirty();
+    }
+
+    // Marks which expertise card is being dragged so the template can show live drop guidance.
+    startExpertiseDrag(index: number, _event: CdkDragStart): void {
+        if (this.entityForm?.disabled) {
+            return;
+        }
+
+        this.draggedExpertiseIndex = index;
+        this.previewExpertiseIndex = index;
+    }
+
+    // Updates the current drop target while the dragged card moves through the list.
+    previewExpertiseDrop(index: number, _event: CdkDragEnter): void {
+        if (this.draggedExpertiseIndex === null) {
+            return;
+        }
+
+        this.previewExpertiseIndex = index;
+    }
+
+    // Clears the temporary drag preview state once the interaction ends.
+    endExpertiseDrag(_event: CdkDragEnd): void {
+        this.clearDragPreview();
     }
 
     // Removes one expertise card while keeping the required minimum of three.
@@ -253,37 +343,6 @@ export class CoreExpertiseComponent implements OnInit {
             );
     }
 
-    // Repositions one expertise card based on its edited priority and renumbers the full list.
-    reorderExpertiseFromPriority(index: number): void {
-        if (!this.expertiseForms?.length) {
-            return;
-        }
-
-        const currentControls = [...this.expertiseForms.controls] as UntypedFormGroup[];
-        const selectedControl = currentControls[index];
-
-        if (!selectedControl) {
-            return;
-        }
-
-        const requestedPriority = Number(selectedControl.get('priority')?.value) || 1;
-        const clampedPriority = Math.min(
-            Math.max(requestedPriority, 1),
-            currentControls.length
-        );
-
-        currentControls.splice(index, 1);
-        currentControls.splice(clampedPriority - 1, 0, selectedControl);
-
-        currentControls.forEach((control, reorderedIndex) => {
-            control.get('priority')?.setValue(reorderedIndex + 1, {
-                emitEvent: false,
-            });
-        });
-
-        this.replaceFormArray(this.expertiseForms, currentControls);
-    }
-
     // Converts a stored image path into a browser-ready preview URL.
     resolveImageUrl(imagePath: string): string {
         if (!imagePath) {
@@ -356,6 +415,7 @@ export class CoreExpertiseComponent implements OnInit {
             this.expertiseForms,
             data.expertise.map((item) => this.createExpertiseGroup(item))
         );
+        this.reorderExpertiseSequentially();
     }
 
     // Re-enables the page form after save or upload operations finish.
@@ -605,11 +665,9 @@ export class CoreExpertiseComponent implements OnInit {
 
     // Renumbers the current expertise controls sequentially from top to bottom.
     private reorderExpertiseSequentially(): void {
-        this.expertiseForms.controls.forEach((control, reorderedIndex) => {
-            control.get('priority')?.setValue(reorderedIndex + 1, {
-                emitEvent: false,
-            });
-        });
+        this.syncExpertisePriorities(
+            this.expertiseForms.controls as UntypedFormGroup[]
+        );
     }
 
     // Sorts expertise items by ascending priority while keeping empty priorities at the end.
@@ -630,15 +688,16 @@ export class CoreExpertiseComponent implements OnInit {
 
     // Returns the next priority number for a newly added expertise card.
     private getNextExpertisePriority(): number {
-        const priorities = this.expertiseForms.controls
-            .map((control) => Number(control.get('priority')?.value))
-            .filter((priority) => Number.isFinite(priority) && priority > 0);
+        return this.expertiseForms.length + 1;
+    }
 
-        if (!priorities.length) {
-            return 1;
-        }
-
-        return Math.max(...priorities) + 1;
+    // Mirrors the visible card order into sequential priorities used by the saved JSON.
+    private syncExpertisePriorities(controls: UntypedFormGroup[]): void {
+        controls.forEach((control, reorderedIndex) => {
+            control.get('priority')?.setValue(reorderedIndex + 1, {
+                emitEvent: false,
+            });
+        });
     }
 
     // Scrolls the newest expertise card into view so the added empty form is immediately visible.
@@ -669,6 +728,12 @@ export class CoreExpertiseComponent implements OnInit {
     private finishSaving(): void {
         this.isSaving = false;
         this.enableEntityForm();
+    }
+
+    // Resets the transient drag state used only for UI feedback while reordering.
+    private clearDragPreview(): void {
+        this.draggedExpertiseIndex = null;
+        this.previewExpertiseIndex = null;
     }
 
     // Converts uploaded file names into the stored icon path format used by the UI.

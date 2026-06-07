@@ -54,7 +54,7 @@
                             <div>
                                 <div class="text-lg font-semibold text-slate-900">Expertise Cards</div>
                                 <div class="text-sm text-slate-500">
-                                    Configure title, priority, and icon for each expertise card. Minimum 3 cards and maximum 9 cards.
+                                    Configure title and icon for each expertise card. Drag cards to reorder priorities. Minimum 3 cards and maximum 9 cards.
                                 </div>
                             </div>
 
@@ -70,36 +70,52 @@
                             </button>
                         </div>
 
-                        <div formArrayName="expertise" class="grid gap-4 lg:grid-cols-2">
-                            @for (expertiseGroup of expertiseForms.controls; track $index; let expertiseIndex = $index) {
+                        <div
+                            formArrayName="expertise"
+                            class="core-expertise-drop-list space-y-4"
+                            cdkDropList
+                            cdkDropListOrientation="vertical"
+                            [cdkDropListDisabled]="entityForm?.disabled"
+                            (cdkDropListDropped)="dropExpertise($event)"
+                        >
+                            @for (expertiseGroup of expertiseForms.controls; track expertiseGroup; let expertiseIndex = $index) {
                                 <div
                                     #expertiseCard
                                     [formGroupName]="expertiseIndex"
-                                    class="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+                                    cdkDrag
+                                    class="core-expertise-card rounded-2xl border border-slate-200 bg-slate-50 p-4 transition-all duration-200"
+                                    [ngClass]="{
+                                        'border-sky-400 bg-sky-50 ring-2 ring-sky-200':
+                                            draggedExpertiseIndex !== null && previewExpertiseIndex === expertiseIndex,
+                                        'opacity-90 shadow-lg': draggedExpertiseIndex === expertiseIndex
+                                    }"
+                                    (cdkDragStarted)="startExpertiseDrag(expertiseIndex, $event)"
+                                    (cdkDragEntered)="previewExpertiseDrop(expertiseIndex, $event)"
+                                    (cdkDragEnded)="endExpertiseDrag($event)"
                                 >
                                     <div class="mb-4 flex items-start justify-between gap-4">
-                                        <div class="text-base font-semibold text-slate-900">
-                                            Expertise {{ expertiseIndex + 1 }}
+                                        <div class="flex items-center gap-3">
+                                            <button
+                                                mat-icon-button
+                                                type="button"
+                                                cdkDragHandle
+                                                [disabled]="entityForm?.disabled"
+                                                matTooltip="Drag to reorder"
+                                            >
+                                                <mat-icon [svgIcon]="'heroicons_outline:bars-3'"></mat-icon>
+                                            </button>
+
+                                            <div class="text-base font-semibold text-slate-900">
+                                                Expertise {{ expertiseIndex + 1 }}
+                                            </div>
+
+                                            <div class="inline-flex w-fit items-center rounded-full bg-slate-200 px-3 py-1 text-sm font-medium text-slate-700">
+                                                Priority {{ expertiseIndex + 1 }}
+                                            </div>
+
                                         </div>
 
                                         <div class="flex items-start gap-2">
-                                            <mat-form-field class="w-24" [subscriptSizing]="'dynamic'">
-                                                <mat-label>Priority</mat-label>
-                                                <input
-                                                    matInput
-                                                    type="number"
-                                                    formControlName="priority"
-                                                    min="1"
-                                                    (change)="reorderExpertiseFromPriority(expertiseIndex)"
-                                                />
-                                                @if (expertiseGroup.get('priority')?.hasError('required')) {
-                                                    <mat-error>Required</mat-error>
-                                                }
-                                                @if (expertiseGroup.get('priority')?.hasError('min')) {
-                                                    <mat-error>Min 1</mat-error>
-                                                }
-                                            </mat-form-field>
-
                                             <button
                                                 mat-icon-button
                                                 color="warn"
@@ -165,7 +181,7 @@
 
                                         <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
                                             <img
-                                                class="block h-[180px] w-full object-contain bg-slate-100 p-4"
+                                                class="block h-full w-full object-contain bg-slate-100 p-4"
                                                 [src]="resolveImageUrl(expertiseGroup.get('icon')?.value)"
                                                 [alt]="expertiseGroup.get('title')?.value || 'Core expertise icon preview'"
                                             />
