@@ -137,13 +137,13 @@ export const defaultNavigation: FuseNavigationItem[] = [
                     },
                 ],
             },
-            // {
-            //     id: 'configurations.services',
-            //     title: 'Services',
-            //     type: 'basic',
-            //     icon: 'mat_outline:settings',
-            //     link: '/configurations/services',
-            // },
+            {
+                id: 'configurations.careers',
+                title: 'Careers Page',
+                type: 'basic',
+                icon: 'mat_outline:work',
+                link: '/configurations/careers',
+            },
             // {
             //     id: 'configurations.about',
             //     title: 'About Page',

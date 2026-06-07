@@ -1,0 +1,252 @@
+<div class="bg-card flex min-w-0 flex-auto flex-col dark:bg-transparent sm:absolute sm:inset-0 sm:overflow-hidden">
+    <div
+        class="relative flex flex-0 flex-col border-b px-6 py-8 sm:flex-row sm:items-center sm:justify-between md:px-8">
+        @if (isLoading) {
+            <div class="absolute inset-x-0 bottom-0">
+                <mat-progress-bar [mode]="'indeterminate'"></mat-progress-bar>
+            </div>
+        }
+        <div class="text-4xl font-extrabold tracking-tight">Job Openings</div>
+        <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
+            <mat-form-field class="fuse-mat-dense fuse-mat-rounded min-w-72" [subscriptSizing]="'dynamic'">
+                <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
+                <input matInput [(ngModel)]="query" [autocomplete]="'off'" [placeholder]="'Search by job title'" />
+            </mat-form-field>
+
+            <button class="ml-4" mat-flat-button [color]="'primary'" (click)="openCareerDialog('add')">
+                <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                <span class="ml-2">Add New Job</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="flex flex-auto overflow-hidden">
+        <div class="flex flex-auto flex-col overflow-hidden sm:overflow-y-auto">
+            @if (jobs$ | async; as jobs) {
+                @if (jobs.length > 0) {
+                    <div class="grid">
+                        <div
+                            class="careers-grid text-secondary sticky top-0 z-10 grid gap-4 bg-gray-50 px-6 py-4 text-md font-semibold shadow dark:bg-black dark:bg-opacity-5 md:px-8"
+                            matSort
+                            matSortDisableClear
+                        >
+                            <div [mat-sort-header]="'title'">Job Title</div>
+                            <div [mat-sort-header]="'experience'">Experience</div>
+                            <div [mat-sort-header]="'qualification'">Qualification</div>
+                            <div [mat-sort-header]="'isOpen'">Status</div>
+                            <div>Actions</div>
+                        </div>
+
+                        @if (jobs$ | async | SearchFilter:query:'title' | sort: _sort?.active:_sort?.direction; as filteredJobs) {
+                            <div *ngIf="filteredJobs.length > 0; else noData">
+                                @for (job of filteredJobs; track trackByFn($index, job)) {
+                                    <div class="careers-grid grid items-center gap-4 border-b px-6 py-3 md:px-8">
+                                        <div class="flex min-w-0 items-center gap-2" [title]="job.title">
+                                            <span class="truncate font-medium text-slate-900">
+                                                {{ job.title }}
+                                            </span>
+
+                                            <span
+                                                class="mobile-status-badge hidden shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide"
+                                                [ngClass]="job.isOpen ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'"
+                                            >
+                                                {{ job.isOpen ? 'Open' : 'Closed' }}
+                                            </span>
+                                        </div>
+
+                                        <div class="truncate" [title]="job.experience || '-'">
+                                            {{ job.experience || '-' }}
+                                        </div>
+
+                                        <div class="truncate" [title]="job.qualification || '-'">
+                                            {{ job.qualification || '-' }}
+                                        </div>
+
+                                        <div>
+                                            <span
+                                                class="inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide"
+                                                [ngClass]="job.isOpen ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'"
+                                            >
+                                                {{ job.isOpen ? 'Open' : 'Closed' }}
+                                            </span>
+                                        </div>
+
+                                        <div class="flex justify-center">
+                                            <button
+                                                mat-icon-button
+                                                type="button"
+                                                [matMenuTriggerFor]="careerActionsMenu"
+                                                [matMenuTriggerData]="{ job: job }"
+                                                matTooltip="Open actions"
+                                            >
+                                                <mat-icon [svgIcon]="'heroicons_outline:ellipsis-vertical'"></mat-icon>
+                                            </button>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+
+                            <ng-template #noData>
+                                <div class="border-t p-8 text-center text-2xl tracking-tight">
+                                    No job openings found for the term <span class="font-semibold">"{{ query }}"</span>
+                                </div>
+                            </ng-template>
+                        }
+                    </div>
+                } @else {
+                    <div class="border-t p-8 text-center text-4xl tracking-tight sm:p-16">
+                        There are no job openings yet!
+                    </div>
+                }
+            }
+            @else {
+                <div class="border-t p-8 text-center text-4xl tracking-tight sm:p-16">
+                    There are no job openings yet!
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<ng-template #CareerDialog>
+    <div class="flex items-center justify-between border-b px-6 py-4">
+        <div class="text-xl font-semibold text-slate-900">
+            {{ careerDialogMode === 'add' ? 'Add Job Opening' : 'Edit Job Opening' }}
+        </div>
+
+        <button mat-icon-button type="button" (click)="closeCareerDialog()">
+            <mat-icon [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+        </button>
+    </div>
+
+    <form [formGroup]="careerDialogForm" class="px-6 py-5">
+        <div class="grid gap-4">
+            <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                <mat-label>Job Title</mat-label>
+                <input matInput formControlName="title" maxlength="500" />
+                <mat-hint align="end">{{ careerDialogForm.get('title')?.value?.length || 0 }}/500</mat-hint>
+                @if (careerDialogForm.get('title')?.hasError('required')) {
+                    <mat-error>Job title is required</mat-error>
+                }
+            </mat-form-field>
+
+            <div class="grid gap-4 md:grid-cols-2">
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Experience</mat-label>
+                    <input matInput formControlName="experience" maxlength="100" />
+                    <mat-hint align="end">{{ careerDialogForm.get('experience')?.value?.length || 0 }}/100</mat-hint>
+                    @if (careerDialogForm.get('experience')?.hasError('required')) {
+                        <mat-error>Experience is required</mat-error>
+                    }
+                </mat-form-field>
+
+                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                    <mat-label>Qualification</mat-label>
+                    <input matInput formControlName="qualification" maxlength="100" />
+                    <mat-hint align="end">{{ careerDialogForm.get('qualification')?.value?.length || 0 }}/100</mat-hint>
+                    @if (careerDialogForm.get('qualification')?.hasError('required')) {
+                        <mat-error>Qualification is required</mat-error>
+                    }
+                </mat-form-field>
+            </div>
+
+            <div class="career-skills-field space-y-2">
+                <div class="text-sm font-medium text-slate-700">
+                    Skills <span class="text-red-600">*</span>
+                </div>
+                <div
+                    class="overflow-hidden rounded-2xl border bg-white"
+                    [ngClass]="careerDialogForm.get('skills')?.invalid && careerDialogForm.get('skills')?.touched ? 'border-red-400 ring-1 ring-red-200' : 'border-slate-200'"
+                >
+                    <quill-editor
+                        class="career-skills-editor block w-full"
+                        formControlName="skills"
+                        [styles]="{ height: '180px' }"
+                        (onBlur)="careerDialogForm.get('skills')?.markAsTouched()"
+                    ></quill-editor>
+                </div>
+                <div class="text-xs text-slate-500">
+                    Enter the key skills, technologies, or responsibilities for this role.
+                </div>
+                @if (careerDialogForm.get('skills')?.hasError('required') && careerDialogForm.get('skills')?.touched) {
+                    <div class="text-sm text-red-600">Skills are required</div>
+                }
+            </div>
+
+            <mat-slide-toggle formControlName="isOpen">
+                {{ careerDialogForm.get('isOpen')?.value ? 'Job is open' : 'Job is closed' }}
+            </mat-slide-toggle>
+        </div>
+
+        <div class="mt-6 flex items-center justify-between gap-4 border-t pt-4">
+            <div></div>
+
+            <div class="flex items-center gap-3">
+                <button
+                    mat-stroked-button
+                    type="button"
+                    [disabled]="isSubmitting"
+                    (click)="closeCareerDialog()"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    mat-flat-button
+                    color="primary"
+                    type="button"
+                    [disabled]="careerDialogForm.invalid || isSubmitting"
+                    (click)="submitCareerDialog()"
+                >
+                    @if (!isSubmitting) {
+                        <span>{{ careerDialogMode === 'add' ? 'Create Job' : 'Update Job' }}</span>
+                    }
+                    @if (isSubmitting) {
+                        <mat-progress-spinner [diameter]="20" [mode]="'indeterminate'"></mat-progress-spinner>
+                    }
+                </button>
+            </div>
+        </div>
+    </form>
+</ng-template>
+
+<mat-menu #careerActionsMenu="matMenu">
+    <ng-template matMenuContent let-job="job">
+        <button mat-menu-item type="button" (click)="openCareerDialog('edit', job)">
+            <mat-icon [svgIcon]="'heroicons_outline:pencil-square'"></mat-icon>
+            <span>Edit</span>
+        </button>
+
+        @if (job?.isOpen) {
+            <button
+                mat-menu-item
+                type="button"
+                [disabled]="statusUpdatingCareerId === job?.id"
+                (click)="confirmMarkClosed(job)"
+            >
+                <mat-icon [svgIcon]="'heroicons_outline:lock-closed'"></mat-icon>
+                <span>Mark Closed</span>
+            </button>
+        } @else {
+            <button
+                mat-menu-item
+                type="button"
+                [disabled]="statusUpdatingCareerId === job?.id"
+                (click)="confirmReopen(job)"
+            >
+                <mat-icon [svgIcon]="'heroicons_outline:lock-open'"></mat-icon>
+                <span>Reopen</span>
+            </button>
+        }
+
+        <button
+            mat-menu-item
+            type="button"
+            [disabled]="deletingCareerId === job?.id"
+            (click)="confirmDelete(job)"
+        >
+            <mat-icon [svgIcon]="'heroicons_outline:trash'"></mat-icon>
+            <span>Delete</span>
+        </button>
+    </ng-template>
+</mat-menu>

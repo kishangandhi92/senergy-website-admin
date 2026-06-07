@@ -121,27 +121,21 @@ export const appRoutes: Route[] = [
                 data: { userType: 'administrator' },  // Only allow administrators
                 children: [
                     {
-                        path: 'slider',
-                        loadChildren: () =>
-                            import('app/modules/admin/slider/slider.routes')
-
-                    },
-                    {
                         path: 'home',
                         loadChildren: () =>
                             import('app/modules/admin/homepage/home.routes')
 
                     },
                     {
-                        path: 'services',
-                        loadChildren: () =>
-                            import('app/modules/admin/services/services.routes')
-
-                    },
-                    {
                         path: 'about-us-page',
                         loadChildren: () =>
                             import('app/modules/admin/about-us-page/about-us-page.routes')
+
+                    },
+                    {
+                        path: 'careers',
+                        loadChildren: () =>
+                            import('app/modules/admin/careers/careers.routes')
 
                     },
                     {
