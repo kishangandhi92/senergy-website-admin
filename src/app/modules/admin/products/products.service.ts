@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, map, switchMap, take, tap } from 'rxjs';
 import { environment } from 'environments/environment';
-import { Product } from './product.types';
+import { Product, ProductOrderUpdate } from './product.types';
 
 @Injectable({ providedIn: 'root' })
 export class ProductsService {
@@ -160,5 +160,72 @@ export class ProductsService {
                     )
             )
         );
+    }
+
+    updateProductOrders(orderUpdates: ProductOrderUpdate[]): Observable<any> {
+        return this.products$.pipe(
+            take(1),
+            switchMap((products) =>
+                this._httpClient
+                    .post(this.apiUrl + '/reorder', {
+                        products: orderUpdates,
+                    })
+                    .pipe(
+                        map((response: any) => {
+                            if (response?.status === false) {
+                                return response;
+                            }
+
+                            if (Array.isArray(response?.data)) {
+                                this._products.next(
+                                    this.sortProductsByOrder(response.data as Product[])
+                                );
+                                return response;
+                            }
+
+                            if (products) {
+                                const orderMap = new Map(
+                                    orderUpdates.map((item) => [item.id, item.order])
+                                );
+                                const updatedProducts = products.map((product) => ({
+                                    ...product,
+                                    order: orderMap.get(product.id) ?? product.order,
+                                }));
+
+                                this._products.next(
+                                    this.sortProductsByOrder(updatedProducts)
+                                );
+                            }
+
+                            return response;
+                        })
+                    )
+            )
+        );
+    }
+
+    private sortProductsByOrder(products: Product[]): Product[] {
+        return [...products].sort((leftProduct, rightProduct) => {
+            const leftOrder = this.normalizeOrder(leftProduct?.order);
+            const rightOrder = this.normalizeOrder(rightProduct?.order);
+
+            if (leftOrder !== rightOrder) {
+                return leftOrder - rightOrder;
+            }
+
+            return (leftProduct?.title || '').localeCompare(
+                rightProduct?.title || ''
+            );
+        });
+    }
+
+    private normalizeOrder(order: number | undefined): number {
+        const normalizedOrder = Number(order);
+
+        if (Number.isFinite(normalizedOrder) && normalizedOrder > 0) {
+            return normalizedOrder;
+        }
+
+        return Number.MAX_SAFE_INTEGER;
     }
 }

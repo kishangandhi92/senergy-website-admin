@@ -1,19 +1,11 @@
-import {
-    AsyncPipe,
-    CommonModule,
-    NgClass,
-    NgTemplateOutlet,
-} from '@angular/common';
-import { ChangeDetectorRef, Component, ViewChild } from '@angular/core';
-import {
-    FormsModule,
-    ReactiveFormsModule,
-    UntypedFormBuilder,
-} from '@angular/forms';
+import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
+import { AsyncPipe, CommonModule, NgClass } from '@angular/common';
+import { ChangeDetectorRef, Component, TemplateRef, ViewChild } from '@angular/core';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatOptionModule, MatRippleModule } from '@angular/material/core';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -32,58 +24,64 @@ import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { SnackBarService } from 'app/core/general/snackbar.service';
 import { PipesModule } from 'app/pipes/pipes.module';
 import { environment } from 'environments/environment.prod';
-import { Observable } from 'rxjs';
-import { Product } from '../product.types';
+import { finalize, Observable, take } from 'rxjs';
+import { Product, ProductOrderUpdate } from '../product.types';
 import { ProductsService } from '../products.service';
-import { project } from 'app/mock-api/dashboards/project/data';
 
 @Component({
     selector: 'app-product-list',
     standalone: true,
     imports: [
-    MatProgressBarModule,
-    MatFormFieldModule,
-    MatIconModule,
-    MatInputModule,
-    FormsModule,
-    ReactiveFormsModule,
-    MatButtonModule,
-    MatSortModule,
-    MatPaginatorModule,
-    NgClass,
-    MatSlideToggleModule,
-    MatSelectModule,
-    MatOptionModule,
-    MatCheckboxModule,
-    MatRippleModule,
-    MatProgressSpinnerModule,
-    AsyncPipe,
-    MatSnackBarModule,
-    PipesModule,
-    MatTooltipModule,
-    MatTabsModule,
-    CommonModule,
-    MatTableModule,
-    RouterModule,
-    ReactiveFormsModule
-],
+        MatProgressBarModule,
+        MatFormFieldModule,
+        MatIconModule,
+        MatInputModule,
+        FormsModule,
+        ReactiveFormsModule,
+        MatButtonModule,
+        MatDialogModule,
+        MatSortModule,
+        MatPaginatorModule,
+        NgClass,
+        MatSlideToggleModule,
+        MatSelectModule,
+        MatOptionModule,
+        MatCheckboxModule,
+        MatRippleModule,
+        MatProgressSpinnerModule,
+        AsyncPipe,
+        MatSnackBarModule,
+        PipesModule,
+        MatTooltipModule,
+        MatTabsModule,
+        CommonModule,
+        MatTableModule,
+        RouterModule,
+        DragDropModule,
+    ],
     templateUrl: './product-list.component.html',
     styleUrl: './product-list.component.scss',
 })
 export class ProductListComponent {
     @ViewChild(MatSort) private _sort: MatSort = null;
+    @ViewChild('ProductOrderDialog') productOrderDialogTemplate:
+        | TemplateRef<any>
+        | undefined;
 
     products$: Observable<Product[] | null> | undefined;
     isLoading: boolean = false;
+    isReorderSaving = false;
     query = '';
+    reorderProducts: Product[] = [];
+    productOrderDialogRef = null;
     readonly baseURL = environment.apiBaseUrl;
+    private _initialReorderIds: number[] = [];
 
     constructor(
         private route: ActivatedRoute,
         private _changeDetectorRef: ChangeDetectorRef,
         private _fuseConfirmationService: FuseConfirmationService,
         private _matDialog: MatDialog,
-        private _formBuilder: UntypedFormBuilder,
         private _productService: ProductsService,
         private _snackBar: SnackBarService
     ) {}
@@ -107,6 +105,110 @@ export class ProductListComponent {
 
     trackByFn(index: number, item: any): any {
         return item.id || index;
+    }
+
+    openProductOrderDialog(): void {
+        if (!this.productOrderDialogTemplate || !this.products$) {
+            return;
+        }
+
+        this.products$
+            .pipe(take(1))
+            .subscribe((products) => {
+                this.reorderProducts = this.buildReorderProducts(products || []);
+                this._initialReorderIds = this.reorderProducts.map(
+                    (product) => product.id
+                );
+
+                this.productOrderDialogRef = this._matDialog.open(
+                    this.productOrderDialogTemplate,
+                    {
+                        width: '720px',
+                        maxWidth: '96vw',
+                        disableClose: true,
+                    }
+                );
+
+                this.productOrderDialogRef
+                    ?.afterClosed()
+                    .pipe(take(1))
+                    .subscribe(() => {
+                        this.reorderProducts = [];
+                        this._initialReorderIds = [];
+                        this.isReorderSaving = false;
+                        this.productOrderDialogRef = null;
+                    });
+            });
+    }
+
+    closeProductOrderDialog(): void {
+        if (this.isReorderSaving) {
+            return;
+        }
+
+        this.productOrderDialogRef?.close();
+    }
+
+    dropReorderProduct(event: CdkDragDrop<Product[]>): void {
+        if (
+            event.previousIndex === event.currentIndex ||
+            this.isReorderSaving
+        ) {
+            return;
+        }
+
+        moveItemInArray(
+            this.reorderProducts,
+            event.previousIndex,
+            event.currentIndex
+        );
+        this.syncReorderProductOrder();
+    }
+
+    saveProductOrder(): void {
+        if (!this.hasReorderChanges || this.isReorderSaving) {
+            return;
+        }
+
+        const orderPayload: ProductOrderUpdate[] = this.reorderProducts.map(
+            (product, index) => ({
+                id: product.id,
+                order: index + 1,
+            })
+        );
+
+        this.isReorderSaving = true;
+
+        this._productService
+            .updateProductOrders(orderPayload)
+            .pipe(
+                take(1),
+                finalize(() => {
+                    this.isReorderSaving = false;
+                    this._changeDetectorRef.markForCheck();
+                })
+            )
+            .subscribe({
+                next: (response: any) => {
+                    if (response?.status === false) {
+                        this._snackBar.showError(
+                            'Failed to update product order'
+                        );
+                        return;
+                    }
+
+                    this._snackBar.showSuccess(
+                        'Product order updated successfully'
+                    );
+                    this.isReorderSaving = false;
+                    this.productOrderDialogRef?.close();
+                },
+                error: () => {
+                    this._snackBar.showError(
+                        'Oh no! Server error occurred while updating the product order'
+                    );
+                },
+            });
     }
 
     showHideEntity(product: Product): void {
@@ -149,8 +251,63 @@ export class ProductListComponent {
                                 'Failed to update Product status'
                             );
                         }
-                    });
+                });
             }
         });
+    }
+
+    isProductVisible(product: Product): boolean {
+        return Number(product?.status) === 1;
+    }
+
+    get hasReorderChanges(): boolean {
+        if (this.reorderProducts.length !== this._initialReorderIds.length) {
+            return false;
+        }
+
+        return this.reorderProducts.some(
+            (product, index) => product.id !== this._initialReorderIds[index]
+        );
+    }
+
+    private buildReorderProducts(products: Product[]): Product[] {
+        return [...products]
+            .sort((leftProduct, rightProduct) => {
+                const leftOrder = this.normalizeProductOrder(
+                    leftProduct?.order
+                );
+                const rightOrder = this.normalizeProductOrder(
+                    rightProduct?.order
+                );
+
+                if (leftOrder !== rightOrder) {
+                    return leftOrder - rightOrder;
+                }
+
+                return (leftProduct?.title || '').localeCompare(
+                    rightProduct?.title || ''
+                );
+            })
+            .map((product, index) => ({
+                ...product,
+                order: index + 1,
+            }));
+    }
+
+    private syncReorderProductOrder(): void {
+        this.reorderProducts = this.reorderProducts.map((product, index) => ({
+            ...product,
+            order: index + 1,
+        }));
+    }
+
+    private normalizeProductOrder(order: number | undefined): number {
+        const normalizedOrder = Number(order);
+
+        if (Number.isFinite(normalizedOrder) && normalizedOrder > 0) {
+            return normalizedOrder;
+        }
+
+        return Number.MAX_SAFE_INTEGER;
     }
 }

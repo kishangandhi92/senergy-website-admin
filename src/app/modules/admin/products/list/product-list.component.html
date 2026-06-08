@@ -11,14 +11,18 @@
         <!-- Title -->
         <div class="text-4xl font-extrabold tracking-tight">Products ({{ (products$ | async)?.length || 0 }})</div>
         <!-- Actions -->
-        <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
+        <div class="mt-6 flex flex-wrap gap-3 shrink-0 items-center sm:ml-4 sm:mt-0">
             <!-- Search -->
-            <mat-form-field class="fuse-mat-dense fuse-mat-rounded min-w-64" [subscriptSizing]="'dynamic'">
+            <mat-form-field class="fuse-mat-dense fuse-mat-rounded min-w-full sm:min-w-64 " [subscriptSizing]="'dynamic'">
                 <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
                 <input matInput [(ngModel)]="query" [autocomplete]="'off'" [placeholder]="'Search by Title'" />
             </mat-form-field>
+            <button  mat-stroked-button type="button" (click)="openProductOrderDialog()">
+                <mat-icon [svgIcon]="'heroicons_outline:bars-3'"></mat-icon>
+                <span class="ml-2">Change Order</span>
+            </button>
             <!-- Add product button -->
-            <a class="ml-4" mat-flat-button [color]="'primary'" [routerLink]="['create']">
+            <a  mat-flat-button [color]="'primary'" [routerLink]="['create']">
                 <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
                 <span class="ml-2 mr-1">Add New</span>
             </a>
@@ -51,7 +55,7 @@
                     track trackByFn($index, product)
                     ) {
                     <div class="inventory-grid grid items-center gap-4 border-b px-6 py-3 md:px-8"
-                        [ngClass]="product.status == '0' ? 'bg-red-50': ''">
+                        [ngClass]="!isProductVisible(product) ? 'bg-red-50': ''">
 
                         <!-- Name -->
                         <div class="inventory-grid__title truncate" [title]="product.title">
@@ -65,9 +69,9 @@
                         <div class="inventory-grid__status">
                             <span
                                 class="inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide"
-                                [ngClass]="product.status === '1' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'"
+                                [ngClass]="isProductVisible(product) ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'"
                             >
-                                {{ product.status === '1' ? 'Visible' : 'Hidden' }}
+                                {{ isProductVisible(product) ? 'Visible' : 'Hidden' }}
                             </span>
                         </div>
 
@@ -80,11 +84,11 @@
                             </a>
 
                             <button class="h-7 min-h-7 min-w-10 px-2 leading-6 border-none" mat-stroked-button
-                                [matTooltip]="product.status === '1' ? 'Hide Product' : 'Show Product'"
+                                [matTooltip]="isProductVisible(product) ? 'Hide Product' : 'Show Product'"
                                 (click)="showHideEntity(product)">
-                                <mat-icon *ngIf="product.status === '0'" class="icon-size-6 text-blue-400"
+                                <mat-icon *ngIf="!isProductVisible(product)" class="icon-size-6 text-blue-400"
                                     [svgIcon]="'heroicons_outline:eye'"></mat-icon>
-                                <mat-icon *ngIf="product.status === '1'" class="icon-size-6 text-red-400"
+                                <mat-icon *ngIf="isProductVisible(product)" class="icon-size-6 text-red-400"
                                     [svgIcon]="'heroicons_outline:eye-slash'"></mat-icon>
                             </button>
                         </div>
@@ -114,3 +118,89 @@
         </div>
     </div>
 </div>
+
+<ng-template #ProductOrderDialog>
+    <div class="flex items-center justify-between border-b px-5 py-3">
+        <div>
+            <div class="text-lg font-semibold text-slate-900">Change Product Order</div>
+        </div>
+
+        <button mat-icon-button type="button" [disabled]="isReorderSaving" (click)="closeProductOrderDialog()">
+            <mat-icon [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+        </button>
+    </div>
+
+    <div class="px-5 py-4">
+        <div
+            class="product-order-list"
+            cdkDropList
+            cdkDropListOrientation="vertical"
+            [cdkDropListDisabled]="isReorderSaving"
+            (cdkDropListDropped)="dropReorderProduct($event)"
+        >
+            @for (product of reorderProducts; track product.id; let productIndex = $index) {
+                <div cdkDrag class="product-order-item rounded-lg border border-slate-200 bg-slate-50">
+                    <div class="flex items-center gap-2.5">
+                        <button
+                            mat-icon-button
+                            type="button"
+                            cdkDragHandle
+                            class="product-order-item__handle"
+                            [disabled]="isReorderSaving"
+                            matTooltip="Drag to reorder"
+                        >
+                            <mat-icon [svgIcon]="'heroicons_outline:bars-3'"></mat-icon>
+                        </button>
+
+                        <div class="product-order-item__priority">
+                            {{ productIndex + 1 }}
+                        </div>
+
+                        <div class="min-w-0 flex-1">
+                            <div class="truncate text-md font-semibold text-slate-900" [title]="product.title">
+                                {{ product.title }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="flex items-center justify-between gap-4 border-t px-5 py-3">
+        <div class="text-xs text-slate-500">
+            @if (!hasReorderChanges) {
+                <span>Drag any row to change the current priority.</span>
+            }
+            @if (hasReorderChanges) {
+                <span>Priority updated locally. Save to apply it for all products.</span>
+            }
+        </div>
+
+        <div class="flex items-center gap-3">
+            <button
+                mat-stroked-button
+                type="button"
+                [disabled]="isReorderSaving"
+                (click)="closeProductOrderDialog()"
+            >
+                Cancel
+            </button>
+
+            <button
+                mat-flat-button
+                color="primary"
+                type="button"
+                [disabled]="!hasReorderChanges || isReorderSaving"
+                (click)="saveProductOrder()"
+            >
+                @if (!isReorderSaving) {
+                    <span>Save Order</span>
+                }
+                @if (isReorderSaving) {
+                    <mat-progress-spinner [diameter]="20" [mode]="'indeterminate'"></mat-progress-spinner>
+                }
+            </button>
+        </div>
+    </div>
+</ng-template>

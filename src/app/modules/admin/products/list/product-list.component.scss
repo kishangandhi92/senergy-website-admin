@@ -30,3 +30,68 @@
         align-items: center;
     }
 }
+
+.product-order-list {
+    display: flex;
+    max-height: min(55vh, 520px);
+    flex-direction: column;
+    gap: 0.5rem;
+    overflow-y: auto;
+    padding-right: 0.125rem;
+}
+
+.product-order-item {
+    transition:
+        box-shadow 220ms ease,
+        opacity 220ms ease,
+        transform 220ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.product-order-item__handle {
+    cursor: move;
+    height: 2rem;
+    width: 2rem;
+    padding: 0.25rem;
+}
+
+.product-order-item__priority {
+    display: inline-flex;
+    min-width: 2rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    background: rgb(226 232 240);
+    color: rgb(51 65 85);
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+    padding: 0.45rem 0.4rem;
+}
+
+:host ::ng-deep .product-order-list.cdk-drop-list-dragging
+    .product-order-item:not(.cdk-drag-placeholder) {
+    transition:
+        transform 220ms cubic-bezier(0.2, 0, 0, 1),
+        box-shadow 220ms ease,
+        opacity 220ms ease;
+}
+
+:host ::ng-deep .product-order-item.cdk-drag-preview {
+    border-radius: 1rem;
+    background: rgb(248 250 252);
+    box-shadow:
+        0 22px 50px -12px rgba(15, 23, 42, 0.28),
+        0 8px 18px -10px rgba(15, 23, 42, 0.18);
+    opacity: 0.96;
+}
+
+:host ::ng-deep .product-order-item.cdk-drag-placeholder {
+    border-style: dashed;
+    border-color: rgb(14 165 233);
+    background: rgb(240 249 255);
+    opacity: 0.24;
+}
+
+:host ::ng-deep .product-order-item.cdk-drag-animating {
+    transition: transform 220ms cubic-bezier(0.2, 0, 0, 1);
+}
