@@ -98,7 +98,7 @@ export class ProductsService {
      * @param id
      */
     showHideProduct(product: Product): Observable<boolean> {
-        let flag = Number(product.disabled) === 1 ? 'enable' : 'disable';
+        let flag = Number(product.status) === 0 ? 'enable' : 'disable';
 
         return this.products$.pipe(
             take(1),
@@ -113,17 +113,19 @@ export class ProductsService {
                     )
                     .pipe(
                         map((response: any) => {
-                            if (response.status) {
+                            if (response.status && products) {
                                 // Find the index of the updated product
                                 const index = products.findIndex(
                                     (item) => item.id === product.id
                                 );
 
-                                // Update the product
-                                products[index] = response.data;
+                                if (index !== -1) {
+                                    // Update the product
+                                    products[index] = response.data;
 
-                                // Update the shifts
-                                this._products.next(products);
+                                    // Update the shifts
+                                    this._products.next(products);
+                                }
                             }
                             return response;
                         })

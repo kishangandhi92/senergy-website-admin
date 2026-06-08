@@ -12,5 +12,4 @@ export interface Product {
     status: number;
     created_at?: string;
     updated_at?: string;
-    disabled?: number
 }

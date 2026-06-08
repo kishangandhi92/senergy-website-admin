@@ -15,7 +15,7 @@
             <!-- Search -->
             <mat-form-field class="fuse-mat-dense fuse-mat-rounded min-w-64" [subscriptSizing]="'dynamic'">
                 <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
-                <input matInput [(ngModel)]="query" [autocomplete]="'off'" [placeholder]="'Search'" />
+                <input matInput [(ngModel)]="query" [autocomplete]="'off'" [placeholder]="'Search by Title'" />
             </mat-form-field>
             <!-- Add product button -->
             <a class="ml-4" mat-flat-button [color]="'primary'" [routerLink]="['create']">
@@ -51,7 +51,7 @@
                     track trackByFn($index, product)
                     ) {
                     <div class="inventory-grid grid items-center gap-4 border-b px-6 py-3 md:px-8"
-                        [ngClass]="product.disabled == 1 ? 'bg-red-50': ''">
+                        [ngClass]="product.status == '0' ? 'bg-red-50': ''">
 
                         <!-- Name -->
                         <div class="inventory-grid__title truncate" [title]="product.title">
@@ -80,11 +80,11 @@
                             </a>
 
                             <button class="h-7 min-h-7 min-w-10 px-2 leading-6 border-none" mat-stroked-button
-                                [matTooltip]="product.disabled === '0' ? 'Hide Product' : 'Show Product'"
+                                [matTooltip]="product.status === '1' ? 'Hide Product' : 'Show Product'"
                                 (click)="showHideEntity(product)">
-                                <mat-icon *ngIf="product.disabled === '1'" class="icon-size-6 text-blue-400"
+                                <mat-icon *ngIf="product.status === '0'" class="icon-size-6 text-blue-400"
                                     [svgIcon]="'heroicons_outline:eye'"></mat-icon>
-                                <mat-icon *ngIf="product.disabled === '0'" class="icon-size-6 text-red-400"
+                                <mat-icon *ngIf="product.status === '1'" class="icon-size-6 text-red-400"
                                     [svgIcon]="'heroicons_outline:eye-slash'"></mat-icon>
                             </button>
                         </div>

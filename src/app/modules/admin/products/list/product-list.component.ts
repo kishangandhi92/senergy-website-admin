@@ -115,7 +115,7 @@ export class ProductListComponent {
             message: 'Are you sure you want to the hide this Product?',
         };
 
-        if (Number(product.disabled) === 1) {
+        if (Number(product.status) === 0) {
             message.title = 'Show Product';
             message.message =
                 'Are you sure you want to the make this Product visible?';
@@ -142,11 +142,11 @@ export class ProductListComponent {
                     .subscribe((response: any) => {
                         if (response.status) {
                             this._snackBar.showSuccess(
-                                'Product updated successfully'
+                                'Product status updated successfully'
                             );
                         } else {
                             this._snackBar.showError(
-                                'Failed to show/hide Product'
+                                'Failed to update Product status'
                             );
                         }
                     });
