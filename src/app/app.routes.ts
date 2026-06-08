@@ -148,6 +148,11 @@ export const appRoutes: Route[] = [
                         path: 'contact',
                         loadChildren: () =>
                             import('app/modules/admin/contact/contact.routes')
+                    },
+                    {
+                        path: 'products',
+                        loadChildren: () =>
+                            import('app/modules/admin/products/product.routes')
                     }
                 ],
             },

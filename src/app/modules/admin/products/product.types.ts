@@ -1,11 +1,16 @@
 export interface Product {
-    autoNo: number;
-    name: string;
-    localeTitle: string;
-    description: string;
-    photo: string;
-    createdAt?: string;
-    lastModifiedAt?: string;
-    disabled?: boolean
-    priority?: number
+    id: number;
+    title: string;
+    slug: string;
+    short_description: string;
+    image?: string;
+    image_alt?: string;
+    order?: number;
+    details: string;
+    seoData?: string;
+    ctaData?: string;
+    status: number;
+    created_at?: string;
+    updated_at?: string;
+    disabled?: number
 }

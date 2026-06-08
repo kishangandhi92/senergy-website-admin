@@ -1,0 +1,116 @@
+<div class="bg-card flex min-w-0 flex-auto flex-col dark:bg-transparent sm:absolute sm:inset-0 sm:overflow-hidden">
+    <!-- Header -->
+    <div
+        class="relative flex flex-0 flex-col border-b px-6 py-4 sm:flex-row sm:items-center sm:justify-between md:px-8">
+        <!-- Loader -->
+        @if (isLoading) {
+        <div class="absolute inset-x-0 bottom-0">
+            <mat-progress-bar [mode]="'indeterminate'"></mat-progress-bar>
+        </div>
+        }
+        <!-- Title -->
+        <div class="text-4xl font-extrabold tracking-tight">Products ({{ (products$ | async)?.length || 0 }})</div>
+        <!-- Actions -->
+        <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
+            <!-- Search -->
+            <mat-form-field class="fuse-mat-dense fuse-mat-rounded min-w-64" [subscriptSizing]="'dynamic'">
+                <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
+                <input matInput [(ngModel)]="query" [autocomplete]="'off'" [placeholder]="'Search'" />
+            </mat-form-field>
+            <!-- Add product button -->
+            <a class="ml-4" mat-flat-button [color]="'primary'" [routerLink]="['create']">
+                <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                <span class="ml-2 mr-1">Add New</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Main -->
+    <div class="flex flex-auto overflow-hidden">
+        <!-- Products list -->
+        <div class="flex flex-auto flex-col overflow-hidden sm:overflow-y-auto">
+
+            @if (products$ | async; as products) {
+            @if (products.length > 0) {
+            <div class="grid">
+                <div class="inventory-grid text-secondary sticky top-0 z-10 grid gap-4 bg-gray-50 px-6 py-4 text-md font-semibold shadow dark:bg-black dark:bg-opacity-5 md:px-8"
+                    matSort matSortDisableClear>
+                    <div class="inventory-grid__title" [mat-sort-header]="'title'">Title</div>
+                    <div class="inventory-grid__description" [mat-sort-header]="'short_description'">Short Description</div>
+                    <div class="inventory-grid__status" [mat-sort-header]="'status'">Status</div>
+                    <div class="inventory-grid__actions">Actions</div>
+                </div>
+
+                <!-- Rows -->
+                @if (products$ | async | SearchFilter:query:'title'| sort: _sort?.active:_sort?.direction; as products
+                ) {
+
+                <div *ngIf="products.length > 0; else noData">
+                    @for (
+                    product of products;
+                    track trackByFn($index, product)
+                    ) {
+                    <div class="inventory-grid grid items-center gap-4 border-b px-6 py-3 md:px-8"
+                        [ngClass]="product.disabled == 1 ? 'bg-red-50': ''">
+
+                        <!-- Name -->
+                        <div class="inventory-grid__title truncate" [title]="product.title">
+                            {{ product.title }}
+                        </div>
+
+                        <div class="inventory-grid__description truncate" [title]="product.short_description">
+                            {{ product.short_description }}
+                        </div>
+
+                        <div class="inventory-grid__status">
+                            <span
+                                class="inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide"
+                                [ngClass]="product.status === '1' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'"
+                            >
+                                {{ product.status === '1' ? 'Visible' : 'Hidden' }}
+                            </span>
+                        </div>
+
+                        <div class="inventory-grid__actions flex gap-2">
+
+                            <a class="h-7 min-h-7 min-w-10 px-2 leading-6 border-none" mat-stroked-button
+                                [matTooltip]="'Update Product'" [routerLink]="['details',product.id]">
+                                <mat-icon class="icon-size-6 text-teal-400"
+                                    [svgIcon]="'heroicons_solid:pencil-square'"></mat-icon>
+                            </a>
+
+                            <button class="h-7 min-h-7 min-w-10 px-2 leading-6 border-none" mat-stroked-button
+                                [matTooltip]="product.disabled === '0' ? 'Hide Product' : 'Show Product'"
+                                (click)="showHideEntity(product)">
+                                <mat-icon *ngIf="product.disabled === '1'" class="icon-size-6 text-blue-400"
+                                    [svgIcon]="'heroicons_outline:eye'"></mat-icon>
+                                <mat-icon *ngIf="product.disabled === '0'" class="icon-size-6 text-red-400"
+                                    [svgIcon]="'heroicons_outline:eye-slash'"></mat-icon>
+                            </button>
+                        </div>
+                    </div>
+
+                    }
+                </div>
+                <ng-template #noData>
+                    <div class="border-t p-8 text-center text-2xl tracking-tight">No records found for the term <span
+                            class="font-semibold ">"{{query }}"</span></div>
+                </ng-template>
+
+                }
+
+            </div>
+            }
+            @else {
+            <div class="border-t p-8 text-center text-4xl tracking-tight sm:p-16">
+                There are no Products!
+            </div>
+            }
+            }@else {
+            <div class=" p-8 text-center text-4xl tracking-tight sm:p-16">
+                There are no Products!
+            </div>
+            }
+        </div>
+    </div>
+</div>

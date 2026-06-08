@@ -137,6 +137,14 @@ export const defaultNavigation: FuseNavigationItem[] = [
                     },
                 ],
             },
+            
+            {
+                id: 'configurations.products',
+                title: 'Products',
+                type: 'basic',
+                icon: 'mat_outline:inventory_2',
+                link: '/configurations/products',
+            },
             {
                 id: 'configurations.careers',
                 title: 'Careers Page',
