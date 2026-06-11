@@ -8,8 +8,10 @@ import {
     ViewChild,
 } from '@angular/core';
 import {
+    AbstractControl,
     FormsModule,
     ReactiveFormsModule,
+    UntypedFormArray,
     UntypedFormBuilder,
     UntypedFormGroup,
     Validators,
@@ -82,9 +84,9 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
     public readonly maxFileSizeInKb = FILE_UPLOAD.MAX_FILE_SIZE_IN_KB;
     public readonly PHOTO_TYPE = {
         COVER: 'COVER',
-        GALLERY: 'gallery',
-        HOW_IT_WORKS: 'how-it-works',
-        KEY_FEATURES: 'key-features',
+        GALLERY: 'GALLERY',
+        HOW_IT_WORKS: 'HOW_IT_WORKS',
+        KEY_FEATURES: 'FEATURES',
     };
 
     private destroy$ = new Subject<void>(); // To clean up subscriptions
@@ -141,6 +143,11 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
                     title: ['', [Validators.required, Validators.maxLength(200)]],
                     subtitle: ['', [Validators.required, Validators.maxLength(300)]],
                 }),
+                gallery: this._formBuilder.array(
+                    this.createDefaultGalleryItems().map((item) =>
+                        this.createGalleryImageGroup(item)
+                    )
+                ),
             }),
         });
 
@@ -177,6 +184,9 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
     }
 
     patchFormValues(product: any) {
+        const details = this.normalizeDetails(product.details);
+        this.replaceGalleryForms(details.gallery);
+
         this.entityForm.patchValue({
             title: product.title,
             slug: product.slug,
@@ -185,11 +195,15 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
             image_alt: product.image_alt,
             order: product.order ?? 0,
             status: product.status ?? 1,
-            details: this.normalizeDetails(product.details),
+            details,
         });
 
         this.productTitle = product.title;
         this.coverImagePreview = this.resolveImageUrl(product.image);
+    }
+
+    get galleryForms(): UntypedFormArray {
+        return this.entityForm.get('details.gallery') as UntypedFormArray;
     }
 
     addEntity(): void {
@@ -309,10 +323,75 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         });
     }
 
+    addGalleryImage(): void {
+        if (this.galleryForms.length >= 10 || this.entityForm.disabled) {
+            return;
+        }
+
+        this.galleryForms.push(
+            this.createGalleryImageGroup({
+                image: '',
+                priority: this.galleryForms.length + 1,
+            })
+        );
+        this.syncGalleryPriorities();
+    }
+
+    removeGalleryImage(index: number): void {
+        if (this.galleryForms.length <= 3 || this.entityForm.disabled) {
+            return;
+        }
+
+        const imagePath = this.galleryForms.at(index).get('image')?.value;
+
+        if (imagePath) {
+            this.clearGalleryImage(index, true);
+            return;
+        }
+
+        this.galleryForms.removeAt(index);
+        this.syncGalleryPriorities();
+    }
+
+    onGalleryImageSelect(index: number, event: Event): void {
+        const input = event.target as HTMLInputElement;
+
+        if (!input.files?.length) {
+            return;
+        }
+
+        const imageControl = this.galleryForms.at(index).get('image');
+        this.uploadProductImage(
+            input.files[0],
+            this.PHOTO_TYPE.GALLERY,
+            'image',
+            imageControl
+        );
+        input.value = '';
+    }
+
+    clearGalleryImage(index: number, removeAfterDelete = false): void {
+        const imageControl = this.galleryForms.at(index).get('image');
+
+        this.clearProductImage(
+            this.PHOTO_TYPE.GALLERY,
+            'image',
+            'gallery image',
+            imageControl,
+            () => {
+                if (removeAfterDelete && this.galleryForms.length > 3) {
+                    this.galleryForms.removeAt(index);
+                    this.syncGalleryPriorities();
+                }
+            }
+        );
+    }
+
     uploadProductImage(
         file: File,
-        fieldType: string,
-        controlName: string
+        fileType: string,
+        controlName: string,
+        targetControl?: AbstractControl | null
     ): void {
         const maxFileSize = this.maxFileSizeInKb * 1024;
 
@@ -324,8 +403,8 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         }
 
         const formData = new FormData();
-        formData.append(`${fieldType}[0]`, file);
-        formData.append('fieldType', fieldType);
+        formData.append(`${fileType}[0]`, file);
+        formData.append('fileType', fileType);
 
         this.isUploadingImage = true;
         this.entityForm.disable();
@@ -336,10 +415,13 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
                     const imagePath = this.normalizeUploadedImagePath(
                         response.data[0]
                     );
-                    this.entityForm.get(controlName)?.setValue(imagePath);
-                    this.entityForm.get(controlName)?.markAsDirty();
+                    const imageControl =
+                        targetControl || this.entityForm.get(controlName);
 
-                    if (controlName === 'image') {
+                    imageControl?.setValue(imagePath);
+                    imageControl?.markAsDirty();
+
+                    if (!targetControl && controlName === 'image') {
                         this.coverImagePreview = this.resolveImageUrl(imagePath);
                     }
 
@@ -361,15 +443,19 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
     }
 
     clearProductImage(
-        fieldType: string,
+        fileType: string,
         controlName: string,
-        label = 'image'
+        label = 'image',
+        targetControl?: AbstractControl | null,
+        afterClear?: () => void
     ): void {
-        const imagePath = this.entityForm.get(controlName)?.value;
+        const imageControl = targetControl || this.entityForm.get(controlName);
+        const imagePath = imageControl?.value;
         const fileName = this.extractFileName(imagePath);
 
         if (!fileName) {
-            this.clearImageControl(controlName);
+            this.clearImageControl(controlName, imageControl);
+            afterClear?.();
             return;
         }
 
@@ -392,10 +478,11 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
             this.isDeletingImage = true;
             this.entityForm.disable();
 
-            this._productsService.deletePhoto(fileName, fieldType).subscribe(
+            this._productsService.deletePhoto(fileName, fileType).subscribe(
                 (response) => {
                     if (response) {
-                        this.clearImageControl(controlName);
+                        this.clearImageControl(controlName, imageControl);
+                        afterClear?.();
                         this._snackBar.showSuccess(
                             `${this.toTitleCase(label)} deleted successfully`
                         );
@@ -440,11 +527,16 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         return `${this.baseURL}/${imagePath.replace(/^\/+/, '')}`;
     }
 
-    private clearImageControl(controlName: string): void {
-        this.entityForm.get(controlName)?.setValue('');
-        this.entityForm.get(controlName)?.markAsDirty();
+    private clearImageControl(
+        controlName: string,
+        targetControl?: AbstractControl | null
+    ): void {
+        const imageControl = targetControl || this.entityForm.get(controlName);
 
-        if (controlName === 'image') {
+        imageControl?.setValue('');
+        imageControl?.markAsDirty();
+
+        if (!targetControl && controlName === 'image') {
             this.coverImagePreview = '';
         }
     }
@@ -481,6 +573,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
                 title: parsedDetails?.pageHeader?.title || '',
                 subtitle: parsedDetails?.pageHeader?.subtitle || '',
             },
+            gallery: this.normalizeGalleryItems(parsedDetails?.gallery),
         };
     }
 
@@ -498,6 +591,61 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         } catch {
             return {};
         }
+    }
+
+    private createGalleryImageGroup(item: any): UntypedFormGroup {
+        return this._formBuilder.group({
+            image: [item?.image || '', [Validators.required]],
+            priority: [Number(item?.priority) || 1, [Validators.required]],
+        });
+    }
+
+    private createDefaultGalleryItems(): any[] {
+        return [1, 2, 3].map((priority) => ({
+            image: '',
+            priority,
+        }));
+    }
+
+    private normalizeGalleryItems(items: any): any[] {
+        const galleryItems = Array.isArray(items) ? items : [];
+        const normalizedItems = galleryItems
+            .slice(0, 10)
+            .map((item, index) => ({
+                image: item?.image || item?.src || '',
+                priority: Number(item?.priority) || index + 1,
+            }))
+            .sort((leftItem, rightItem) => leftItem.priority - rightItem.priority);
+
+        while (normalizedItems.length < 3) {
+            normalizedItems.push({
+                image: '',
+                priority: normalizedItems.length + 1,
+            });
+        }
+
+        return normalizedItems.map((item, index) => ({
+            ...item,
+            priority: index + 1,
+        }));
+    }
+
+    private replaceGalleryForms(items: any[]): void {
+        while (this.galleryForms.length) {
+            this.galleryForms.removeAt(0);
+        }
+
+        this.normalizeGalleryItems(items).forEach((item) => {
+            this.galleryForms.push(this.createGalleryImageGroup(item));
+        });
+    }
+
+    private syncGalleryPriorities(): void {
+        this.galleryForms.controls.forEach((control, index) => {
+            control.get('priority')?.setValue(index + 1, {
+                emitEvent: false,
+            });
+        });
     }
 
     private normalizeUploadedImagePath(imageNameOrPath: string): string {

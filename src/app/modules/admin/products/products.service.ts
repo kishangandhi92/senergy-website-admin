@@ -46,7 +46,7 @@ export class ProductsService {
             );
     }
 
-    getProductDetailsById(productId: string): Observable<any> {
+    getProductDetailsById(productId: string | null): Observable<any> {
         return this._httpClient
             .get(this.apiUrl + '/'+ productId)
             .pipe(
