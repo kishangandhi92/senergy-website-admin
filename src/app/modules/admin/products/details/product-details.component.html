@@ -378,7 +378,135 @@
                             </div>
                         </div>
                     </mat-tab>
-                    <mat-tab label="How it Works"></mat-tab>
+                    <mat-tab label="How it Works">
+                        <div class="p-2" formGroupName="details">
+                            <div class="mb-4 flex items-center justify-between gap-4">
+                                <div>
+                                    <div class="text-base font-semibold text-slate-900">How it Works</div>
+                                    <div class="text-sm text-slate-500">
+                                        Minimum 3 items and maximum 10 items. Images can be up to {{ maxFileSizeInKb }} KB.
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center gap-4">
+                                    <mat-checkbox
+                                        formControlName="showHowItWorks"
+                                        color="primary"
+                                        (change)="onHowItWorksVisibilityChange()"
+                                    >
+                                        Show this on Details Page?
+                                    </mat-checkbox>
+
+                                    <button
+                                        mat-stroked-button
+                                        color="primary"
+                                        type="button"
+                                        [disabled]="!showHowItWorks || howItWorksForms.length >= 10 || entityForm.disabled"
+                                        (click)="addHowItWorksItem()"
+                                    >
+                                        <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                                        <span class="ml-2">Add Item</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="grid gap-3 xl:grid-cols-2" formArrayName="howItWorks">
+                                @for (item of howItWorksForms.controls; track item; let itemIndex = $index) {
+                                <div
+                                    class="grid gap-3 rounded-lg border border-slate-200 bg-white p-3 sm:grid-cols-[132px_minmax(0,1fr)_72px_44px] sm:items-start"
+                                    [formGroupName]="itemIndex"
+                                >
+                                    <div>
+                                        <div
+                                            class="flex h-24 w-32 items-center justify-center overflow-hidden rounded-lg border border-dashed border-slate-300 bg-slate-50"
+                                        >
+                                            @if (item.get('image')?.value) {
+                                            <img
+                                                class="h-full w-full object-cover"
+                                                [src]="resolveImageUrl(item.get('image')?.value)"
+                                                [alt]="'How it works image ' + (itemIndex + 1)"
+                                            />
+                                            } @else {
+                                            <mat-icon class="text-slate-400" [svgIcon]="'heroicons_outline:photo'"></mat-icon>
+                                            }
+                                        </div>
+
+                                        <input
+                                            hidden
+                                            #howItWorksImageInput
+                                            type="file"
+                                            accept=".jpg,.jpeg,.png,.webp,.svg"
+                                            (change)="onHowItWorksImageSelect(itemIndex, $event)"
+                                        />
+
+                                        <div class="mt-2 flex gap-1">
+                                            <button
+                                                mat-icon-button
+                                                color="primary"
+                                                type="button"
+                                                [disabled]="!showHowItWorks || isUploadingImage || isDeletingImage"
+                                                (click)="howItWorksImageInput.click()"
+                                                matTooltip="Upload image"
+                                            >
+                                                <mat-icon [svgIcon]="'mat_outline:file_upload'"></mat-icon>
+                                            </button>
+
+                                            <button
+                                                mat-icon-button
+                                                color="warn"
+                                                type="button"
+                                                [disabled]="!showHowItWorks || !item.get('image')?.value || isUploadingImage || isDeletingImage"
+                                                (click)="clearHowItWorksImage(itemIndex)"
+                                                matTooltip="Clear image"
+                                            >
+                                                <mat-icon [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="grid gap-3">
+                                        <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                                            <mat-label>Title</mat-label>
+                                            <input matInput formControlName="title" maxlength="100" />
+                                            <mat-hint align="end">{{ item.get('title')?.value?.length || 0 }}/100</mat-hint>
+                                            @if (item.get('title')?.hasError('required')) {
+                                            <mat-error>Title is required</mat-error>
+                                            }
+                                        </mat-form-field>
+
+                                        <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                                            <mat-label>Description</mat-label>
+                                            <input matInput formControlName="description" maxlength="150" />
+                                            <mat-hint align="end">{{ item.get('description')?.value?.length || 0 }}/150</mat-hint>
+                                            @if (item.get('description')?.hasError('required')) {
+                                            <mat-error>Description is required</mat-error>
+                                            }
+                                        </mat-form-field>
+                                    </div>
+
+                                    <div class="rounded-lg bg-slate-100 px-3 py-2 text-center">
+                                        <div class="font-medium text-slate-500">Step</div>
+                                        <div class="text-lg font-semibold text-slate-900">
+                                            {{ item.get('priority')?.value || itemIndex + 1 }}
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        mat-icon-button
+                                        color="warn"
+                                        type="button"
+                                        class="justify-self-end"
+                                        [disabled]="!showHowItWorks || howItWorksForms.length <= 3 || entityForm.disabled"
+                                        (click)="removeHowItWorksItem(itemIndex)"
+                                        matTooltip="Remove item"
+                                    >
+                                        <mat-icon [svgIcon]="'heroicons_outline:trash'"></mat-icon>
+                                    </button>
+                                </div>
+                                }
+                            </div>
+                        </div>
+                    </mat-tab>
                     <mat-tab label="Key Features"></mat-tab>
                     <mat-tab label="Advanced Capabilities"></mat-tab>
                     <mat-tab label="Tech Specs"></mat-tab>

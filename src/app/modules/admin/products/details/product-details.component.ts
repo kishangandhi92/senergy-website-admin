@@ -19,6 +19,7 @@ import {
 } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatOptionModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -58,6 +59,7 @@ import { ProductsService } from '../products.service';
         MatProgressSpinnerModule,
         MatDatepickerModule,
         MatDialogModule,
+        MatCheckboxModule,
         MatSelectModule,
         MatOptionModule,
         CommonModule,
@@ -164,6 +166,12 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
                         }),
                     ]),
                 }),
+                howItWorks: this._formBuilder.array(
+                    this.createDefaultHowItWorksItems().map((item) =>
+                        this.createHowItWorksItemGroup(item)
+                    )
+                ),
+                showHowItWorks: [true],
             }),
         });
 
@@ -203,6 +211,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         const details = this.normalizeDetails(product.details);
         this.replaceGalleryForms(details.gallery);
         this.replaceOverviewCtaForms(details.overview.ctas);
+        this.replaceHowItWorksForms(details.howItWorks);
 
         this.entityForm.patchValue({
             title: product.title,
@@ -215,6 +224,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
             details,
         });
 
+        this.updateHowItWorksSectionState();
         this.productTitle = product.title;
         this.coverImagePreview = this.resolveImageUrl(product.image);
     }
@@ -225,6 +235,14 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
 
     get overviewCtaForms(): UntypedFormArray {
         return this.entityForm.get('details.overview.ctas') as UntypedFormArray;
+    }
+
+    get howItWorksForms(): UntypedFormArray {
+        return this.entityForm.get('details.howItWorks') as UntypedFormArray;
+    }
+
+    get showHowItWorks(): boolean {
+        return !!this.entityForm.get('details.showHowItWorks')?.value;
     }
 
     addEntity(): void {
@@ -442,6 +460,85 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         );
     }
 
+    addHowItWorksItem(): void {
+        if (
+            !this.showHowItWorks ||
+            this.howItWorksForms.length >= 10 ||
+            this.entityForm.disabled
+        ) {
+            return;
+        }
+
+        this.howItWorksForms.push(
+            this.createHowItWorksItemGroup({
+                image: '',
+                title: '',
+                description: '',
+                priority: this.howItWorksForms.length + 1,
+            })
+        );
+    }
+
+    removeHowItWorksItem(index: number): void {
+        if (
+            !this.showHowItWorks ||
+            this.howItWorksForms.length <= 3 ||
+            this.entityForm.disabled
+        ) {
+            return;
+        }
+
+        const imagePath = this.howItWorksForms.at(index).get('image')?.value;
+
+        if (imagePath) {
+            this.clearHowItWorksImage(index, true);
+            return;
+        }
+
+        this.howItWorksForms.removeAt(index);
+    }
+
+    onHowItWorksImageSelect(index: number, event: Event): void {
+        const input = event.target as HTMLInputElement;
+
+        if (!this.showHowItWorks || !input.files?.length) {
+            return;
+        }
+
+        const imageControl = this.howItWorksForms.at(index).get('image');
+        this.uploadProductImage(
+            input.files[0],
+            this.PHOTO_TYPE.HOW_IT_WORKS,
+            'image',
+            imageControl
+        );
+        input.value = '';
+    }
+
+    clearHowItWorksImage(index: number, removeAfterDelete = false): void {
+        if (!this.showHowItWorks) {
+            return;
+        }
+
+        const imageControl = this.howItWorksForms.at(index).get('image');
+
+        this.clearProductImage(
+            this.PHOTO_TYPE.HOW_IT_WORKS,
+            'image',
+            'how it works image',
+            imageControl,
+            () => {
+                if (removeAfterDelete && this.howItWorksForms.length > 3) {
+                    this.howItWorksForms.removeAt(index);
+                }
+            }
+        );
+    }
+
+    onHowItWorksVisibilityChange(): void {
+        this.updateHowItWorksSectionState();
+    }
+
     uploadProductImage(
         file: File,
         fileType: string,
@@ -602,6 +699,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         }
 
         this.entityForm.enable({ emitEvent: false });
+        this.updateHowItWorksSectionState();
     }
 
     private buildProductPayload(): any {
@@ -630,6 +728,10 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
             },
             gallery: this.normalizeGalleryItems(parsedDetails?.gallery),
             overview: this.normalizeOverview(parsedDetails?.overview),
+            howItWorks: this.normalizeHowItWorksItems(
+                parsedDetails?.howItWorks
+            ),
+            showHowItWorks: parsedDetails?.showHowItWorks ?? true,
         };
     }
 
@@ -673,9 +775,36 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         return ctaGroup;
     }
 
+    private createHowItWorksItemGroup(item: any): UntypedFormGroup {
+        return this._formBuilder.group({
+            image: [item?.image || '', [Validators.required]],
+            title: [
+                item?.title || '',
+                [Validators.required, Validators.maxLength(100)],
+            ],
+            description: [
+                item?.description || '',
+                [Validators.required, Validators.maxLength(150)],
+            ],
+            priority: [
+                Number(item?.priority) || 1,
+                [Validators.required, Validators.min(1)],
+            ],
+        });
+    }
+
     private createDefaultGalleryItems(): any[] {
         return [1, 2, 3].map((priority) => ({
             image: '',
+            priority,
+        }));
+    }
+
+    private createDefaultHowItWorksItems(): any[] {
+        return [1, 2, 3].map((priority) => ({
+            image: '',
+            title: '',
+            description: '',
             priority,
         }));
     }
@@ -741,6 +870,30 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         return normalizedItems;
     }
 
+    private normalizeHowItWorksItems(items: any): any[] {
+        const howItWorksItems = Array.isArray(items) ? items : [];
+        const normalizedItems = howItWorksItems
+            .slice(0, 10)
+            .map((item, index) => ({
+                image: item?.image || item?.src || '',
+                title: item?.title || '',
+                description: item?.description || '',
+                priority: Number(item?.priority) || index + 1,
+            }))
+            .sort((leftItem, rightItem) => leftItem.priority - rightItem.priority);
+
+        while (normalizedItems.length < 3) {
+            normalizedItems.push({
+                image: '',
+                title: '',
+                description: '',
+                priority: normalizedItems.length + 1,
+            });
+        }
+
+        return normalizedItems;
+    }
+
     private replaceGalleryForms(items: any[]): void {
         while (this.galleryForms.length) {
             this.galleryForms.removeAt(0);
@@ -759,6 +912,27 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         this.normalizeOverviewCtas(items).forEach((item) => {
             this.overviewCtaForms.push(this.createOverviewCtaGroup(item));
         });
+    }
+
+    private replaceHowItWorksForms(items: any[]): void {
+        while (this.howItWorksForms.length) {
+            this.howItWorksForms.removeAt(0);
+        }
+
+        this.normalizeHowItWorksItems(items).forEach((item) => {
+            this.howItWorksForms.push(this.createHowItWorksItemGroup(item));
+        });
+    }
+
+    private updateHowItWorksSectionState(): void {
+        const showSection = this.entityForm.get('details.showHowItWorks')?.value;
+
+        if (showSection) {
+            this.howItWorksForms.enable({ emitEvent: false });
+            return;
+        }
+
+        this.howItWorksForms.disable({ emitEvent: false });
     }
 
     private syncGalleryPriorities(): void {
