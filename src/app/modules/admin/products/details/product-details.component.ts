@@ -1,5 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+    ChangeDetectorRef,
+    Component,
+    OnDestroy,
+    OnInit,
+    TemplateRef,
+    ViewChild,
+} from '@angular/core';
 import {
     FormsModule,
     ReactiveFormsModule,
@@ -11,6 +18,7 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 import { MatOptionModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -46,6 +54,7 @@ import { ProductsService } from '../products.service';
         MatRadioModule,
         MatProgressSpinnerModule,
         MatDatepickerModule,
+        MatDialogModule,
         MatSelectModule,
         MatOptionModule,
         CommonModule,
@@ -55,6 +64,10 @@ import { ProductsService } from '../products.service';
     styleUrl: './product-details.component.scss',
 })
 export class ProductDetailsComponent implements OnInit, OnDestroy {
+    @ViewChild('CoverImagePreviewDialog') coverImagePreviewDialog:
+        | TemplateRef<any>
+        | undefined;
+
     mode!: string; // Holds the mode ('CREATE' or 'EDIT')
     id!: string | null; // Holds the id (if present)
     entityForm: UntypedFormGroup;
@@ -82,6 +95,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         private _snackBar: SnackBarService,
         private _productsService: ProductsService,
         private _fuseConfirmationService: FuseConfirmationService,
+        private _matDialog: MatDialog,
         private router: Router,
         private cdr: ChangeDetectorRef
     ) {}
@@ -274,6 +288,18 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
 
     clearCoverImage(): void {
         this.clearProductImage(this.PHOTO_TYPE.COVER, 'image', 'cover image');
+    }
+
+    openCoverImagePreview(): void {
+        if (!this.coverImagePreviewDialog || !this.entityForm.get('image')?.value) {
+            return;
+        }
+
+        this._matDialog.open(this.coverImagePreviewDialog, {
+            width: '920px',
+            maxWidth: '96vw',
+            panelClass: 'product-image-preview-dialog',
+        });
     }
 
     uploadProductImage(

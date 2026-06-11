@@ -131,6 +131,16 @@
                                     <div class="mt-3 flex justify-center gap-3">
                                         <button
                                             mat-stroked-button
+                                            type="button"
+                                            [disabled]="!entityForm.get('image')?.value"
+                                            (click)="openCoverImagePreview()"
+                                        >
+                                            <mat-icon [svgIcon]="'heroicons_outline:magnifying-glass-plus'"></mat-icon>
+                                            <span class="ml-2">Preview</span>
+                                        </button>
+
+                                        <button
+                                            mat-stroked-button
                                             color="primary"
                                             type="button"
                                             [disabled]="isUploadingImage || isDeletingImage"
@@ -187,3 +197,26 @@
     </div>
 
 </div>
+
+<ng-template #CoverImagePreviewDialog>
+    <div class="flex items-center justify-between border-b px-5 py-3">
+        <div>
+            <div class="text-lg font-semibold text-slate-900">Cover Image Preview</div>
+            <div class="mt-0.5 text-xs text-slate-500">
+                {{ entityForm.get('image')?.value }}
+            </div>
+        </div>
+
+        <button mat-icon-button type="button" mat-dialog-close>
+            <mat-icon [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+        </button>
+    </div>
+
+    <div class="max-h-[78vh] overflow-auto bg-slate-950 p-4">
+        <img
+            class="mx-auto max-h-[72vh] max-w-full rounded object-contain"
+            [src]="coverImagePreview || resolveImageUrl(entityForm.get('image')?.value)"
+            [alt]="entityForm.get('image_alt')?.value || entityForm.get('title')?.value || 'Product cover image preview'"
+        />
+    </div>
+</ng-template>
