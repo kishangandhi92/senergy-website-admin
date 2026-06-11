@@ -14,6 +14,7 @@ import {
     UntypedFormArray,
     UntypedFormBuilder,
     UntypedFormGroup,
+    ValidationErrors,
     Validators,
 } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
@@ -88,6 +89,11 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         HOW_IT_WORKS: 'HOW_IT_WORKS',
         KEY_FEATURES: 'FEATURES',
     };
+    public readonly OVERVIEW_CTA_TYPES = [
+        { value: 'enquiry', label: 'Enquiry' },
+        { value: 'video', label: 'Video' },
+        { value: 'general-link', label: 'General Link' },
+    ];
 
     private destroy$ = new Subject<void>(); // To clean up subscriptions
 
@@ -148,6 +154,16 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
                         this.createGalleryImageGroup(item)
                     )
                 ),
+                overview: this._formBuilder.group({
+                    content: ['', [this.richTextRequiredValidator]],
+                    ctas: this._formBuilder.array([
+                        this.createOverviewCtaGroup({
+                            type: 'enquiry',
+                            label: '',
+                            url: '',
+                        }),
+                    ]),
+                }),
             }),
         });
 
@@ -186,6 +202,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
     patchFormValues(product: any) {
         const details = this.normalizeDetails(product.details);
         this.replaceGalleryForms(details.gallery);
+        this.replaceOverviewCtaForms(details.overview.ctas);
 
         this.entityForm.patchValue({
             title: product.title,
@@ -204,6 +221,10 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
 
     get galleryForms(): UntypedFormArray {
         return this.entityForm.get('details.gallery') as UntypedFormArray;
+    }
+
+    get overviewCtaForms(): UntypedFormArray {
+        return this.entityForm.get('details.overview.ctas') as UntypedFormArray;
     }
 
     addEntity(): void {
@@ -384,6 +405,40 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
                     this.syncGalleryPriorities();
                 }
             }
+        );
+    }
+
+    addOverviewCta(): void {
+        if (this.overviewCtaForms.length >= 3 || this.entityForm.disabled) {
+            return;
+        }
+
+        this.overviewCtaForms.push(
+            this.createOverviewCtaGroup({
+                type: this.getNextAvailableOverviewCtaType(),
+                label: '',
+                url: '',
+            })
+        );
+    }
+
+    removeOverviewCta(index: number): void {
+        if (this.overviewCtaForms.length <= 1 || this.entityForm.disabled) {
+            return;
+        }
+
+        this.overviewCtaForms.removeAt(index);
+    }
+
+    onOverviewCtaTypeChange(index: number): void {
+        const ctaGroup = this.overviewCtaForms.at(index) as UntypedFormGroup;
+        this.updateOverviewCtaUrlValidators(ctaGroup);
+    }
+
+    isOverviewCtaTypeDisabled(type: string, currentIndex: number): boolean {
+        return this.overviewCtaForms.controls.some(
+            (control, index) =>
+                index !== currentIndex && control.get('type')?.value === type
         );
     }
 
@@ -574,6 +629,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
                 subtitle: parsedDetails?.pageHeader?.subtitle || '',
             },
             gallery: this.normalizeGalleryItems(parsedDetails?.gallery),
+            overview: this.normalizeOverview(parsedDetails?.overview),
         };
     }
 
@@ -598,6 +654,23 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
             image: [item?.image || '', [Validators.required]],
             priority: [Number(item?.priority) || 1, [Validators.required]],
         });
+    }
+
+    private createOverviewCtaGroup(item: any): UntypedFormGroup {
+        const ctaGroup = this._formBuilder.group({
+            type: [
+                this.isValidOverviewCtaType(item?.type)
+                    ? item.type
+                    : this.getNextAvailableOverviewCtaType(),
+                [Validators.required],
+            ],
+            label: [item?.label || '', [Validators.required, Validators.maxLength(120)]],
+            url: [item?.url || ''],
+        });
+
+        this.updateOverviewCtaUrlValidators(ctaGroup);
+
+        return ctaGroup;
     }
 
     private createDefaultGalleryItems(): any[] {
@@ -630,6 +703,44 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         }));
     }
 
+    private normalizeOverview(overview: any): any {
+        return {
+            content: this.normalizeRichTextContent(overview?.content),
+            ctas: this.normalizeOverviewCtas(overview?.ctas),
+        };
+    }
+
+    private normalizeOverviewCtas(items: any): any[] {
+        const ctaItems = Array.isArray(items) ? items : [];
+        const usedTypes = new Set<string>();
+        const normalizedItems = ctaItems
+            .filter((item) => this.isValidOverviewCtaType(item?.type))
+            .filter((item) => {
+                if (usedTypes.has(item.type)) {
+                    return false;
+                }
+
+                usedTypes.add(item.type);
+                return true;
+            })
+            .slice(0, 3)
+            .map((item) => ({
+                type: item.type,
+                label: item?.label || '',
+                url: item.type === 'enquiry' ? '' : item?.url || '',
+            }));
+
+        if (!normalizedItems.length) {
+            normalizedItems.push({
+                type: 'enquiry',
+                label: '',
+                url: '',
+            });
+        }
+
+        return normalizedItems;
+    }
+
     private replaceGalleryForms(items: any[]): void {
         while (this.galleryForms.length) {
             this.galleryForms.removeAt(0);
@@ -637,6 +748,16 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
 
         this.normalizeGalleryItems(items).forEach((item) => {
             this.galleryForms.push(this.createGalleryImageGroup(item));
+        });
+    }
+
+    private replaceOverviewCtaForms(items: any[]): void {
+        while (this.overviewCtaForms.length) {
+            this.overviewCtaForms.removeAt(0);
+        }
+
+        this.normalizeOverviewCtas(items).forEach((item) => {
+            this.overviewCtaForms.push(this.createOverviewCtaGroup(item));
         });
     }
 
@@ -662,6 +783,57 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         }
 
         return `assets/images/products/${imageNameOrPath}`;
+    }
+
+    private updateOverviewCtaUrlValidators(ctaGroup: UntypedFormGroup): void {
+        const urlControl = ctaGroup.get('url');
+        const type = ctaGroup.get('type')?.value;
+
+        if (type === 'video' || type === 'general-link') {
+            urlControl?.setValidators([
+                Validators.required,
+                Validators.maxLength(500),
+            ]);
+        } else {
+            urlControl?.clearValidators();
+            urlControl?.setValue('', { emitEvent: false });
+        }
+
+        urlControl?.updateValueAndValidity({ emitEvent: false });
+    }
+
+    private getNextAvailableOverviewCtaType(): string {
+        const selectedTypes = this.overviewCtaForms?.controls?.map(
+            (control) => control.get('type')?.value
+        );
+
+        return (
+            this.OVERVIEW_CTA_TYPES.find(
+                (ctaType) => !selectedTypes?.includes(ctaType.value)
+            )?.value || 'enquiry'
+        );
+    }
+
+    private isValidOverviewCtaType(type: string): boolean {
+        return this.OVERVIEW_CTA_TYPES.some(
+            (ctaType) => ctaType.value === type
+        );
+    }
+
+    private richTextRequiredValidator = (
+        control: AbstractControl
+    ): ValidationErrors | null => {
+        const value = this.normalizeRichTextContent(control.value)
+            .replace(/<[^>]*>/g, '')
+            .trim();
+
+        return value ? null : { required: true };
+    };
+
+    private normalizeRichTextContent(value: string): string {
+        return String(value || '')
+            .replace(/&nbsp;/gi, ' ')
+            .replace(/\u00a0/g, ' ');
     }
 
     private extractFileName(imagePath: string): string {

@@ -55,7 +55,7 @@
                         <div class="p-2">
                             <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_400px]">
                                 <div class="grid gap-2">
-                                    <mat-form-field class="w-full" >
+                                    <mat-form-field class="w-full">
                                         <mat-label>Product Title</mat-label>
                                         <input matInput formControlName="title" maxlength="255" />
                                         <mat-hint align="end">{{ entityForm.get('title')?.value?.length || 0
@@ -65,13 +65,13 @@
                                         }
                                     </mat-form-field>
 
-                                    <mat-form-field class="w-full" >
+                                    <mat-form-field class="w-full">
                                         <mat-label>Slug</mat-label>
                                         <input matInput formControlName="slug" maxlength="255" readonly />
                                         <mat-hint>Auto generated from product title</mat-hint>
                                     </mat-form-field>
 
-                                    <mat-form-field class="w-full" >
+                                    <mat-form-field class="w-full">
                                         <mat-label>Short Description</mat-label>
                                         <textarea matInput formControlName="short_description" rows="2"
                                             maxlength="400"></textarea>
@@ -82,7 +82,7 @@
                                             }}/400</mat-hint>
                                     </mat-form-field>
 
-                                    <mat-form-field class="w-full" >
+                                    <mat-form-field class="w-full">
                                         <mat-label>Cover Image ALT Text</mat-label>
                                         <input matInput formControlName="image_alt" maxlength="200" />
                                         @if (entityForm.get('image_alt')?.hasError('required')) {
@@ -129,23 +129,16 @@
                                     </mat-form-field>
 
                                     <div class="mt-3 flex justify-center gap-3">
-                                        <button
-                                            mat-stroked-button
-                                            type="button"
+                                        <button mat-stroked-button type="button"
                                             [disabled]="!entityForm.get('image')?.value"
-                                            (click)="openCoverImagePreview()"
-                                        >
+                                            (click)="openCoverImagePreview()">
                                             <mat-icon [svgIcon]="'heroicons_outline:magnifying-glass-plus'"></mat-icon>
                                             <span class="ml-2">Preview</span>
                                         </button>
 
-                                        <button
-                                            mat-stroked-button
-                                            color="primary"
-                                            type="button"
+                                        <button mat-stroked-button color="primary" type="button"
                                             [disabled]="isUploadingImage || isDeletingImage"
-                                            (click)="coverImageInput.click()"
-                                        >
+                                            (click)="coverImageInput.click()">
                                             @if (!isUploadingImage) {
                                             <mat-icon [svgIcon]="'mat_outline:file_upload'"></mat-icon>
                                             }
@@ -153,17 +146,14 @@
                                             <span class="ml-2">Upload</span>
                                             }
                                             @if (isUploadingImage) {
-                                            <mat-progress-spinner [diameter]="20" [mode]="'indeterminate'"></mat-progress-spinner>
+                                            <mat-progress-spinner [diameter]="20"
+                                                [mode]="'indeterminate'"></mat-progress-spinner>
                                             }
                                         </button>
 
-                                        <button
-                                            mat-stroked-button
-                                            color="warn"
-                                            type="button"
+                                        <button mat-stroked-button color="warn" type="button"
                                             [disabled]="!entityForm.get('image')?.value || isUploadingImage || isDeletingImage"
-                                            (click)="clearCoverImage()"
-                                        >
+                                            (click)="clearCoverImage()">
                                             @if (!isDeletingImage) {
                                             <mat-icon [svgIcon]="'heroicons_outline:trash'"></mat-icon>
                                             }
@@ -171,7 +161,8 @@
                                             <span class="ml-2">Clear</span>
                                             }
                                             @if (isDeletingImage) {
-                                            <mat-progress-spinner [diameter]="20" [mode]="'indeterminate'"></mat-progress-spinner>
+                                            <mat-progress-spinner [diameter]="20"
+                                                [mode]="'indeterminate'"></mat-progress-spinner>
                                             }
                                         </button>
                                     </div>
@@ -185,8 +176,10 @@
                                 <mat-form-field class="w-full">
                                     <mat-label>Title</mat-label>
                                     <input matInput formControlName="title" maxlength="200" />
-                                    <mat-hint>To highlight text add <strong>asterisk (*)</strong> at the start and end of the text</mat-hint>
-                                    <mat-hint align="end">{{ entityForm.get('details.pageHeader.title')?.value?.length || 0 }}/200</mat-hint>
+                                    <mat-hint>To highlight text add <strong>asterisk (*)</strong> at the start and end
+                                        of the text</mat-hint>
+                                    <mat-hint align="end">{{ entityForm.get('details.pageHeader.title')?.value?.length
+                                        || 0 }}/200</mat-hint>
                                     @if (entityForm.get('details.pageHeader.title')?.hasError('required')) {
                                     <mat-error>Page header title is required</mat-error>
                                     }
@@ -195,7 +188,9 @@
                                 <mat-form-field class="w-full">
                                     <mat-label>Subtitle</mat-label>
                                     <textarea matInput formControlName="subtitle" rows="3" maxlength="300"></textarea>
-                                    <mat-hint align="end">{{ entityForm.get('details.pageHeader.subtitle')?.value?.length || 0 }}/300</mat-hint>
+                                    <mat-hint align="end">{{
+                                        entityForm.get('details.pageHeader.subtitle')?.value?.length || 0
+                                        }}/300</mat-hint>
                                     @if (entityForm.get('details.pageHeader.subtitle')?.hasError('required')) {
                                     <mat-error>Page header subtitle is required</mat-error>
                                     }
@@ -209,28 +204,24 @@
                                 <div>
                                     <div class="text-base font-semibold text-slate-900">Gallery Images</div>
                                     <div class="text-sm text-slate-500">
-                                        Minimum 3 images and maximum 10 images. JPG, JPEG, PNG or WebP up to {{ maxFileSizeInKb }} KB.
+                                        Minimum 3 images and maximum 10 images. JPG, JPEG, PNG or WebP up to {{
+                                        maxFileSizeInKb }} KB.
                                     </div>
                                 </div>
 
-                                <button
-                                    mat-stroked-button
-                                    color="primary"
-                                    type="button"
+                                <button mat-stroked-button color="primary" type="button"
                                     [disabled]="galleryForms.length >= 10 || entityForm.disabled"
-                                    (click)="addGalleryImage()"
-                                >
+                                    (click)="addGalleryImage()">
                                     <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
                                     <span class="ml-2">Add Image</span>
                                 </button>
                             </div>
 
                             <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3" formArrayName="gallery">
-                                @for (galleryImage of galleryForms.controls; track galleryImage; let galleryIndex = $index) {
-                                <div
-                                    class="rounded-lg border border-slate-200 bg-white p-4"
-                                    [formGroupName]="galleryIndex"
-                                >
+                                @for (galleryImage of galleryForms.controls; track galleryImage; let galleryIndex =
+                                $index) {
+                                <div class="rounded-lg border border-slate-200 bg-white p-4"
+                                    [formGroupName]="galleryIndex">
                                     <div class="mb-3 flex items-center justify-between gap-3">
                                         <div>
                                             <div class="text-sm font-semibold text-slate-900">
@@ -241,42 +232,30 @@
                                             </div>
                                         </div>
 
-                                        <button
-                                            mat-icon-button
-                                            color="warn"
-                                            type="button"
+                                        <button mat-icon-button color="warn" type="button"
                                             [disabled]="galleryForms.length <= 3 || entityForm.disabled"
-                                            (click)="removeGalleryImage(galleryIndex)"
-                                            matTooltip="Remove image"
-                                        >
+                                            (click)="removeGalleryImage(galleryIndex)" matTooltip="Remove image">
                                             <mat-icon [svgIcon]="'heroicons_outline:trash'"></mat-icon>
                                         </button>
                                     </div>
 
                                     <div
-                                        class="flex aspect-video items-center justify-center overflow-hidden rounded-lg border border-dashed border-slate-300 bg-slate-50"
-                                    >
+                                        class="flex aspect-video items-center justify-center overflow-hidden rounded-lg border border-dashed border-slate-300 bg-slate-50">
                                         @if (galleryImage.get('image')?.value) {
-                                        <img
-                                            class="h-full w-full object-cover"
+                                        <img class="h-full w-full object-cover"
                                             [src]="resolveImageUrl(galleryImage.get('image')?.value)"
-                                            [alt]="'Gallery image ' + (galleryIndex + 1)"
-                                        />
+                                            [alt]="'Gallery image ' + (galleryIndex + 1)" />
                                         } @else {
                                         <div class="flex flex-col items-center gap-2 text-slate-400">
-                                            <mat-icon class="icon-size-8" [svgIcon]="'heroicons_outline:photo'"></mat-icon>
+                                            <mat-icon class="icon-size-8"
+                                                [svgIcon]="'heroicons_outline:photo'"></mat-icon>
                                             <div class="text-sm font-medium">No image selected</div>
                                         </div>
                                         }
                                     </div>
 
-                                    <input
-                                        hidden
-                                        #galleryImageInput
-                                        type="file"
-                                        accept=".jpg,.jpeg,.png,.webp"
-                                        (change)="onGalleryImageSelect(galleryIndex, $event)"
-                                    />
+                                    <input hidden #galleryImageInput type="file" accept=".jpg,.jpeg,.png,.webp"
+                                        (change)="onGalleryImageSelect(galleryIndex, $event)" />
 
                                     <mat-form-field class="mt-4 w-full" [subscriptSizing]="'dynamic'">
                                         <mat-label>Image Path</mat-label>
@@ -289,24 +268,16 @@
                                     <input type="hidden" formControlName="priority" />
 
                                     <div class="mt-3 flex justify-center gap-3">
-                                        <button
-                                            mat-stroked-button
-                                            color="primary"
-                                            type="button"
+                                        <button mat-stroked-button color="primary" type="button"
                                             [disabled]="isUploadingImage || isDeletingImage"
-                                            (click)="galleryImageInput.click()"
-                                        >
+                                            (click)="galleryImageInput.click()">
                                             <mat-icon [svgIcon]="'mat_outline:file_upload'"></mat-icon>
                                             <span class="ml-2">Upload</span>
                                         </button>
 
-                                        <button
-                                            mat-stroked-button
-                                            color="warn"
-                                            type="button"
+                                        <button mat-stroked-button color="warn" type="button"
                                             [disabled]="!galleryImage.get('image')?.value || isUploadingImage || isDeletingImage"
-                                            (click)="clearGalleryImage(galleryIndex)"
-                                        >
+                                            (click)="clearGalleryImage(galleryIndex)">
                                             <mat-icon [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
                                             <span class="ml-2">Clear</span>
                                         </button>
@@ -316,7 +287,97 @@
                             </div>
                         </div>
                     </mat-tab>
-                    <mat-tab label="Overview"></mat-tab>
+                    <mat-tab label="Overview">
+                        <div class="p-2" formGroupName="details">
+                            <div class="grid gap-6" formGroupName="overview">
+
+                                <div class="">
+                                <div class="text-base font-semibold text-slate-900 mb-2">Overview Content <span
+                                        class="text-red-500">*</span> </div>
+                                <quill-editor class="block w-full" formControlName="content"
+                                    [styles]="{ height: '300px' }"></quill-editor>
+                                </div>
+
+                                @if (entityForm.get('details.overview.content')?.hasError('required') &&
+                                entityForm.get('details.overview.content')?.touched) {
+                                <div class="mt-2 text-sm text-warn">Overview content is required</div>
+                                }
+
+                                <div class="rounded-lg border border-slate-200 bg-white p-4">
+                                    <div class="mb-4 flex items-center justify-between gap-4">
+                                        <div>
+                                            <div class="text-base font-semibold text-slate-900">CTAs</div>
+                                            <div class="text-sm text-slate-500">
+                                                Add minimum 1 and maximum 3 CTAs. Each CTA type can be used only once.
+                                            </div>
+                                        </div>
+
+                                        <button mat-stroked-button color="primary" type="button"
+                                            [disabled]="overviewCtaForms.length >= 3 || entityForm.disabled"
+                                            (click)="addOverviewCta()">
+                                            <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                                            <span class="ml-2">Add CTA</span>
+                                        </button>
+                                    </div>
+
+                                    <div class="grid gap-4 lg:grid-cols-3" formArrayName="ctas">
+                                        @for (cta of overviewCtaForms.controls; track cta; let ctaIndex = $index) {
+                                        <div class="rounded-lg border border-slate-200 bg-slate-50 p-4"
+                                            [formGroupName]="ctaIndex">
+                                            <div class="mb-3 flex items-center justify-between gap-3">
+                                                <div class="text-sm font-semibold text-slate-900">
+                                                    CTA {{ ctaIndex + 1 }}
+                                                </div>
+
+                                                <button mat-icon-button color="warn" type="button"
+                                                    [disabled]="overviewCtaForms.length <= 1 || entityForm.disabled"
+                                                    (click)="removeOverviewCta(ctaIndex)" matTooltip="Remove CTA">
+                                                    <mat-icon [svgIcon]="'heroicons_outline:trash'"></mat-icon>
+                                                </button>
+                                            </div>
+
+                                            <div class="grid gap-2">
+                                                <mat-form-field class="w-full">
+                                                    <mat-label>CTA Type</mat-label>
+                                                    <mat-select formControlName="type"
+                                                        (selectionChange)="onOverviewCtaTypeChange(ctaIndex)">
+                                                        @for (ctaType of OVERVIEW_CTA_TYPES; track ctaType.value) {
+                                                        <mat-option [value]="ctaType.value"
+                                                            [disabled]="isOverviewCtaTypeDisabled(ctaType.value, ctaIndex)">
+                                                            {{ ctaType.label }}
+                                                        </mat-option>
+                                                        }
+                                                    </mat-select>
+                                                    @if (cta.get('type')?.hasError('required')) {
+                                                    <mat-error>CTA type is required</mat-error>
+                                                    }
+                                                </mat-form-field>
+
+                                                <mat-form-field class="w-full">
+                                                    <mat-label>Label</mat-label>
+                                                    <input matInput formControlName="label" maxlength="120" />
+                                                    @if (cta.get('label')?.hasError('required')) {
+                                                    <mat-error>CTA label is required</mat-error>
+                                                    }
+                                                </mat-form-field>
+
+                                                @if (cta.get('type')?.value !== 'enquiry') {
+                                                <mat-form-field class="w-full">
+                                                    <mat-label>URL</mat-label>
+                                                    <input matInput formControlName="url" maxlength="500" />
+                                                    @if (cta.get('url')?.hasError('required')) {
+                                                    <mat-error>CTA URL is required</mat-error>
+                                                    }
+                                                </mat-form-field>
+                                                }
+                                            </div>
+                                        </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </mat-tab>
                     <mat-tab label="How it Works"></mat-tab>
                     <mat-tab label="Key Features"></mat-tab>
                     <mat-tab label="Advanced Capabilities"></mat-tab>
@@ -346,10 +407,8 @@
     </div>
 
     <div class="max-h-[78vh] overflow-auto bg-slate-950 p-4">
-        <img
-            class="mx-auto max-h-[72vh] max-w-full rounded object-contain"
+        <img class="mx-auto max-h-[72vh] max-w-full rounded object-contain"
             [src]="coverImagePreview || resolveImageUrl(entityForm.get('image')?.value)"
-            [alt]="entityForm.get('image_alt')?.value || entityForm.get('title')?.value || 'Product cover image preview'"
-        />
+            [alt]="entityForm.get('image_alt')?.value || entityForm.get('title')?.value || 'Product cover image preview'" />
     </div>
 </ng-template>
