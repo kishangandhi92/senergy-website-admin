@@ -46,7 +46,7 @@ export class ProductsService {
             );
     }
 
-    getProductDetailsById(productId: number): Observable<any> {
+    getProductDetailsById(productId: string): Observable<any> {
         return this._httpClient
             .get(this.apiUrl + '/'+ productId)
             .pipe(
@@ -147,7 +147,7 @@ export class ProductsService {
             );
     }
 
-    uploadGalleryFiles(formData: FormData) {
+    uploadFiles(formData: FormData) {
         return this.products$.pipe(
             take(1),
             switchMap((products) =>
@@ -160,6 +160,10 @@ export class ProductsService {
                     )
             )
         );
+    }
+
+    uploadGalleryFiles(formData: FormData) {
+        return this.uploadFiles(formData);
     }
 
     updateProductOrders(orderUpdates: ProductOrderUpdate[]): Observable<any> {

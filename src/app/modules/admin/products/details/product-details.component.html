@@ -1,1 +1,189 @@
-<p>product-details works!</p>
+<div class="flex min-w-0 flex-auto flex-col">
+    <div class="bg-card">
+        <!-- Header -->
+        <div
+            class="relative flex flex-0 flex-col border-b px-6 py-4 sm:flex-row sm:items-center sm:justify-between md:px-8">
+            <!-- Loader -->
+            <!-- @if (isLoading) {
+            <div class="absolute inset-x-0 bottom-0">
+                <mat-progress-bar [mode]="'indeterminate'"></mat-progress-bar>
+            </div>
+            } -->
+            <!-- Title -->
+            <div class="truncate">
+                <div class="text-4xl truncate font-extrabold leading-none tracking-tight">
+                    {{ mode === 'CREATE' ? 'Add New Product' : productTitle }}
+                </div>
+                <div class="text-secondary mt-2 flex items-center font-medium">
+                    <div class="flex items-center space-x-2">
+
+                        <a class="cursor-pointer text-primary flex items-center"
+                            [routerLink]="['/configurations/products']">
+                            <mat-icon svgIcon="heroicons_outline:arrow-left"
+                                class="icon-size-4 text-primary mr-2"></mat-icon> Back to All Products
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+            <!-- Actions -->
+            <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
+
+                <!-- Add product button -->
+                <button [disabled]="entityForm.invalid || entityForm.disabled" class="ml-4" mat-flat-button
+                    (click)="mode === 'CREATE' ? addEntity(): updateSelectedEntity()" [color]="'primary'">
+                    @if (!entityForm.disabled) {
+                    <span class="ml-2 mr-1">{{ mode === 'CREATE' ? 'Create Product' : 'Update Product' }}</span>
+                    }
+                    @if (entityForm.disabled) {
+                    <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
+                    }
+                </button>
+            </div>
+        </div>
+
+
+    </div>
+
+    <!-- Main -->
+    <div class="-mt-px flex-auto border-t">
+        <div class="mx-auto w-full max-w-screen-xxl">
+            <!-- Tabs -->
+            <form [formGroup]="entityForm">
+                <mat-tab-group class="sm:px-2" mat-stretch-tabs="false" [animationDuration]="'0'" dynamicHeight>
+                    <mat-tab label="Product Details">
+                        <div class="p-2">
+                            <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+                                <div class="grid gap-2">
+                                    <mat-form-field class="w-full" >
+                                        <mat-label>Product Title</mat-label>
+                                        <input matInput formControlName="title" maxlength="255" />
+                                        <mat-hint align="end">{{ entityForm.get('title')?.value?.length || 0
+                                            }}/255</mat-hint>
+                                        @if (entityForm.get('title')?.hasError('required')) {
+                                        <mat-error>Product title is required</mat-error>
+                                        }
+                                    </mat-form-field>
+
+                                    <mat-form-field class="w-full" >
+                                        <mat-label>Slug</mat-label>
+                                        <input matInput formControlName="slug" maxlength="255" readonly />
+                                        <mat-hint>Auto generated from product title</mat-hint>
+                                    </mat-form-field>
+
+                                    <mat-form-field class="w-full" >
+                                        <mat-label>Short Description</mat-label>
+                                        <textarea matInput formControlName="short_description" rows="2"
+                                            maxlength="400"></textarea>
+                                        @if (entityForm.get('short_description')?.hasError('required')) {
+                                        <mat-error>Short description is required</mat-error>
+                                        }
+                                        <mat-hint align="end">{{ entityForm.get('short_description')?.value?.length || 0
+                                            }}/400</mat-hint>
+                                    </mat-form-field>
+
+                                    <mat-form-field class="w-full" >
+                                        <mat-label>Cover Image ALT Text</mat-label>
+                                        <input matInput formControlName="image_alt" maxlength="200" />
+                                        @if (entityForm.get('image_alt')?.hasError('required')) {
+                                        <mat-error>Cover image ALT Text is required</mat-error>
+                                        }
+                                        <mat-hint align="end">{{ entityForm.get('image_alt')?.value?.length || 0
+                                            }}/200</mat-hint>
+                                    </mat-form-field>
+                                </div>
+
+                                <div class="rounded-lg border border-slate-200 bg-white p-4">
+                                    <div class="mb-3">
+                                        <div>
+                                            <div class="text-base font-semibold text-slate-900">Cover Image</div>
+                                            <div class="text-sm text-slate-500">JPG, PNG or WebP up to {{
+                                                maxFileSizeInKb }} KB.</div>
+                                        </div>
+                                    </div>
+
+                                    <div
+                                        class="flex aspect-video items-center justify-center overflow-hidden rounded-lg border border-dashed border-slate-300 bg-slate-50">
+                                        @if (coverImagePreview || entityForm.get('image')?.value) {
+                                        <img class="h-full w-full object-cover"
+                                            [src]="coverImagePreview || resolveImageUrl(entityForm.get('image')?.value)"
+                                            [alt]="entityForm.get('image_alt')?.value || entityForm.get('title')?.value || 'Product cover image'" />
+                                        } @else {
+                                        <div class="flex flex-col items-center gap-2 text-slate-400">
+                                            <mat-icon class="icon-size-10"
+                                                [svgIcon]="'heroicons_outline:photo'"></mat-icon>
+                                            <div class="text-sm font-medium">No cover image selected</div>
+                                        </div>
+                                        }
+                                    </div>
+
+                                    <input hidden #coverImageInput type="file" accept=".jpg,.jpeg,.png,.webp"
+                                        (change)="onCoverImageSelect($event)" />
+
+                                    <mat-form-field class="mt-4 w-full" [subscriptSizing]="'dynamic'">
+                                        <mat-label>Cover Image</mat-label>
+                                        <input matInput formControlName="image" readonly />
+                                        @if (entityForm.get('image')?.hasError('required')) {
+                                        <mat-error>Cover image is required</mat-error>
+                                        }
+                                    </mat-form-field>
+
+                                    <div class="mt-3 flex justify-center gap-3">
+                                        <button
+                                            mat-stroked-button
+                                            color="primary"
+                                            type="button"
+                                            [disabled]="isUploadingImage || isDeletingImage"
+                                            (click)="coverImageInput.click()"
+                                        >
+                                            @if (!isUploadingImage) {
+                                            <mat-icon [svgIcon]="'mat_outline:file_upload'"></mat-icon>
+                                            }
+                                            @if (!isUploadingImage) {
+                                            <span class="ml-2">Upload</span>
+                                            }
+                                            @if (isUploadingImage) {
+                                            <mat-progress-spinner [diameter]="20" [mode]="'indeterminate'"></mat-progress-spinner>
+                                            }
+                                        </button>
+
+                                        <button
+                                            mat-stroked-button
+                                            color="warn"
+                                            type="button"
+                                            [disabled]="!entityForm.get('image')?.value || isUploadingImage || isDeletingImage"
+                                            (click)="clearCoverImage()"
+                                        >
+                                            @if (!isDeletingImage) {
+                                            <mat-icon [svgIcon]="'heroicons_outline:trash'"></mat-icon>
+                                            }
+                                            @if (!isDeletingImage) {
+                                            <span class="ml-2">Clear</span>
+                                            }
+                                            @if (isDeletingImage) {
+                                            <mat-progress-spinner [diameter]="20" [mode]="'indeterminate'"></mat-progress-spinner>
+                                            }
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </mat-tab>
+                    <mat-tab label="Page Header">
+
+                    </mat-tab>
+                    <mat-tab label="Gallery"></mat-tab>
+                    <mat-tab label="Overview"></mat-tab>
+                    <mat-tab label="How it Works"></mat-tab>
+                    <mat-tab label="Key Features"></mat-tab>
+                    <mat-tab label="Advanced Capabilities"></mat-tab>
+                    <mat-tab label="Tech Specs"></mat-tab>
+                    <mat-tab label="Customer Stories"></mat-tab>
+                    <mat-tab label="CTA"></mat-tab>
+
+                </mat-tab-group>
+            </form>
+        </div>
+    </div>
+
+</div>
