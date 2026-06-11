@@ -25,7 +25,7 @@ import { FILE_UPLOAD } from 'app/constants/upload';
 import { SnackBarService } from 'app/core/general/snackbar.service';
 import { environment } from 'environments/environment';
 import { QuillModule } from 'ngx-quill';
-import { Subject, Subscription } from 'rxjs';
+import { finalize, Subject, Subscription, take } from 'rxjs';
 import { ProductsService } from '../products.service';
 
 @Component({
@@ -120,6 +120,8 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
             ],
             image: ['', [Validators.required]],
             image_alt: ['', [Validators.required, Validators.maxLength(200)]],
+            order: [0],
+            status: [1],
         });
 
         this.subscription = this.entityForm
@@ -161,15 +163,103 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
             short_description: product.short_description,
             image: product.image,
             image_alt: product.image_alt,
+            order: product.order ?? 0,
+            status: product.status ?? 1,
         });
 
         this.productTitle = product.title;
         this.coverImagePreview = this.resolveImageUrl(product.image);
     }
 
-    addEntity() {}
+    addEntity(): void {
+        if (this.entityForm.invalid || this.entityForm.disabled) {
+            this.entityForm.markAllAsTouched();
+            return;
+        }
 
-    updateSelectedEntity() {}
+        this.entityForm.disable();
+
+        this._productsService
+            .createProduct(this.buildProductPayload())
+            .pipe(
+                take(1),
+                finalize(() => {
+                    this.enableEntityForm();
+                })
+            )
+            .subscribe({
+                next: (response: any) => {
+                    if (response?.status === false) {
+                        this._snackBar.showError('Failed to create product');
+                        return;
+                    }
+
+                    this._snackBar.showSuccess('Product created successfully');
+
+                    const productId = response?.data?.id;
+                    if (productId) {
+                        this.router.navigate([
+                            '/configurations/products/details',
+                            productId,
+                        ]);
+                        return;
+                    }
+
+                    this.router.navigate(['/configurations/products']);
+                },
+                error: () => {
+                    this._snackBar.showError(
+                        'Oh no! Server error occurred while creating the product'
+                    );
+                },
+            });
+    }
+
+    updateSelectedEntity(): void {
+        if (this.entityForm.invalid || this.entityForm.disabled) {
+            this.entityForm.markAllAsTouched();
+            return;
+        }
+
+        const productId = Number(this.id);
+        if (!Number.isFinite(productId) || productId <= 0) {
+            this._snackBar.showError(
+                'Product was not loaded correctly, so update cannot be completed.'
+            );
+            return;
+        }
+
+        this.entityForm.disable();
+
+        this._productsService
+            .updateProduct(productId, this.buildProductPayload())
+            .pipe(
+                take(1),
+                finalize(() => {
+                    this.enableEntityForm();
+                })
+            )
+            .subscribe({
+                next: (response: any) => {
+                    if (response?.status === false) {
+                        this._snackBar.showError('Failed to update product');
+                        return;
+                    }
+
+                    const product = response?.data;
+                    if (product) {
+                        this.patchFormValues(product);
+                    }
+
+                    this._snackBar.showSuccess('Product updated successfully');
+                },
+                error: () => {
+                    this._snackBar.showError(
+                        'Oh no! Server error occurred while updating the product'
+                    );
+                },
+            });
+    }
 
     onCoverImageSelect(event: Event): void {
         const input = event.target as HTMLInputElement;
@@ -332,6 +422,20 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         }
 
         this.entityForm.enable({ emitEvent: false });
+    }
+
+    private buildProductPayload(): any {
+        const formValue = this.entityForm.getRawValue();
+
+        return {
+            title: formValue?.title || '',
+            slug: formValue?.slug || '',
+            short_description: formValue?.short_description || '',
+            image: formValue?.image || '',
+            image_alt: formValue?.image_alt || '',
+            order: formValue?.order ?? 0,
+            status: formValue?.status ?? 1,
+        };
     }
 
     private normalizeUploadedImagePath(imageNameOrPath: string): string {
