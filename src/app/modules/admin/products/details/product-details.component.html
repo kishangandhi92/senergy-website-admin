@@ -11,7 +11,7 @@
             } -->
             <!-- Title -->
             <div class="truncate">
-                <div class="text-4xl truncate font-extrabold leading-none tracking-tight">
+                <div class="text-4xl truncate font-extrabold leading-[1.2] tracking-tight">
                     {{ mode === 'CREATE' ? 'Add New Product' : productTitle }}
                 </div>
                 <div class="text-secondary mt-2 flex items-center font-medium">
@@ -180,7 +180,28 @@
                         </div>
                     </mat-tab>
                     <mat-tab label="Page Header">
+                        <div class="p-2" formGroupName="details">
+                            <div class="grid gap-4" formGroupName="pageHeader">
+                                <mat-form-field class="w-full">
+                                    <mat-label>Title</mat-label>
+                                    <input matInput formControlName="title" maxlength="200" />
+                                    <mat-hint>To highlight text add <strong>asterisk (*)</strong> at the start and end of the text</mat-hint>
+                                    <mat-hint align="end">{{ entityForm.get('details.pageHeader.title')?.value?.length || 0 }}/200</mat-hint>
+                                    @if (entityForm.get('details.pageHeader.title')?.hasError('required')) {
+                                    <mat-error>Page header title is required</mat-error>
+                                    }
+                                </mat-form-field>
 
+                                <mat-form-field class="w-full">
+                                    <mat-label>Subtitle</mat-label>
+                                    <textarea matInput formControlName="subtitle" rows="3" maxlength="300"></textarea>
+                                    <mat-hint align="end">{{ entityForm.get('details.pageHeader.subtitle')?.value?.length || 0 }}/300</mat-hint>
+                                    @if (entityForm.get('details.pageHeader.subtitle')?.hasError('required')) {
+                                    <mat-error>Page header subtitle is required</mat-error>
+                                    }
+                                </mat-form-field>
+                            </div>
+                        </div>
                     </mat-tab>
                     <mat-tab label="Gallery"></mat-tab>
                     <mat-tab label="Overview"></mat-tab>

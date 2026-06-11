@@ -136,6 +136,12 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
             image_alt: ['', [Validators.required, Validators.maxLength(200)]],
             order: [0],
             status: [1],
+            details: this._formBuilder.group({
+                pageHeader: this._formBuilder.group({
+                    title: ['', [Validators.required, Validators.maxLength(200)]],
+                    subtitle: ['', [Validators.required, Validators.maxLength(300)]],
+                }),
+            }),
         });
 
         this.subscription = this.entityForm
@@ -179,6 +185,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
             image_alt: product.image_alt,
             order: product.order ?? 0,
             status: product.status ?? 1,
+            details: this.normalizeDetails(product.details),
         });
 
         this.productTitle = product.title;
@@ -461,7 +468,36 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
             image_alt: formValue?.image_alt || '',
             order: formValue?.order ?? 0,
             status: formValue?.status ?? 1,
+            details: this.normalizeDetails(formValue?.details),
         };
+    }
+
+    private normalizeDetails(details: any): any {
+        const parsedDetails = this.parseJsonField(details);
+
+        return {
+            ...parsedDetails,
+            pageHeader: {
+                title: parsedDetails?.pageHeader?.title || '',
+                subtitle: parsedDetails?.pageHeader?.subtitle || '',
+            },
+        };
+    }
+
+    private parseJsonField(value: any): any {
+        if (!value) {
+            return {};
+        }
+
+        if (typeof value === 'object') {
+            return value;
+        }
+
+        try {
+            return JSON.parse(value);
+        } catch {
+            return {};
+        }
     }
 
     private normalizeUploadedImagePath(imageNameOrPath: string): string {
