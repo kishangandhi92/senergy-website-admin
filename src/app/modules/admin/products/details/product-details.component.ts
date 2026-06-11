@@ -72,6 +72,9 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
     @ViewChild('CoverImagePreviewDialog') coverImagePreviewDialog:
         | TemplateRef<any>
         | undefined;
+    @ViewChild('GalleryImagePreviewDialog') galleryImagePreviewDialog:
+        | TemplateRef<any>
+        | undefined;
 
     mode!: string; // Holds the mode ('CREATE' or 'EDIT')
     id!: string | null; // Holds the id (if present)
@@ -79,6 +82,8 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
     subscription: Subscription = null;
     productTitle: string = '';
     coverImagePreview = '';
+    galleryImagePreview = '';
+    galleryImagePreviewTitle = '';
     isUploadingImage = false;
     isDeletingImage = false;
     backLink = '';
@@ -356,6 +361,23 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         }
 
         this._matDialog.open(this.coverImagePreviewDialog, {
+            width: '920px',
+            maxWidth: '96vw',
+            panelClass: 'product-image-preview-dialog',
+        });
+    }
+
+    openGalleryImagePreview(index: number): void {
+        const imagePath = this.galleryForms.at(index).get('image')?.value;
+
+        if (!this.galleryImagePreviewDialog || !imagePath) {
+            return;
+        }
+
+        this.galleryImagePreview = this.resolveImageUrl(imagePath);
+        this.galleryImagePreviewTitle = `Gallery Image ${index + 1}`;
+
+        this._matDialog.open(this.galleryImagePreviewDialog, {
             width: '920px',
             maxWidth: '96vw',
             panelClass: 'product-image-preview-dialog',
