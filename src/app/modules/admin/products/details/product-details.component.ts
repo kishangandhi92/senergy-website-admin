@@ -591,6 +591,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
             this.createKeyFeatureGroup({
                 icon: '',
                 title: '',
+                priority: this.keyFeatureForms.length + 1,
             })
         );
     }
@@ -923,6 +924,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
                 item?.title || '',
                 [Validators.required, Validators.maxLength(100)],
             ],
+            priority: [Number(item?.priority) || 1, [Validators.required]],
         });
     }
 
@@ -943,9 +945,10 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
     }
 
     private createDefaultKeyFeatureItems(): any[] {
-        return [1, 2, 3].map(() => ({
+        return [1, 2, 3].map((priority) => ({
             icon: '',
             title: '',
+            priority,
         }));
     }
 
@@ -1038,19 +1041,24 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         const keyFeatureItems = Array.isArray(items) ? items : [];
         const normalizedItems = keyFeatureItems
             .slice(0, 10)
-            .map((item) => ({
+            .map((item, index) => ({
                 icon: item?.icon || item?.image || item?.src || '',
                 title: item?.title || '',
+                priority: Number(item?.priority) || index + 1,
             }));
 
         while (normalizedItems.length < 3) {
             normalizedItems.push({
                 icon: '',
                 title: '',
+                priority: normalizedItems.length + 1,
             });
         }
 
-        return normalizedItems;
+        return normalizedItems.map((item, index) => ({
+            ...item,
+            priority: index + 1,
+        }));
     }
 
     private replaceGalleryForms(items: any[]): void {
