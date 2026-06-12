@@ -90,6 +90,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
     public readonly baseURL = environment.apiBaseUrl;
     public readonly maxFileSizeInMb = FILE_UPLOAD.MAX_FILE_SIZE_IN_MB;
     public readonly maxFileSizeInKb = FILE_UPLOAD.MAX_FILE_SIZE_IN_KB;
+    public readonly maxIconFileSizeInKb = FILE_UPLOAD.MAX_ICON_FILE_SIZE_IN_KB;
     public readonly PHOTO_TYPE = {
         COVER: 'COVER',
         GALLERY: 'GALLERY',
@@ -177,6 +178,12 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
                     )
                 ),
                 showHowItWorks: [true],
+                keyFeatures: this._formBuilder.array(
+                    this.createDefaultKeyFeatureItems().map((item) =>
+                        this.createKeyFeatureGroup(item)
+                    )
+                ),
+                showKeyFeatures: [true],
             }),
         });
 
@@ -217,6 +224,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         this.replaceGalleryForms(details.gallery);
         this.replaceOverviewCtaForms(details.overview.ctas);
         this.replaceHowItWorksForms(details.howItWorks);
+        this.replaceKeyFeatureForms(details.keyFeatures);
 
         this.entityForm.patchValue({
             title: product.title,
@@ -230,6 +238,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         });
 
         this.updateHowItWorksSectionState();
+        this.updateKeyFeaturesSectionState();
         this.productTitle = product.title;
         this.coverImagePreview = this.resolveImageUrl(product.image);
     }
@@ -248,6 +257,14 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
 
     get showHowItWorks(): boolean {
         return !!this.entityForm.get('details.showHowItWorks')?.value;
+    }
+
+    get keyFeatureForms(): UntypedFormArray {
+        return this.entityForm.get('details.keyFeatures') as UntypedFormArray;
+    }
+
+    get showKeyFeatures(): boolean {
+        return !!this.entityForm.get('details.showKeyFeatures')?.value;
     }
 
     addEntity(): void {
@@ -561,17 +578,96 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         this.updateHowItWorksSectionState();
     }
 
+    addKeyFeature(): void {
+        if (
+            !this.showKeyFeatures ||
+            this.keyFeatureForms.length >= 10 ||
+            this.entityForm.disabled
+        ) {
+            return;
+        }
+
+        this.keyFeatureForms.push(
+            this.createKeyFeatureGroup({
+                icon: '',
+                title: '',
+            })
+        );
+    }
+
+    removeKeyFeature(index: number): void {
+        if (
+            !this.showKeyFeatures ||
+            this.keyFeatureForms.length <= 3 ||
+            this.entityForm.disabled
+        ) {
+            return;
+        }
+
+        const iconPath = this.keyFeatureForms.at(index).get('icon')?.value;
+
+        if (iconPath) {
+            this.clearKeyFeatureIcon(index, true);
+            return;
+        }
+
+        this.keyFeatureForms.removeAt(index);
+    }
+
+    onKeyFeatureIconSelect(index: number, event: Event): void {
+        const input = event.target as HTMLInputElement;
+
+        if (!this.showKeyFeatures || !input.files?.length) {
+            return;
+        }
+
+        const iconControl = this.keyFeatureForms.at(index).get('icon');
+        this.uploadProductImage(
+            input.files[0],
+            this.PHOTO_TYPE.KEY_FEATURES,
+            'icon',
+            iconControl,
+            this.maxIconFileSizeInKb
+        );
+        input.value = '';
+    }
+
+    clearKeyFeatureIcon(index: number, removeAfterDelete = false): void {
+        if (!this.showKeyFeatures) {
+            return;
+        }
+
+        const iconControl = this.keyFeatureForms.at(index).get('icon');
+
+        this.clearProductImage(
+            this.PHOTO_TYPE.KEY_FEATURES,
+            'icon',
+            'key feature icon',
+            iconControl,
+            () => {
+                if (removeAfterDelete && this.keyFeatureForms.length > 3) {
+                    this.keyFeatureForms.removeAt(index);
+                }
+            }
+        );
+    }
+
+    onKeyFeaturesVisibilityChange(): void {
+        this.updateKeyFeaturesSectionState();
+    }
+
     uploadProductImage(
         file: File,
         fileType: string,
         controlName: string,
-        targetControl?: AbstractControl | null
+        targetControl?: AbstractControl | null,
+        maxFileSizeInKb = this.maxFileSizeInKb
     ): void {
-        const maxFileSize = this.maxFileSizeInKb * 1024;
+        const maxFileSize = maxFileSizeInKb * 1024;
 
         if (file.size > maxFileSize) {
             this._snackBar.showError(
-                `The selected image size exceeds the ${this.maxFileSizeInKb} KB limit.`
+                `The selected image size exceeds the ${maxFileSizeInKb} KB limit.`
             );
             return;
         }
@@ -722,6 +818,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
 
         this.entityForm.enable({ emitEvent: false });
         this.updateHowItWorksSectionState();
+        this.updateKeyFeaturesSectionState();
     }
 
     private buildProductPayload(): any {
@@ -754,6 +851,10 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
                 parsedDetails?.howItWorks
             ),
             showHowItWorks: parsedDetails?.showHowItWorks ?? true,
+            keyFeatures: this.normalizeKeyFeatureItems(
+                parsedDetails?.keyFeatures
+            ),
+            showKeyFeatures: parsedDetails?.showKeyFeatures ?? true,
         };
     }
 
@@ -815,6 +916,16 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         });
     }
 
+    private createKeyFeatureGroup(item: any): UntypedFormGroup {
+        return this._formBuilder.group({
+            icon: [item?.icon || item?.image || '', [Validators.required]],
+            title: [
+                item?.title || '',
+                [Validators.required, Validators.maxLength(100)],
+            ],
+        });
+    }
+
     private createDefaultGalleryItems(): any[] {
         return [1, 2, 3].map((priority) => ({
             image: '',
@@ -828,6 +939,13 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
             title: '',
             description: '',
             priority,
+        }));
+    }
+
+    private createDefaultKeyFeatureItems(): any[] {
+        return [1, 2, 3].map(() => ({
+            icon: '',
+            title: '',
         }));
     }
 
@@ -916,6 +1034,25 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         return normalizedItems;
     }
 
+    private normalizeKeyFeatureItems(items: any): any[] {
+        const keyFeatureItems = Array.isArray(items) ? items : [];
+        const normalizedItems = keyFeatureItems
+            .slice(0, 10)
+            .map((item) => ({
+                icon: item?.icon || item?.image || item?.src || '',
+                title: item?.title || '',
+            }));
+
+        while (normalizedItems.length < 3) {
+            normalizedItems.push({
+                icon: '',
+                title: '',
+            });
+        }
+
+        return normalizedItems;
+    }
+
     private replaceGalleryForms(items: any[]): void {
         while (this.galleryForms.length) {
             this.galleryForms.removeAt(0);
@@ -946,6 +1083,16 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         });
     }
 
+    private replaceKeyFeatureForms(items: any[]): void {
+        while (this.keyFeatureForms.length) {
+            this.keyFeatureForms.removeAt(0);
+        }
+
+        this.normalizeKeyFeatureItems(items).forEach((item) => {
+            this.keyFeatureForms.push(this.createKeyFeatureGroup(item));
+        });
+    }
+
     private updateHowItWorksSectionState(): void {
         const showSection = this.entityForm.get('details.showHowItWorks')?.value;
 
@@ -955,6 +1102,17 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         }
 
         this.howItWorksForms.disable({ emitEvent: false });
+    }
+
+    private updateKeyFeaturesSectionState(): void {
+        const showSection = this.entityForm.get('details.showKeyFeatures')?.value;
+
+        if (showSection) {
+            this.keyFeatureForms.enable({ emitEvent: false });
+            return;
+        }
+
+        this.keyFeatureForms.disable({ emitEvent: false });
     }
 
     private syncGalleryPriorities(): void {
