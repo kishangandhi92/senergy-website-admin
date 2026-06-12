@@ -190,6 +190,14 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
                     )
                 ),
                 showAdvancedCapabilities: [true],
+                techSpecs: this._formBuilder.group({
+                    rows: this._formBuilder.array(
+                        this.createDefaultTechSpecRows().map((row) =>
+                            this.createTechSpecRowGroup(row)
+                        )
+                    ),
+                }),
+                showTechSpecs: [true],
             }),
         });
 
@@ -232,6 +240,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         this.replaceHowItWorksForms(details.howItWorks);
         this.replaceKeyFeatureForms(details.keyFeatures);
         this.replaceAdvancedCapabilityForms(details.advancedCapabilities);
+        this.replaceTechSpecRows(details.techSpecs.rows);
 
         this.entityForm.patchValue({
             title: product.title,
@@ -247,6 +256,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         this.updateHowItWorksSectionState();
         this.updateKeyFeaturesSectionState();
         this.updateAdvancedCapabilitiesSectionState();
+        this.updateTechSpecsSectionState();
         this.productTitle = product.title;
         this.coverImagePreview = this.resolveImageUrl(product.image);
     }
@@ -283,6 +293,14 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
 
     get showAdvancedCapabilities(): boolean {
         return !!this.entityForm.get('details.showAdvancedCapabilities')?.value;
+    }
+
+    get showTechSpecs(): boolean {
+        return !!this.entityForm.get('details.showTechSpecs')?.value;
+    }
+
+    get techSpecRows(): UntypedFormArray {
+        return this.entityForm.get('details.techSpecs.rows') as UntypedFormArray;
     }
 
     addEntity(): void {
@@ -711,6 +729,35 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         this.updateAdvancedCapabilitiesSectionState();
     }
 
+    onTechSpecsVisibilityChange(): void {
+        this.updateTechSpecsSectionState();
+    }
+
+    addTechSpecRow(): void {
+        if (!this.showTechSpecs || this.entityForm.disabled) {
+            return;
+        }
+
+        this.techSpecRows.push(
+            this.createTechSpecRowGroup({
+                heading: '',
+                content: '',
+            })
+        );
+    }
+
+    removeTechSpecRow(index: number): void {
+        if (
+            !this.showTechSpecs ||
+            this.techSpecRows.length <= 1 ||
+            this.entityForm.disabled
+        ) {
+            return;
+        }
+
+        this.techSpecRows.removeAt(index);
+    }
+
     uploadProductImage(
         file: File,
         fileType: string,
@@ -875,6 +922,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         this.updateHowItWorksSectionState();
         this.updateKeyFeaturesSectionState();
         this.updateAdvancedCapabilitiesSectionState();
+        this.updateTechSpecsSectionState();
     }
 
     private buildProductPayload(): any {
@@ -916,6 +964,8 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
             ),
             showAdvancedCapabilities:
                 parsedDetails?.showAdvancedCapabilities ?? true,
+            techSpecs: this.normalizeTechSpecs(parsedDetails?.techSpecs),
+            showTechSpecs: parsedDetails?.showTechSpecs ?? true,
         };
     }
 
@@ -1002,6 +1052,16 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         });
     }
 
+    private createTechSpecRowGroup(row: any): UntypedFormGroup {
+        return this._formBuilder.group({
+            heading: [
+                row?.heading || row?.title || '',
+                [Validators.required, Validators.maxLength(100)],
+            ],
+            content: [row?.content || row?.description || '', [Validators.required]],
+        });
+    }
+
     private createDefaultGalleryItems(): any[] {
         return [1, 2, 3].map((priority) => ({
             image: '',
@@ -1034,6 +1094,15 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         }));
     }
 
+    private createDefaultTechSpecRows(): any[] {
+        return [
+            {
+                heading: '',
+                content: '',
+            },
+        ];
+    }
+
     private normalizeGalleryItems(items: any): any[] {
         const galleryItems = Array.isArray(items) ? items : [];
         const normalizedItems = galleryItems
@@ -1062,6 +1131,43 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
             content: this.normalizeRichTextContent(overview?.content),
             ctas: this.normalizeOverviewCtas(overview?.ctas),
         };
+    }
+
+    private normalizeTechSpecs(techSpecs: any): any {
+        return {
+            rows: this.normalizeTechSpecRows(techSpecs),
+        };
+    }
+
+    private normalizeTechSpecRows(techSpecs: any): any[] {
+        const rows = Array.isArray(techSpecs?.rows)
+            ? techSpecs.rows
+            : Array.isArray(techSpecs)
+              ? techSpecs
+              : [];
+
+        const normalizedRows = rows.map((row) => ({
+            heading: row?.heading || row?.title || '',
+            content: row?.content || row?.description || '',
+        }));
+
+        if (!normalizedRows.length && (techSpecs?.content || techSpecs?.description)) {
+            normalizedRows.push({
+                heading: '',
+                content: this.normalizeRichTextContent(
+                    techSpecs?.content || techSpecs?.description
+                ),
+            });
+        }
+
+        if (!normalizedRows.length) {
+            normalizedRows.push({
+                heading: '',
+                content: '',
+            });
+        }
+
+        return normalizedRows;
     }
 
     private normalizeOverviewCtas(items: any): any[] {
@@ -1222,6 +1328,16 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         });
     }
 
+    private replaceTechSpecRows(rows: any[]): void {
+        while (this.techSpecRows.length) {
+            this.techSpecRows.removeAt(0);
+        }
+
+        this.normalizeTechSpecRows({ rows }).forEach((row) => {
+            this.techSpecRows.push(this.createTechSpecRowGroup(row));
+        });
+    }
+
     private updateHowItWorksSectionState(): void {
         const showSection = this.entityForm.get('details.showHowItWorks')?.value;
 
@@ -1255,6 +1371,18 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         }
 
         this.advancedCapabilityForms.disable({ emitEvent: false });
+    }
+
+    private updateTechSpecsSectionState(): void {
+        const techSpecsGroup = this.entityForm.get('details.techSpecs');
+        const showSection = this.entityForm.get('details.showTechSpecs')?.value;
+
+        if (showSection) {
+            techSpecsGroup?.enable({ emitEvent: false });
+            return;
+        }
+
+        techSpecsGroup?.disable({ emitEvent: false });
     }
 
     private syncAdvancedCapabilityPriorities(): void {
