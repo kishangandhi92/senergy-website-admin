@@ -184,6 +184,12 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
                     )
                 ),
                 showKeyFeatures: [true],
+                advancedCapabilities: this._formBuilder.array(
+                    this.createDefaultAdvancedCapabilityItems().map((item) =>
+                        this.createAdvancedCapabilityGroup(item)
+                    )
+                ),
+                showAdvancedCapabilities: [true],
             }),
         });
 
@@ -225,6 +231,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         this.replaceOverviewCtaForms(details.overview.ctas);
         this.replaceHowItWorksForms(details.howItWorks);
         this.replaceKeyFeatureForms(details.keyFeatures);
+        this.replaceAdvancedCapabilityForms(details.advancedCapabilities);
 
         this.entityForm.patchValue({
             title: product.title,
@@ -239,6 +246,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
 
         this.updateHowItWorksSectionState();
         this.updateKeyFeaturesSectionState();
+        this.updateAdvancedCapabilitiesSectionState();
         this.productTitle = product.title;
         this.coverImagePreview = this.resolveImageUrl(product.image);
     }
@@ -265,6 +273,16 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
 
     get showKeyFeatures(): boolean {
         return !!this.entityForm.get('details.showKeyFeatures')?.value;
+    }
+
+    get advancedCapabilityForms(): UntypedFormArray {
+        return this.entityForm.get(
+            'details.advancedCapabilities'
+        ) as UntypedFormArray;
+    }
+
+    get showAdvancedCapabilities(): boolean {
+        return !!this.entityForm.get('details.showAdvancedCapabilities')?.value;
     }
 
     addEntity(): void {
@@ -657,6 +675,42 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         this.updateKeyFeaturesSectionState();
     }
 
+    addAdvancedCapability(): void {
+        if (
+            !this.showAdvancedCapabilities ||
+            this.advancedCapabilityForms.length >= 6 ||
+            this.entityForm.disabled
+        ) {
+            return;
+        }
+
+        this.advancedCapabilityForms.push(
+            this.createAdvancedCapabilityGroup({
+                heading: '',
+                description: '',
+                priority: this.advancedCapabilityForms.length + 1,
+            })
+        );
+        this.syncAdvancedCapabilityPriorities();
+    }
+
+    removeAdvancedCapability(index: number): void {
+        if (
+            !this.showAdvancedCapabilities ||
+            this.advancedCapabilityForms.length <= 2 ||
+            this.entityForm.disabled
+        ) {
+            return;
+        }
+
+        this.advancedCapabilityForms.removeAt(index);
+        this.syncAdvancedCapabilityPriorities();
+    }
+
+    onAdvancedCapabilitiesVisibilityChange(): void {
+        this.updateAdvancedCapabilitiesSectionState();
+    }
+
     uploadProductImage(
         file: File,
         fileType: string,
@@ -820,6 +874,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         this.entityForm.enable({ emitEvent: false });
         this.updateHowItWorksSectionState();
         this.updateKeyFeaturesSectionState();
+        this.updateAdvancedCapabilitiesSectionState();
     }
 
     private buildProductPayload(): any {
@@ -856,6 +911,11 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
                 parsedDetails?.keyFeatures
             ),
             showKeyFeatures: parsedDetails?.showKeyFeatures ?? true,
+            advancedCapabilities: this.normalizeAdvancedCapabilityItems(
+                parsedDetails?.advancedCapabilities
+            ),
+            showAdvancedCapabilities:
+                parsedDetails?.showAdvancedCapabilities ?? true,
         };
     }
 
@@ -928,6 +988,20 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         });
     }
 
+    private createAdvancedCapabilityGroup(item: any): UntypedFormGroup {
+        return this._formBuilder.group({
+            heading: [
+                item?.heading || '',
+                [Validators.required, Validators.maxLength(50)],
+            ],
+            description: [
+                this.normalizeRichTextContent(item?.description),
+                [this.richTextRequiredValidator],
+            ],
+            priority: [Number(item?.priority) || 1, [Validators.required]],
+        });
+    }
+
     private createDefaultGalleryItems(): any[] {
         return [1, 2, 3].map((priority) => ({
             image: '',
@@ -948,6 +1022,14 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         return [1, 2, 3].map((priority) => ({
             icon: '',
             title: '',
+            priority,
+        }));
+    }
+
+    private createDefaultAdvancedCapabilityItems(): any[] {
+        return [1, 2].map((priority) => ({
+            heading: '',
+            description: '',
             priority,
         }));
     }
@@ -1061,6 +1143,33 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         }));
     }
 
+    private normalizeAdvancedCapabilityItems(items: any): any[] {
+        const advancedCapabilityItems = Array.isArray(items) ? items : [];
+        const normalizedItems = advancedCapabilityItems
+            .slice(0, 6)
+            .map((item, index) => ({
+                heading: item?.heading || item?.title || '',
+                description: this.normalizeRichTextContent(
+                    item?.description || item?.content
+                ),
+                priority: Number(item?.priority) || index + 1,
+            }))
+            .sort((leftItem, rightItem) => leftItem.priority - rightItem.priority);
+
+        while (normalizedItems.length < 2) {
+            normalizedItems.push({
+                heading: '',
+                description: '',
+                priority: normalizedItems.length + 1,
+            });
+        }
+
+        return normalizedItems.map((item, index) => ({
+            ...item,
+            priority: index + 1,
+        }));
+    }
+
     private replaceGalleryForms(items: any[]): void {
         while (this.galleryForms.length) {
             this.galleryForms.removeAt(0);
@@ -1101,6 +1210,18 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         });
     }
 
+    private replaceAdvancedCapabilityForms(items: any[]): void {
+        while (this.advancedCapabilityForms.length) {
+            this.advancedCapabilityForms.removeAt(0);
+        }
+
+        this.normalizeAdvancedCapabilityItems(items).forEach((item) => {
+            this.advancedCapabilityForms.push(
+                this.createAdvancedCapabilityGroup(item)
+            );
+        });
+    }
+
     private updateHowItWorksSectionState(): void {
         const showSection = this.entityForm.get('details.showHowItWorks')?.value;
 
@@ -1121,6 +1242,27 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         }
 
         this.keyFeatureForms.disable({ emitEvent: false });
+    }
+
+    private updateAdvancedCapabilitiesSectionState(): void {
+        const showSection = this.entityForm.get(
+            'details.showAdvancedCapabilities'
+        )?.value;
+
+        if (showSection) {
+            this.advancedCapabilityForms.enable({ emitEvent: false });
+            return;
+        }
+
+        this.advancedCapabilityForms.disable({ emitEvent: false });
+    }
+
+    private syncAdvancedCapabilityPriorities(): void {
+        this.advancedCapabilityForms.controls.forEach((control, index) => {
+            control.get('priority')?.setValue(index + 1, {
+                emitEvent: false,
+            });
+        });
     }
 
     private syncGalleryPriorities(): void {

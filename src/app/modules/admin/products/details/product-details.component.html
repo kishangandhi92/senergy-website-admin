@@ -655,7 +655,103 @@
                             </div>
                         </div>
                     </mat-tab>
-                    <mat-tab label="Advanced Capabilities"></mat-tab>
+                    <mat-tab label="Advanced Capabilities">
+                        <div class="p-2" formGroupName="details">
+                            <div class="mb-4 flex items-center justify-between gap-4">
+                                <div>
+                                    <div class="text-base font-semibold text-slate-900">Advanced Capabilities</div>
+                                    <div class="text-sm text-slate-500">
+                                        Minimum 2 capabilities and maximum 6 capabilities. Each item needs a heading and detailed description.
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center gap-4">
+                                    <mat-checkbox
+                                        formControlName="showAdvancedCapabilities"
+                                        color="primary"
+                                        (change)="onAdvancedCapabilitiesVisibilityChange()"
+                                    >
+                                        Show this on Details Page?
+                                    </mat-checkbox>
+
+                                    <button
+                                        mat-stroked-button
+                                        color="primary"
+                                        type="button"
+                                        [disabled]="!showAdvancedCapabilities || advancedCapabilityForms.length >= 6 || entityForm.disabled"
+                                        (click)="addAdvancedCapability()"
+                                    >
+                                        <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
+                                        <span class="ml-2">Add Capability</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="grid gap-4 xl:grid-cols-2" formArrayName="advancedCapabilities">
+                                @for (capability of advancedCapabilityForms.controls; track capability; let capabilityIndex = $index) {
+                                <div
+                                    class="rounded-lg border border-slate-200 bg-white p-4"
+                                    [formGroupName]="capabilityIndex"
+                                >
+                                    <div class="mb-4 flex items-start justify-between gap-3">
+                                        <div>
+                                            <div class="text-sm font-semibold text-slate-900">
+                                                Capability {{ capabilityIndex + 1 }}
+                                            </div>
+                                            <div class="text-xs text-slate-500">
+                                                Heading and description are required
+                                            </div>
+                                        </div>
+
+                                        <div class="flex items-start gap-2">
+                                            <div class="rounded-lg bg-slate-100 px-3 py-2 text-center">
+                                                <div class="text-xs font-medium text-slate-500">Priority</div>
+                                                <div class="text-sm font-semibold text-slate-900">
+                                                    {{ capability.get('priority')?.value || capabilityIndex + 1 }}
+                                                </div>
+                                            </div>
+
+                                            <button
+                                                mat-icon-button
+                                                color="warn"
+                                                type="button"
+                                                [disabled]="!showAdvancedCapabilities || advancedCapabilityForms.length <= 2 || entityForm.disabled"
+                                                (click)="removeAdvancedCapability(capabilityIndex)"
+                                                matTooltip="Remove capability"
+                                            >
+                                                <mat-icon [svgIcon]="'heroicons_outline:trash'"></mat-icon>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                                        <mat-label>Heading</mat-label>
+                                        <input matInput formControlName="heading" maxlength="50" />
+                                        <mat-hint align="end">{{ capability.get('heading')?.value?.length || 0 }}/50</mat-hint>
+                                        @if (capability.get('heading')?.hasError('required')) {
+                                        <mat-error>Heading is required</mat-error>
+                                        }
+                                    </mat-form-field>
+
+                                    <div class="mt-3">
+                                        <div class="mb-2 text-sm font-medium text-slate-700">
+                                            Description <span class="text-red-500">*</span>
+                                        </div>
+                                        <quill-editor
+                                            class="block w-full"
+                                            formControlName="description"
+                                            [styles]="{ height: '180px' }"
+                                        ></quill-editor>
+
+                                        @if (capability.get('description')?.hasError('required') && capability.get('description')?.touched) {
+                                        <div class="mt-2 text-sm text-warn">Description is required</div>
+                                        }
+                                    </div>
+                                </div>
+                                }
+                            </div>
+                        </div>
+                    </mat-tab>
                     <mat-tab label="Tech Specs"></mat-tab>
                     <mat-tab label="Customer Stories"></mat-tab>
                     <mat-tab label="CTA"></mat-tab>
