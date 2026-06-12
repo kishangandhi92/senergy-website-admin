@@ -109,6 +109,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         HOW_IT_WORKS: 'HOW_IT_WORKS',
         KEY_FEATURES: 'FEATURES',
         TESTIMONIALS: 'TESTIMONIALS',
+        CTA: 'CTA',
     };
     public readonly OVERVIEW_CTA_TYPES = [
         { value: 'enquiry', label: 'Enquiry' },
@@ -166,6 +167,17 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
             image_alt: ['', [Validators.required, Validators.maxLength(200)]],
             order: [0],
             status: [1],
+            ctaData: this._formBuilder.group({
+                title: ['', [Validators.required, Validators.maxLength(100)]],
+                subtitle: ['', [Validators.required, Validators.maxLength(200)]],
+                imageSrc: ['', [Validators.required]],
+                imageAlt: ['', [Validators.required, Validators.maxLength(200)]],
+                cta: this._formBuilder.array(
+                    this.createDefaultProductCtaItems().map((cta) =>
+                        this.createProductCtaGroup(cta)
+                    )
+                ),
+            }),
             details: this._formBuilder.group({
                 pageHeader: this._formBuilder.group({
                     title: ['', [Validators.required, Validators.maxLength(200)]],
@@ -258,6 +270,8 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         this.replaceAdvancedCapabilityForms(details.advancedCapabilities);
         this.replaceTechSpecRows(details.techSpecs.rows);
         this.replaceCustomerStoryForms(details.customerStories);
+        const ctaData = this.normalizeProductCtaData(product.ctaData);
+        this.replaceProductCtaForms(ctaData.cta);
 
         this.entityForm.patchValue({
             title: product.title,
@@ -267,6 +281,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
             image_alt: product.image_alt,
             order: product.order ?? 0,
             status: product.status ?? 1,
+            ctaData,
             details,
         });
 
@@ -323,6 +338,10 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
 
     get customerStoryForms(): UntypedFormArray {
         return this.entityForm.get('details.customerStories') as UntypedFormArray;
+    }
+
+    get productCtaForms(): UntypedFormArray {
+        return this.entityForm.get('ctaData.cta') as UntypedFormArray;
     }
 
     get showCustomerStories(): boolean {
@@ -931,6 +950,31 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         this.updateCustomerStoriesSectionState();
     }
 
+    onProductCtaImageSelect(event: Event): void {
+        const input = event.target as HTMLInputElement;
+
+        if (!input.files?.length) {
+            return;
+        }
+
+        this.uploadProductImage(
+            input.files[0],
+            this.PHOTO_TYPE.CTA,
+            'imageSrc',
+            this.entityForm.get('ctaData.imageSrc')
+        );
+        input.value = '';
+    }
+
+    clearProductCtaImage(): void {
+        this.clearProductImage(
+            this.PHOTO_TYPE.CTA,
+            'imageSrc',
+            'CTA image',
+            this.entityForm.get('ctaData.imageSrc')
+        );
+    }
+
     uploadProductImage(
         file: File,
         fileType: string,
@@ -1114,6 +1158,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
             order: formValue?.order ?? 0,
             status: formValue?.status ?? 1,
             details: this.normalizeDetails(formValue?.details),
+            ctaData: this.mapProductCtaFormValueToPayload(formValue?.ctaData),
         };
     }
 
@@ -1243,6 +1288,18 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         });
     }
 
+    private createProductCtaGroup(cta: any): UntypedFormGroup {
+        return this._formBuilder.group({
+            label: [cta?.label || '', [Validators.required, Validators.maxLength(120)]],
+            link: [cta?.link || '', [Validators.required, Validators.maxLength(255)]],
+            style: [cta?.style || 'primary', [Validators.required]],
+            target: [
+                cta?.target === '_blank' ? '_blank' : '_self',
+                [Validators.required],
+            ],
+        });
+    }
+
     private createCustomerStoryGroup(customerStory: any): UntypedFormGroup {
         return this._formBuilder.group({
             priority: [
@@ -1297,6 +1354,22 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
                 content: '',
             },
         ];
+    }
+
+    private createDefaultProductCtaItems(): any[] {
+        return [
+            this.createDefaultProductCtaItem('primary'),
+            this.createDefaultProductCtaItem('secondary'),
+        ];
+    }
+
+    private createDefaultProductCtaItem(style: 'primary' | 'secondary'): any {
+        return {
+            label: '',
+            link: '',
+            style,
+            target: style === 'primary' ? '_self' : '_blank',
+        };
     }
 
     private generateCustomerStoryDialogForm(): void {
@@ -1382,6 +1455,74 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
     private normalizeTechSpecs(techSpecs: any): any {
         return {
             rows: this.normalizeTechSpecRows(techSpecs),
+        };
+    }
+
+    private normalizeProductCtaData(payload: any): any {
+        const parsedPayload = this.parseJsonField(payload);
+        const ctaSection =
+            parsedPayload?.content?.title || parsedPayload?.image || parsedPayload?.cta
+                ? parsedPayload
+                : parsedPayload?.content || {};
+        const ctas = Array.isArray(ctaSection?.cta)
+            ? ctaSection.cta.slice(0, 2)
+            : [];
+
+        while (ctas.length < 2) {
+            ctas.push(
+                this.createDefaultProductCtaItem(
+                    ctas.length === 0 ? 'primary' : 'secondary'
+                )
+            );
+        }
+
+        return {
+            title: ctaSection?.content?.title || ctaSection?.title || '',
+            subtitle: ctaSection?.content?.subtitle || ctaSection?.subtitle || '',
+            imageSrc: ctaSection?.image?.src || ctaSection?.imageSrc || '',
+            imageAlt: ctaSection?.image?.alt || ctaSection?.imageAlt || '',
+            cta: [
+                this.normalizeProductCtaItem(ctas[0], 0),
+                this.normalizeProductCtaItem(ctas[1], 1),
+            ],
+        };
+    }
+
+    private normalizeProductCtaItem(cta: any, index: number): any {
+        return {
+            label: cta?.label || '',
+            link: cta?.link || '',
+            style: index === 0 ? 'primary' : 'secondary',
+            target: cta?.target === '_blank' ? '_blank' : '_self',
+        };
+    }
+
+    private mapProductCtaFormValueToPayload(formValue: any): any {
+        const ctas = Array.isArray(formValue?.cta)
+            ? formValue.cta.slice(0, 2)
+            : [];
+
+        while (ctas.length < 2) {
+            ctas.push(
+                this.createDefaultProductCtaItem(
+                    ctas.length === 0 ? 'primary' : 'secondary'
+                )
+            );
+        }
+
+        return {
+            content: {
+                title: formValue?.title || '',
+                subtitle: formValue?.subtitle || '',
+            },
+            image: {
+                src: formValue?.imageSrc || '',
+                alt: formValue?.imageAlt || '',
+            },
+            cta: [
+                this.normalizeProductCtaItem(ctas[0], 0),
+                this.normalizeProductCtaItem(ctas[1], 1),
+            ],
         };
     }
 
@@ -1617,6 +1758,17 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         });
     }
 
+    private replaceProductCtaForms(ctas: any[]): void {
+        while (this.productCtaForms.length) {
+            this.productCtaForms.removeAt(0);
+        }
+
+        const normalizedCtaData = this.normalizeProductCtaData({ cta: ctas });
+        normalizedCtaData.cta.forEach((cta) => {
+            this.productCtaForms.push(this.createProductCtaGroup(cta));
+        });
+    }
+
     private getCurrentCustomerStories(): any[] {
         return this.customerStoryForms.controls.map((control) =>
             this.mapFormValueToCustomerStory(control.getRawValue())
@@ -1809,6 +1961,10 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
 
         if (fileType === this.PHOTO_TYPE.TESTIMONIALS) {
             return `assets/images/testimonial/${imageNameOrPath}`;
+        }
+
+        if (fileType === this.PHOTO_TYPE.CTA) {
+            return `assets/images/bg/${imageNameOrPath}`;
         }
 
         return `assets/images/products/${imageNameOrPath}`;
