@@ -31,6 +31,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTabsModule } from '@angular/material/tabs';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FuseConfirmationService } from '@fuse/services/confirmation/public-api';
 import { FILE_UPLOAD } from 'app/constants/upload';
@@ -64,6 +65,7 @@ import { ProductsService } from '../products.service';
         MatOptionModule,
         CommonModule,
         MatAutocompleteModule,
+        MatTooltipModule,
     ],
     templateUrl: './product-details.component.html',
     styleUrl: './product-details.component.scss',
@@ -75,6 +77,9 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
     @ViewChild('GalleryImagePreviewDialog') galleryImagePreviewDialog:
         | TemplateRef<any>
         | undefined;
+    @ViewChild('CustomerStoryDialog') customerStoryDialog:
+        | TemplateRef<any>
+        | undefined;
 
     mode!: string; // Holds the mode ('CREATE' or 'EDIT')
     id!: string | null; // Holds the id (if present)
@@ -84,6 +89,11 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
     coverImagePreview = '';
     galleryImagePreview = '';
     galleryImagePreviewTitle = '';
+    customerStoryDialogForm: UntypedFormGroup | undefined;
+    customerStoryDialogRef = null;
+    selectedCustomerStoryIndex: number | null = null;
+    customerStoryDialogMode: 'add' | 'edit' = 'add';
+    customerStoryImagePreview = '';
     isUploadingImage = false;
     isDeletingImage = false;
     backLink = '';
@@ -91,11 +101,14 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
     public readonly maxFileSizeInMb = FILE_UPLOAD.MAX_FILE_SIZE_IN_MB;
     public readonly maxFileSizeInKb = FILE_UPLOAD.MAX_FILE_SIZE_IN_KB;
     public readonly maxIconFileSizeInKb = FILE_UPLOAD.MAX_ICON_FILE_SIZE_IN_KB;
+    public readonly placeholderCustomerStoryImagePath =
+        'assets/images/home/testimonials/avatar.png';
     public readonly PHOTO_TYPE = {
         COVER: 'COVER',
         GALLERY: 'GALLERY',
         HOW_IT_WORKS: 'HOW_IT_WORKS',
         KEY_FEATURES: 'FEATURES',
+        TESTIMONIALS: 'TESTIMONIALS',
     };
     public readonly OVERVIEW_CTA_TYPES = [
         { value: 'enquiry', label: 'Enquiry' },
@@ -124,6 +137,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         this.id = this.route.snapshot.paramMap.get('id'); // Get 'id' as a string
 
         this.generateFormGroup();
+        this.generateCustomerStoryDialogForm();
 
         if (this.id && this.mode === 'EDIT') {
             this.getProductDetails();
@@ -198,6 +212,8 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
                     ),
                 }),
                 showTechSpecs: [true],
+                customerStories: this._formBuilder.array([]),
+                showCustomerStories: [true],
             }),
         });
 
@@ -241,6 +257,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         this.replaceKeyFeatureForms(details.keyFeatures);
         this.replaceAdvancedCapabilityForms(details.advancedCapabilities);
         this.replaceTechSpecRows(details.techSpecs.rows);
+        this.replaceCustomerStoryForms(details.customerStories);
 
         this.entityForm.patchValue({
             title: product.title,
@@ -257,6 +274,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         this.updateKeyFeaturesSectionState();
         this.updateAdvancedCapabilitiesSectionState();
         this.updateTechSpecsSectionState();
+        this.updateCustomerStoriesSectionState();
         this.productTitle = product.title;
         this.coverImagePreview = this.resolveImageUrl(product.image);
     }
@@ -301,6 +319,14 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
 
     get techSpecRows(): UntypedFormArray {
         return this.entityForm.get('details.techSpecs.rows') as UntypedFormArray;
+    }
+
+    get customerStoryForms(): UntypedFormArray {
+        return this.entityForm.get('details.customerStories') as UntypedFormArray;
+    }
+
+    get showCustomerStories(): boolean {
+        return !!this.entityForm.get('details.showCustomerStories')?.value;
     }
 
     addEntity(): void {
@@ -758,12 +784,160 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         this.techSpecRows.removeAt(index);
     }
 
+    openCustomerStoryDialog(mode: 'add' | 'edit', index?: number): void {
+        if (!this.showCustomerStories || this.entityForm.disabled) {
+            return;
+        }
+
+        this.customerStoryDialogMode = mode;
+        this.selectedCustomerStoryIndex = typeof index === 'number' ? index : null;
+        this.resetCustomerStoryDialogForm();
+
+        if (mode === 'edit' && this.selectedCustomerStoryIndex !== null) {
+            const customerStory = this.mapFormValueToCustomerStory(
+                this.customerStoryForms
+                    .at(this.selectedCustomerStoryIndex)
+                    .getRawValue()
+            );
+            this.patchCustomerStoryDialogForm(customerStory);
+        } else {
+            this.customerStoryDialogForm
+                ?.get('priority')
+                ?.setValue(this.getNextCustomerStoryPriority());
+        }
+
+        this.customerStoryDialogRef = this._matDialog.open(
+            this.customerStoryDialog,
+            {
+                width: '860px',
+                maxWidth: '96vw',
+                disableClose: true,
+            }
+        );
+    }
+
+    closeCustomerStoryDialog(): void {
+        if (this.customerStoryDialogForm?.disabled && !this.isUploadingImage) {
+            this.customerStoryDialogForm.enable();
+        }
+
+        this.customerStoryDialogRef?.close();
+        this.customerStoryDialogRef = null;
+        this.selectedCustomerStoryIndex = null;
+        this.customerStoryImagePreview = '';
+    }
+
+    saveCustomerStory(): void {
+        if (this.customerStoryDialogForm?.invalid || this.isUploadingImage) {
+            this.customerStoryDialogForm?.markAllAsTouched();
+            return;
+        }
+
+        const customerStoryData = this.mapFormValueToCustomerStory(
+            this.customerStoryDialogForm?.getRawValue()
+        );
+        const nextCustomerStories =
+            this.buildNextCustomerStoriesState(customerStoryData);
+
+        this.replaceCustomerStoryForms(nextCustomerStories);
+        this.entityForm.get('details.customerStories')?.markAsDirty();
+        this.closeCustomerStoryDialog();
+    }
+
+    deleteCustomerStory(index: number): void {
+        if (!this.showCustomerStories || this.entityForm.disabled) {
+            return;
+        }
+
+        const confirmation = this._fuseConfirmationService.open({
+            title: 'Delete Testimonial',
+            message:
+                'Are you sure you want to delete this testimonial item? This will update the product details when you save.',
+            actions: {
+                confirm: {
+                    label: 'Delete',
+                },
+            },
+        });
+
+        confirmation.afterClosed().subscribe((result) => {
+            if (result !== 'confirmed') {
+                return;
+            }
+
+            const deletedCustomerStory = this.getCurrentCustomerStories()[index];
+            const nextCustomerStories = this.getCurrentCustomerStories()
+                .filter((_, storyIndex) => storyIndex !== index)
+                .map((item, storyIndex) => ({
+                    ...item,
+                    priority: storyIndex + 1,
+                }));
+
+            this.replaceCustomerStoryForms(nextCustomerStories);
+            this.entityForm.get('details.customerStories')?.markAsDirty();
+            this.deleteCustomerStoryImageFromServer(deletedCustomerStory?.image);
+        });
+    }
+
+    onCustomerStoryImageSelect(event: Event): void {
+        const input = event.target as HTMLInputElement;
+
+        if (!input.files?.length) {
+            return;
+        }
+
+        this.uploadProductImage(
+            input.files[0],
+            this.PHOTO_TYPE.TESTIMONIALS,
+            'image',
+            this.customerStoryDialogForm?.get('image'),
+            this.maxIconFileSizeInKb,
+            (imagePath) => {
+                this.customerStoryImagePreview = this.resolveImageUrl(imagePath);
+            }
+        );
+        input.value = '';
+    }
+
+    clearCustomerStoryImage(): void {
+        const imagePath = this.customerStoryDialogForm?.get('image')?.value;
+
+        if (this.isPlaceholderCustomerStoryImage(imagePath)) {
+            this.usePlaceholderCustomerStoryImage();
+            return;
+        }
+
+        this.clearProductImage(
+            this.PHOTO_TYPE.TESTIMONIALS,
+            'image',
+            'testimonial image',
+            this.customerStoryDialogForm?.get('image'),
+            () => {
+                this.usePlaceholderCustomerStoryImage();
+            }
+        );
+    }
+
+    usePlaceholderCustomerStoryImage(): void {
+        this.customerStoryDialogForm
+            ?.get('image')
+            ?.setValue(this.placeholderCustomerStoryImagePath);
+        this.customerStoryImagePreview = this.resolveImageUrl(
+            this.placeholderCustomerStoryImagePath
+        );
+    }
+
+    onCustomerStoriesVisibilityChange(): void {
+        this.updateCustomerStoriesSectionState();
+    }
+
     uploadProductImage(
         file: File,
         fileType: string,
         controlName: string,
         targetControl?: AbstractControl | null,
-        maxFileSizeInKb = this.maxFileSizeInKb
+        maxFileSizeInKb = this.maxFileSizeInKb,
+        afterUpload?: (imagePath: string) => void
     ): void {
         const maxFileSize = maxFileSizeInKb * 1024;
 
@@ -785,7 +959,8 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
             (response: any) => {
                 if (response?.status && response?.data?.[0]) {
                     const imagePath = this.normalizeUploadedImagePath(
-                        response.data[0]
+                        response.data[0],
+                        fileType
                     );
                     const imageControl =
                         targetControl || this.entityForm.get(controlName);
@@ -797,6 +972,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
                         this.coverImagePreview = this.resolveImageUrl(imagePath);
                     }
 
+                    afterUpload?.(imagePath);
                     this._snackBar.showSuccess('Image uploaded successfully');
                 } else {
                     this._snackBar.showError('Failed to upload image');
@@ -923,6 +1099,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         this.updateKeyFeaturesSectionState();
         this.updateAdvancedCapabilitiesSectionState();
         this.updateTechSpecsSectionState();
+        this.updateCustomerStoriesSectionState();
     }
 
     private buildProductPayload(): any {
@@ -966,6 +1143,10 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
                 parsedDetails?.showAdvancedCapabilities ?? true,
             techSpecs: this.normalizeTechSpecs(parsedDetails?.techSpecs),
             showTechSpecs: parsedDetails?.showTechSpecs ?? true,
+            customerStories: this.normalizeCustomerStories(
+                parsedDetails?.customerStories
+            ),
+            showCustomerStories: parsedDetails?.showCustomerStories ?? true,
         };
     }
 
@@ -1062,6 +1243,21 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         });
     }
 
+    private createCustomerStoryGroup(customerStory: any): UntypedFormGroup {
+        return this._formBuilder.group({
+            priority: [
+                Number(customerStory?.priority) || 1,
+                [Validators.required, Validators.min(1)],
+            ],
+            name: [customerStory?.name || '', [Validators.required]],
+            role: [customerStory?.role || '', [Validators.required]],
+            image: [
+                customerStory?.image || this.placeholderCustomerStoryImagePath,
+            ],
+            message: [customerStory?.message || '', [Validators.required]],
+        });
+    }
+
     private createDefaultGalleryItems(): any[] {
         return [1, 2, 3].map((priority) => ({
             image: '',
@@ -1101,6 +1297,56 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
                 content: '',
             },
         ];
+    }
+
+    private generateCustomerStoryDialogForm(): void {
+        this.customerStoryDialogForm = this._formBuilder.group({
+            priority: [1, [Validators.required, Validators.min(1)]],
+            name: ['', [Validators.required, Validators.maxLength(150)]],
+            role: ['', [Validators.required, Validators.maxLength(150)]],
+            image: [this.placeholderCustomerStoryImagePath],
+            message: ['', [Validators.required, Validators.maxLength(320)]],
+        });
+
+        this.resetCustomerStoryDialogForm();
+    }
+
+    private resetCustomerStoryDialogForm(): void {
+        const emptyCustomerStory = this.createEmptyCustomerStory();
+        this.customerStoryDialogForm?.reset(emptyCustomerStory);
+        this.customerStoryImagePreview = this.resolveImageUrl(
+            emptyCustomerStory.image
+        );
+    }
+
+    private patchCustomerStoryDialogForm(customerStory: any): void {
+        this.customerStoryDialogForm?.patchValue(customerStory);
+        this.customerStoryImagePreview = this.resolveImageUrl(
+            customerStory.image
+        );
+    }
+
+    private createEmptyCustomerStory(): any {
+        return {
+            priority: 1,
+            name: '',
+            role: '',
+            image: this.placeholderCustomerStoryImagePath,
+            message: '',
+        };
+    }
+
+    private mapFormValueToCustomerStory(formValue: any): any {
+        return {
+            priority:
+                formValue?.priority === 0 || formValue?.priority
+                    ? Number(formValue.priority)
+                    : null,
+            name: formValue?.name || '',
+            role: formValue?.role || '',
+            image: formValue?.image || this.placeholderCustomerStoryImagePath,
+            message: formValue?.message || '',
+        };
     }
 
     private normalizeGalleryItems(items: any): any[] {
@@ -1168,6 +1414,27 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         }
 
         return normalizedRows;
+    }
+
+    private normalizeCustomerStories(customerStories: any): any[] {
+        const storyItems = Array.isArray(customerStories?.testimonials)
+            ? customerStories.testimonials
+            : Array.isArray(customerStories)
+              ? customerStories
+              : [];
+
+        return this.sortCustomerStoriesByPriority(storyItems)
+            .map((item, index) => ({
+                priority: Number(item?.priority) || index + 1,
+                name: item?.name || '',
+                role: item?.role || '',
+                image: item?.image || this.placeholderCustomerStoryImagePath,
+                message: item?.message || '',
+            }))
+            .map((item, index) => ({
+                ...item,
+                priority: index + 1,
+            }));
     }
 
     private normalizeOverviewCtas(items: any): any[] {
@@ -1338,6 +1605,50 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         });
     }
 
+    private replaceCustomerStoryForms(customerStories: any[]): void {
+        while (this.customerStoryForms.length) {
+            this.customerStoryForms.removeAt(0);
+        }
+
+        this.normalizeCustomerStories(customerStories).forEach((customerStory) => {
+            this.customerStoryForms.push(
+                this.createCustomerStoryGroup(customerStory)
+            );
+        });
+    }
+
+    private getCurrentCustomerStories(): any[] {
+        return this.customerStoryForms.controls.map((control) =>
+            this.mapFormValueToCustomerStory(control.getRawValue())
+        );
+    }
+
+    private buildNextCustomerStoriesState(customerStory: any): any[] {
+        const customerStories = this.getCurrentCustomerStories();
+
+        if (
+            this.customerStoryDialogMode === 'edit' &&
+            this.selectedCustomerStoryIndex !== null
+        ) {
+            customerStories.splice(this.selectedCustomerStoryIndex, 1);
+        }
+
+        const targetPriority = Math.min(
+            Math.max(Number(customerStory.priority) || 1, 1),
+            customerStories.length + 1
+        );
+
+        customerStories.splice(targetPriority - 1, 0, {
+            ...customerStory,
+            priority: targetPriority,
+        });
+
+        return customerStories.map((item, index) => ({
+            ...item,
+            priority: index + 1,
+        }));
+    }
+
     private updateHowItWorksSectionState(): void {
         const showSection = this.entityForm.get('details.showHowItWorks')?.value;
 
@@ -1385,12 +1696,91 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         techSpecsGroup?.disable({ emitEvent: false });
     }
 
+    private updateCustomerStoriesSectionState(): void {
+        const showSection = this.entityForm.get(
+            'details.showCustomerStories'
+        )?.value;
+
+        if (showSection) {
+            this.customerStoryForms.enable({ emitEvent: false });
+            return;
+        }
+
+        this.customerStoryForms.disable({ emitEvent: false });
+    }
+
     private syncAdvancedCapabilityPriorities(): void {
         this.advancedCapabilityForms.controls.forEach((control, index) => {
             control.get('priority')?.setValue(index + 1, {
                 emitEvent: false,
             });
         });
+    }
+
+    private sortCustomerStoriesByPriority(customerStories: any[]): any[] {
+        return [...customerStories].sort((leftStory, rightStory) => {
+            const leftPriority =
+                leftStory?.priority === 0 || leftStory?.priority
+                    ? Number(leftStory.priority)
+                    : Number.MAX_SAFE_INTEGER;
+            const rightPriority =
+                rightStory?.priority === 0 || rightStory?.priority
+                    ? Number(rightStory.priority)
+                    : Number.MAX_SAFE_INTEGER;
+
+            return leftPriority - rightPriority;
+        });
+    }
+
+    private getNextCustomerStoryPriority(): number {
+        const priorities = this.customerStoryForms.controls
+            .map((control) => Number(control.get('priority')?.value))
+            .filter((priority) => Number.isFinite(priority) && priority > 0);
+
+        if (!priorities.length) {
+            return 1;
+        }
+
+        return Math.max(...priorities) + 1;
+    }
+
+    private isPlaceholderCustomerStoryImage(imagePath: string): boolean {
+        if (!imagePath) {
+            return false;
+        }
+
+        return (
+            imagePath.replace(/^\/+/, '') === this.placeholderCustomerStoryImagePath
+        );
+    }
+
+    private deleteCustomerStoryImageFromServer(imagePath: string): void {
+        if (this.isPlaceholderCustomerStoryImage(imagePath)) {
+            return;
+        }
+
+        const fileName = this.extractFileName(imagePath);
+
+        if (!fileName) {
+            return;
+        }
+
+        this._productsService
+            .deletePhoto(fileName, this.PHOTO_TYPE.TESTIMONIALS)
+            .subscribe(
+                (response) => {
+                    if (!response) {
+                        this._snackBar.showError(
+                            'Testimonial was removed, but the image could not be deleted from the server.'
+                        );
+                    }
+                },
+                () => {
+                    this._snackBar.showError(
+                        'Testimonial was removed, but a server error occurred while deleting the image.'
+                    );
+                }
+            );
     }
 
     private syncGalleryPriorities(): void {
@@ -1401,7 +1791,10 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         });
     }
 
-    private normalizeUploadedImagePath(imageNameOrPath: string): string {
+    private normalizeUploadedImagePath(
+        imageNameOrPath: string,
+        fileType = this.PHOTO_TYPE.COVER
+    ): string {
         if (!imageNameOrPath) {
             return '';
         }
@@ -1412,6 +1805,10 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
             imageNameOrPath.startsWith('https://')
         ) {
             return imageNameOrPath;
+        }
+
+        if (fileType === this.PHOTO_TYPE.TESTIMONIALS) {
+            return `assets/images/testimonial/${imageNameOrPath}`;
         }
 
         return `assets/images/products/${imageNameOrPath}`;
