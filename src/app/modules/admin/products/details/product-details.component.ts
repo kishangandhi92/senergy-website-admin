@@ -167,6 +167,14 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
             image_alt: ['', [Validators.required, Validators.maxLength(200)]],
             order: [0],
             status: [1],
+            seoData: this._formBuilder.group({
+                pageTitle: ['', [Validators.required, Validators.maxLength(70)]],
+                metaDescription: [
+                    '',
+                    [Validators.required, Validators.maxLength(160)],
+                ],
+                metaKeywords: ['', [Validators.maxLength(300)]],
+            }),
             ctaData: this._formBuilder.group({
                 title: ['', [Validators.required, Validators.maxLength(100)]],
                 subtitle: ['', [Validators.required, Validators.maxLength(200)]],
@@ -271,6 +279,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         this.replaceTechSpecRows(details.techSpecs.rows);
         this.replaceCustomerStoryForms(details.customerStories);
         const ctaData = this.normalizeProductCtaData(product.ctaData);
+        const seoData = this.normalizeSeoData(product.seoData);
         this.replaceProductCtaForms(ctaData.cta);
 
         this.entityForm.patchValue({
@@ -281,6 +290,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
             image_alt: product.image_alt,
             order: product.order ?? 0,
             status: product.status ?? 1,
+            seoData,
             ctaData,
             details,
         });
@@ -1159,6 +1169,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
             status: formValue?.status ?? 1,
             details: this.normalizeDetails(formValue?.details),
             ctaData: this.mapProductCtaFormValueToPayload(formValue?.ctaData),
+            seoData: JSON.stringify(this.normalizeSeoData(formValue?.seoData)),
         };
     }
 
@@ -1485,6 +1496,24 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
                 this.normalizeProductCtaItem(ctas[0], 0),
                 this.normalizeProductCtaItem(ctas[1], 1),
             ],
+        };
+    }
+
+    private normalizeSeoData(seoData: any): any {
+        const parsedSeoData = this.parseJsonField(seoData);
+
+        return {
+            pageTitle:
+                parsedSeoData?.pageTitle ||
+                parsedSeoData?.title ||
+                parsedSeoData?.metaTitle ||
+                '',
+            metaDescription:
+                parsedSeoData?.metaDescription ||
+                parsedSeoData?.description ||
+                '',
+            metaKeywords:
+                parsedSeoData?.metaKeywords || parsedSeoData?.keywords || '',
         };
     }
 

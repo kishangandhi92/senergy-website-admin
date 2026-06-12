@@ -268,12 +268,9 @@
                                     <input type="hidden" formControlName="priority" />
 
                                     <div class="mt-3 flex justify-center gap-3">
-                                        <button
-                                            mat-stroked-button
-                                            type="button"
+                                        <button mat-stroked-button type="button"
                                             [disabled]="!galleryImage.get('image')?.value"
-                                            (click)="openGalleryImagePreview(galleryIndex)"
-                                        >
+                                            (click)="openGalleryImagePreview(galleryIndex)">
                                             <mat-icon [svgIcon]="'heroicons_outline:magnifying-glass-plus'"></mat-icon>
                                             <span class="ml-2">Preview</span>
                                         </button>
@@ -302,10 +299,10 @@
                             <div class="grid gap-6" formGroupName="overview">
 
                                 <div class="">
-                                <div class="text-base font-semibold text-slate-900 mb-2">Overview Content <span
-                                        class="text-red-500">*</span> </div>
-                                <quill-editor class="block w-full" formControlName="content"
-                                    [styles]="{ height: '300px' }"></quill-editor>
+                                    <div class="text-base font-semibold text-slate-900 mb-2">Overview Content <span
+                                            class="text-red-500">*</span> </div>
+                                    <quill-editor class="block w-full" formControlName="content"
+                                        [styles]="{ height: '300px' }"></quill-editor>
                                 </div>
 
                                 @if (entityForm.get('details.overview.content')?.hasError('required') &&
@@ -394,26 +391,20 @@
                                 <div>
                                     <div class="text-base font-semibold text-slate-900">How it Works</div>
                                     <div class="text-sm text-slate-500">
-                                        Minimum 3 items and maximum 10 items. Images can be up to {{ maxFileSizeInKb }} KB.
+                                        Minimum 3 items and maximum 10 items. Images can be up to {{ maxFileSizeInKb }}
+                                        KB.
                                     </div>
                                 </div>
 
                                 <div class="flex items-center gap-4">
-                                    <mat-checkbox
-                                        formControlName="showHowItWorks"
-                                        color="primary"
-                                        (change)="onHowItWorksVisibilityChange()"
-                                    >
+                                    <mat-checkbox formControlName="showHowItWorks" color="primary"
+                                        (change)="onHowItWorksVisibilityChange()">
                                         Show this on Details Page?
                                     </mat-checkbox>
 
-                                    <button
-                                        mat-stroked-button
-                                        color="primary"
-                                        type="button"
+                                    <button mat-stroked-button color="primary" type="button"
                                         [disabled]="!showHowItWorks || howItWorksForms.length >= 10 || entityForm.disabled"
-                                        (click)="addHowItWorksItem()"
-                                    >
+                                        (click)="addHowItWorksItem()">
                                         <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
                                         <span class="ml-2">Add Item</span>
                                     </button>
@@ -422,53 +413,35 @@
 
                             <div class="grid gap-3 xl:grid-cols-2" formArrayName="howItWorks">
                                 @for (item of howItWorksForms.controls; track item; let itemIndex = $index) {
-                                <div
-                                    class="grid gap-3 rounded-lg border border-slate-200 bg-white p-3 sm:grid-cols-[132px_minmax(0,1fr)_72px_44px] sm:items-start"
-                                    [formGroupName]="itemIndex"
-                                >
+                                <div class="grid gap-3 rounded-lg border border-slate-200 bg-white p-3 sm:grid-cols-[132px_minmax(0,1fr)_72px_44px] sm:items-start"
+                                    [formGroupName]="itemIndex">
                                     <div>
                                         <div
-                                            class="flex h-24 w-32 items-center justify-center overflow-hidden rounded-lg border border-dashed border-slate-300 bg-slate-50"
-                                        >
+                                            class="flex h-24 w-32 items-center justify-center overflow-hidden rounded-lg border border-dashed border-slate-300 bg-slate-50">
                                             @if (item.get('image')?.value) {
-                                            <img
-                                                class="h-full w-full object-cover"
+                                            <img class="h-full w-full object-cover"
                                                 [src]="resolveImageUrl(item.get('image')?.value)"
-                                                [alt]="'How it works image ' + (itemIndex + 1)"
-                                            />
+                                                [alt]="'How it works image ' + (itemIndex + 1)" />
                                             } @else {
-                                            <mat-icon class="text-slate-400" [svgIcon]="'heroicons_outline:photo'"></mat-icon>
+                                            <mat-icon class="text-slate-400"
+                                                [svgIcon]="'heroicons_outline:photo'"></mat-icon>
                                             }
                                         </div>
 
-                                        <input
-                                            hidden
-                                            #howItWorksImageInput
-                                            type="file"
+                                        <input hidden #howItWorksImageInput type="file"
                                             accept=".jpg,.jpeg,.png,.webp,.svg"
-                                            (change)="onHowItWorksImageSelect(itemIndex, $event)"
-                                        />
+                                            (change)="onHowItWorksImageSelect(itemIndex, $event)" />
 
                                         <div class="mt-2 flex gap-1">
-                                            <button
-                                                mat-icon-button
-                                                color="primary"
-                                                type="button"
+                                            <button mat-icon-button color="primary" type="button"
                                                 [disabled]="!showHowItWorks || isUploadingImage || isDeletingImage"
-                                                (click)="howItWorksImageInput.click()"
-                                                matTooltip="Upload image"
-                                            >
+                                                (click)="howItWorksImageInput.click()" matTooltip="Upload image">
                                                 <mat-icon [svgIcon]="'mat_outline:file_upload'"></mat-icon>
                                             </button>
 
-                                            <button
-                                                mat-icon-button
-                                                color="warn"
-                                                type="button"
+                                            <button mat-icon-button color="warn" type="button"
                                                 [disabled]="!showHowItWorks || !item.get('image')?.value || isUploadingImage || isDeletingImage"
-                                                (click)="clearHowItWorksImage(itemIndex)"
-                                                matTooltip="Clear image"
-                                            >
+                                                (click)="clearHowItWorksImage(itemIndex)" matTooltip="Clear image">
                                                 <mat-icon [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
                                             </button>
                                         </div>
@@ -478,7 +451,8 @@
                                         <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
                                             <mat-label>Title</mat-label>
                                             <input matInput formControlName="title" maxlength="100" />
-                                            <mat-hint align="end">{{ item.get('title')?.value?.length || 0 }}/100</mat-hint>
+                                            <mat-hint align="end">{{ item.get('title')?.value?.length || 0
+                                                }}/100</mat-hint>
                                             @if (item.get('title')?.hasError('required')) {
                                             <mat-error>Title is required</mat-error>
                                             }
@@ -487,7 +461,8 @@
                                         <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
                                             <mat-label>Description</mat-label>
                                             <input matInput formControlName="description" maxlength="150" />
-                                            <mat-hint align="end">{{ item.get('description')?.value?.length || 0 }}/150</mat-hint>
+                                            <mat-hint align="end">{{ item.get('description')?.value?.length || 0
+                                                }}/150</mat-hint>
                                             @if (item.get('description')?.hasError('required')) {
                                             <mat-error>Description is required</mat-error>
                                             }
@@ -501,15 +476,9 @@
                                         </div>
                                     </div>
 
-                                    <button
-                                        mat-icon-button
-                                        color="warn"
-                                        type="button"
-                                        class="justify-self-end"
+                                    <button mat-icon-button color="warn" type="button" class="justify-self-end"
                                         [disabled]="!showHowItWorks || howItWorksForms.length <= 3 || entityForm.disabled"
-                                        (click)="removeHowItWorksItem(itemIndex)"
-                                        matTooltip="Remove item"
-                                    >
+                                        (click)="removeHowItWorksItem(itemIndex)" matTooltip="Remove item">
                                         <mat-icon [svgIcon]="'heroicons_outline:trash'"></mat-icon>
                                     </button>
                                 </div>
@@ -523,26 +492,20 @@
                                 <div>
                                     <div class="text-base font-semibold text-slate-900">Key Features</div>
                                     <div class="text-sm text-slate-500">
-                                        Minimum 3 features and maximum 10 features. Icons can be JPG, JPEG, PNG, WebP or GIF up to {{ maxIconFileSizeInKb }} KB.
+                                        Minimum 3 features and maximum 10 features. Icons can be JPG, JPEG, PNG, WebP or
+                                        GIF up to {{ maxIconFileSizeInKb }} KB.
                                     </div>
                                 </div>
 
                                 <div class="flex items-center gap-4">
-                                    <mat-checkbox
-                                        formControlName="showKeyFeatures"
-                                        color="primary"
-                                        (change)="onKeyFeaturesVisibilityChange()"
-                                    >
+                                    <mat-checkbox formControlName="showKeyFeatures" color="primary"
+                                        (change)="onKeyFeaturesVisibilityChange()">
                                         Show this on Details Page?
                                     </mat-checkbox>
 
-                                    <button
-                                        mat-stroked-button
-                                        color="primary"
-                                        type="button"
+                                    <button mat-stroked-button color="primary" type="button"
                                         [disabled]="!showKeyFeatures || keyFeatureForms.length >= 10 || entityForm.disabled"
-                                        (click)="addKeyFeature()"
-                                    >
+                                        (click)="addKeyFeature()">
                                         <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
                                         <span class="ml-2">Add Feature</span>
                                     </button>
@@ -551,23 +514,19 @@
 
                             <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3" formArrayName="keyFeatures">
                                 @for (feature of keyFeatureForms.controls; track feature; let featureIndex = $index) {
-                                <div
-                                    class="rounded-lg border border-slate-200 bg-white p-3"
-                                    [formGroupName]="featureIndex"
-                                >
+                                <div class="rounded-lg border border-slate-200 bg-white p-3"
+                                    [formGroupName]="featureIndex">
                                     <div class="mb-3 flex items-start justify-between gap-3">
                                         <div class="flex gap-3">
                                             <div
-                                                class="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-dashed border-slate-300 bg-slate-50"
-                                            >
+                                                class="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-dashed border-slate-300 bg-slate-50">
                                                 @if (feature.get('icon')?.value) {
-                                                <img
-                                                    class="h-full w-full object-contain p-2"
+                                                <img class="h-full w-full object-contain p-2"
                                                     [src]="resolveImageUrl(feature.get('icon')?.value)"
-                                                    [alt]="'Key feature icon ' + (featureIndex + 1)"
-                                                />
+                                                    [alt]="'Key feature icon ' + (featureIndex + 1)" />
                                                 } @else {
-                                                <mat-icon class="text-slate-400" [svgIcon]="'heroicons_outline:sparkles'"></mat-icon>
+                                                <mat-icon class="text-slate-400"
+                                                    [svgIcon]="'heroicons_outline:sparkles'"></mat-icon>
                                                 }
                                             </div>
 
@@ -589,31 +548,22 @@
                                                 </div>
                                             </div>
 
-                                            <button
-                                                mat-icon-button
-                                                color="warn"
-                                                type="button"
+                                            <button mat-icon-button color="warn" type="button"
                                                 [disabled]="!showKeyFeatures || keyFeatureForms.length <= 3 || entityForm.disabled"
-                                                (click)="removeKeyFeature(featureIndex)"
-                                                matTooltip="Remove feature"
-                                            >
+                                                (click)="removeKeyFeature(featureIndex)" matTooltip="Remove feature">
                                                 <mat-icon [svgIcon]="'heroicons_outline:trash'"></mat-icon>
                                             </button>
                                         </div>
                                     </div>
 
-                                    <input
-                                        hidden
-                                        #keyFeatureIconInput
-                                        type="file"
-                                        accept=".jpg,.jpeg,.png,.webp,.gif"
-                                        (change)="onKeyFeatureIconSelect(featureIndex, $event)"
-                                    />
+                                    <input hidden #keyFeatureIconInput type="file" accept=".jpg,.jpeg,.png,.webp,.gif"
+                                        (change)="onKeyFeatureIconSelect(featureIndex, $event)" />
 
                                     <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
                                         <mat-label>Title</mat-label>
                                         <input matInput formControlName="title" maxlength="100" />
-                                        <mat-hint align="end">{{ feature.get('title')?.value?.length || 0 }}/100</mat-hint>
+                                        <mat-hint align="end">{{ feature.get('title')?.value?.length || 0
+                                            }}/100</mat-hint>
                                         @if (feature.get('title')?.hasError('required')) {
                                         <mat-error>Title is required</mat-error>
                                         }
@@ -628,24 +578,16 @@
                                     </mat-form-field>
 
                                     <div class="mt-3 flex justify-center gap-3">
-                                        <button
-                                            mat-stroked-button
-                                            color="primary"
-                                            type="button"
+                                        <button mat-stroked-button color="primary" type="button"
                                             [disabled]="!showKeyFeatures || isUploadingImage || isDeletingImage"
-                                            (click)="keyFeatureIconInput.click()"
-                                        >
+                                            (click)="keyFeatureIconInput.click()">
                                             <mat-icon [svgIcon]="'mat_outline:file_upload'"></mat-icon>
                                             <span class="ml-2">Upload</span>
                                         </button>
 
-                                        <button
-                                            mat-stroked-button
-                                            color="warn"
-                                            type="button"
+                                        <button mat-stroked-button color="warn" type="button"
                                             [disabled]="!showKeyFeatures || !feature.get('icon')?.value || isUploadingImage || isDeletingImage"
-                                            (click)="clearKeyFeatureIcon(featureIndex)"
-                                        >
+                                            (click)="clearKeyFeatureIcon(featureIndex)">
                                             <mat-icon [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
                                             <span class="ml-2">Clear</span>
                                         </button>
@@ -661,26 +603,20 @@
                                 <div>
                                     <div class="text-base font-semibold text-slate-900">Advanced Capabilities</div>
                                     <div class="text-sm text-slate-500">
-                                        Minimum 2 capabilities and maximum 6 capabilities. Each item needs a heading and detailed description.
+                                        Minimum 2 capabilities and maximum 6 capabilities. Each item needs a heading and
+                                        detailed description.
                                     </div>
                                 </div>
 
                                 <div class="flex items-center gap-4">
-                                    <mat-checkbox
-                                        formControlName="showAdvancedCapabilities"
-                                        color="primary"
-                                        (change)="onAdvancedCapabilitiesVisibilityChange()"
-                                    >
+                                    <mat-checkbox formControlName="showAdvancedCapabilities" color="primary"
+                                        (change)="onAdvancedCapabilitiesVisibilityChange()">
                                         Show this on Details Page?
                                     </mat-checkbox>
 
-                                    <button
-                                        mat-stroked-button
-                                        color="primary"
-                                        type="button"
+                                    <button mat-stroked-button color="primary" type="button"
                                         [disabled]="!showAdvancedCapabilities || advancedCapabilityForms.length >= 6 || entityForm.disabled"
-                                        (click)="addAdvancedCapability()"
-                                    >
+                                        (click)="addAdvancedCapability()">
                                         <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
                                         <span class="ml-2">Add Capability</span>
                                     </button>
@@ -688,11 +624,10 @@
                             </div>
 
                             <div class="grid gap-4 xl:grid-cols-2" formArrayName="advancedCapabilities">
-                                @for (capability of advancedCapabilityForms.controls; track capability; let capabilityIndex = $index) {
-                                <div
-                                    class="rounded-lg border border-slate-200 bg-white p-4"
-                                    [formGroupName]="capabilityIndex"
-                                >
+                                @for (capability of advancedCapabilityForms.controls; track capability; let
+                                capabilityIndex = $index) {
+                                <div class="rounded-lg border border-slate-200 bg-white p-4"
+                                    [formGroupName]="capabilityIndex">
                                     <div class="mb-4 flex items-start justify-between gap-3">
                                         <div>
                                             <div class="text-sm font-semibold text-slate-900">
@@ -711,14 +646,10 @@
                                                 </div>
                                             </div>
 
-                                            <button
-                                                mat-icon-button
-                                                color="warn"
-                                                type="button"
+                                            <button mat-icon-button color="warn" type="button"
                                                 [disabled]="!showAdvancedCapabilities || advancedCapabilityForms.length <= 2 || entityForm.disabled"
                                                 (click)="removeAdvancedCapability(capabilityIndex)"
-                                                matTooltip="Remove capability"
-                                            >
+                                                matTooltip="Remove capability">
                                                 <mat-icon [svgIcon]="'heroicons_outline:trash'"></mat-icon>
                                             </button>
                                         </div>
@@ -727,7 +658,8 @@
                                     <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
                                         <mat-label>Heading</mat-label>
                                         <input matInput formControlName="heading" maxlength="50" />
-                                        <mat-hint align="end">{{ capability.get('heading')?.value?.length || 0 }}/50</mat-hint>
+                                        <mat-hint align="end">{{ capability.get('heading')?.value?.length || 0
+                                            }}/50</mat-hint>
                                         @if (capability.get('heading')?.hasError('required')) {
                                         <mat-error>Heading is required</mat-error>
                                         }
@@ -737,13 +669,11 @@
                                         <div class="mb-2 text-sm font-medium text-slate-700">
                                             Description <span class="text-red-500">*</span>
                                         </div>
-                                        <quill-editor
-                                            class="block w-full"
-                                            formControlName="description"
-                                            [styles]="{ height: '180px' }"
-                                        ></quill-editor>
+                                        <quill-editor class="block w-full" formControlName="description"
+                                            [styles]="{ height: '180px' }"></quill-editor>
 
-                                        @if (capability.get('description')?.hasError('required') && capability.get('description')?.touched) {
+                                        @if (capability.get('description')?.hasError('required') &&
+                                        capability.get('description')?.touched) {
                                         <div class="mt-2 text-sm text-warn">Description is required</div>
                                         }
                                     </div>
@@ -758,27 +688,20 @@
                                 <div>
                                     <div class="text-base font-semibold text-slate-900">Tech Specs</div>
                                     <div class="text-sm text-slate-500">
-                                        Add table rows with a spec heading and its content. Use new lines for multiple points.
+                                        Add table rows with a spec heading and its content. Use new lines for multiple
+                                        points.
                                     </div>
                                 </div>
 
                                 <div class="flex items-center gap-4">
 
-                                    <mat-checkbox
-                                        formControlName="showTechSpecs"
-                                        color="primary"
-                                        (change)="onTechSpecsVisibilityChange()"
-                                    >
+                                    <mat-checkbox formControlName="showTechSpecs" color="primary"
+                                        (change)="onTechSpecsVisibilityChange()">
                                         Show this on Details Page?
                                     </mat-checkbox>
 
-                                    <button
-                                        mat-stroked-button
-                                        color="primary"
-                                        type="button"
-                                        [disabled]="!showTechSpecs || entityForm.disabled"
-                                        (click)="addTechSpecRow()"
-                                    >
+                                    <button mat-stroked-button color="primary" type="button"
+                                        [disabled]="!showTechSpecs || entityForm.disabled" (click)="addTechSpecRow()">
                                         <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
                                         <span class="ml-2">Add Row</span>
                                     </button>
@@ -787,19 +710,19 @@
                             </div>
 
                             <div formGroupName="techSpecs">
-                              
-                                <div class="overflow-hidden rounded-lg border border-slate-200 bg-white" formArrayName="rows">
-                                    <div class="hidden grid-cols-[260px_minmax(0,1fr)_56px] gap-3 border-b bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 md:grid">
+
+                                <div class="overflow-hidden rounded-lg border border-slate-200 bg-white"
+                                    formArrayName="rows">
+                                    <div
+                                        class="hidden grid-cols-[260px_minmax(0,1fr)_56px] gap-3 border-b bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 md:grid">
                                         <div>Table Heading</div>
                                         <div>Table Content</div>
                                         <div></div>
                                     </div>
 
                                     @for (row of techSpecRows.controls; track row; let rowIndex = $index) {
-                                    <div
-                                        class="grid gap-3 border-b border-slate-100 p-4 last:border-b-0 md:grid-cols-[260px_minmax(0,1fr)_56px] md:items-start"
-                                        [formGroupName]="rowIndex"
-                                    >
+                                    <div class="grid gap-3 border-b border-slate-100 p-4 last:border-b-0 md:grid-cols-[260px_minmax(0,1fr)_56px] md:items-start"
+                                        [formGroupName]="rowIndex">
                                         <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
                                             <mat-label>Heading</mat-label>
                                             <input matInput formControlName="heading" maxlength="100" />
@@ -810,26 +733,16 @@
 
                                         <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
                                             <mat-label>Content</mat-label>
-                                            <textarea
-                                                matInput
-                                                formControlName="content"
-                                                rows="3"
-                                                placeholder="Use a new line for each point"
-                                            ></textarea>
+                                            <textarea matInput formControlName="content" rows="3"
+                                                placeholder="Use a new line for each point"></textarea>
                                             @if (row.get('content')?.hasError('required')) {
                                             <mat-error>Content is required</mat-error>
                                             }
                                         </mat-form-field>
 
-                                        <button
-                                            mat-icon-button
-                                            color="warn"
-                                            type="button"
-                                            class="justify-self-end"
+                                        <button mat-icon-button color="warn" type="button" class="justify-self-end"
                                             [disabled]="!showTechSpecs || techSpecRows.length <= 1 || entityForm.disabled"
-                                            (click)="removeTechSpecRow(rowIndex)"
-                                            matTooltip="Remove row"
-                                        >
+                                            (click)="removeTechSpecRow(rowIndex)" matTooltip="Remove row">
                                             <mat-icon [svgIcon]="'heroicons_outline:trash'"></mat-icon>
                                         </button>
                                     </div>
@@ -844,26 +757,20 @@
                                 <div>
                                     <div class="text-base font-semibold text-slate-900">Customer Stories</div>
                                     <div class="text-sm text-slate-500">
-                                        Add customer testimonials for this product. Changes are saved with the main product save button.
+                                        Add customer testimonials for this product. Changes are saved with the main
+                                        product save button.
                                     </div>
                                 </div>
 
                                 <div class="flex items-center gap-4">
-                                    <mat-checkbox
-                                        formControlName="showCustomerStories"
-                                        color="primary"
-                                        (change)="onCustomerStoriesVisibilityChange()"
-                                    >
+                                    <mat-checkbox formControlName="showCustomerStories" color="primary"
+                                        (change)="onCustomerStoriesVisibilityChange()">
                                         Show this on Details Page?
                                     </mat-checkbox>
 
-                                    <button
-                                        mat-stroked-button
-                                        color="primary"
-                                        type="button"
+                                    <button mat-stroked-button color="primary" type="button"
                                         [disabled]="!showCustomerStories || entityForm.disabled || isUploadingImage"
-                                        (click)="openCustomerStoryDialog('add')"
-                                    >
+                                        (click)="openCustomerStoryDialog('add')">
                                         <mat-icon [svgIcon]="'heroicons_outline:plus'"></mat-icon>
                                         <span class="ml-2">Add Testimonial</span>
                                     </button>
@@ -873,8 +780,7 @@
                             <div formArrayName="customerStories" class="grid gap-5 md:grid-cols-2">
                                 @if (customerStoryForms.length === 0) {
                                 <div
-                                    class="col-span-full flex min-h-[220px] flex-col items-center justify-center gap-2 rounded-3xl border border-dashed border-slate-300 bg-white text-center"
-                                >
+                                    class="col-span-full flex min-h-[220px] flex-col items-center justify-center gap-2 rounded-3xl border border-dashed border-slate-300 bg-white text-center">
                                     <div class="text-lg font-bold text-slate-900">No testimonials added</div>
                                     <div class="max-w-sm text-sm text-slate-500">
                                         Start by adding the first customer story for this product.
@@ -882,47 +788,37 @@
                                 </div>
                                 }
 
-                                @for (customerStory of customerStoryForms.controls; track customerStory; let customerStoryIndex = $index) {
-                                <div
-                                    class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm"
-                                    [formGroupName]="customerStoryIndex"
-                                >
+                                @for (customerStory of customerStoryForms.controls; track customerStory; let
+                                customerStoryIndex = $index) {
+                                <div class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm"
+                                    [formGroupName]="customerStoryIndex">
                                     <div class="mb-4 flex items-start justify-between gap-4">
                                         <div class="flex items-start gap-3">
-                                            <img
-                                                class="h-14 w-14 rounded-full border border-slate-200 bg-slate-100 object-cover"
+                                            <img class="h-14 w-14 rounded-full border border-slate-200 bg-slate-100 object-cover"
                                                 [src]="resolveImageUrl(customerStory.get('image')?.value || placeholderCustomerStoryImagePath)"
-                                                [alt]="customerStory.get('name')?.value || 'Testimonial image'"
-                                            />
+                                                [alt]="customerStory.get('name')?.value || 'Testimonial image'" />
                                             <div>
                                                 <div class="text-lg font-semibold text-slate-900">
                                                     {{ customerStory.get('name')?.value || 'Untitled testimonial' }}
                                                 </div>
                                                 <div class="text-sm text-slate-500">
-                                                    #{{ customerStory.get('priority')?.value }} | {{ customerStory.get('role')?.value || 'Role not set' }}
+                                                    #{{ customerStory.get('priority')?.value }} | {{
+                                                    customerStory.get('role')?.value || 'Role not set' }}
                                                 </div>
                                             </div>
                                         </div>
 
                                         <div class="flex flex-wrap gap-2">
-                                            <button
-                                                mat-stroked-button
-                                                color="primary"
-                                                type="button"
+                                            <button mat-stroked-button color="primary" type="button"
                                                 [disabled]="!showCustomerStories || entityForm.disabled"
-                                                (click)="openCustomerStoryDialog('edit', customerStoryIndex)"
-                                            >
+                                                (click)="openCustomerStoryDialog('edit', customerStoryIndex)">
                                                 <mat-icon [svgIcon]="'heroicons_outline:pencil-square'"></mat-icon>
                                                 <span class="ml-2">Edit</span>
                                             </button>
 
-                                            <button
-                                                mat-stroked-button
-                                                color="warn"
-                                                type="button"
+                                            <button mat-stroked-button color="warn" type="button"
                                                 [disabled]="!showCustomerStories || entityForm.disabled"
-                                                (click)="deleteCustomerStory(customerStoryIndex)"
-                                            >
+                                                (click)="deleteCustomerStory(customerStoryIndex)">
                                                 <mat-icon [svgIcon]="'heroicons_outline:trash'"></mat-icon>
                                                 <span class="ml-2">Delete</span>
                                             </button>
@@ -946,7 +842,8 @@
                                     <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
                                         <mat-label>Title</mat-label>
                                         <input matInput formControlName="title" maxlength="100" />
-                                        <mat-hint align="end">{{ entityForm.get('ctaData.title')?.value?.length || 0 }}/100</mat-hint>
+                                        <mat-hint align="end">{{ entityForm.get('ctaData.title')?.value?.length || 0
+                                            }}/100</mat-hint>
                                         @if (entityForm.get('ctaData.title')?.hasError('required')) {
                                         <mat-error>Title is required</mat-error>
                                         }
@@ -955,7 +852,8 @@
                                     <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
                                         <mat-label>Subtitle</mat-label>
                                         <input matInput formControlName="subtitle" maxlength="200" />
-                                        <mat-hint align="end">{{ entityForm.get('ctaData.subtitle')?.value?.length || 0 }}/200</mat-hint>
+                                        <mat-hint align="end">{{ entityForm.get('ctaData.subtitle')?.value?.length || 0
+                                            }}/200</mat-hint>
                                         @if (entityForm.get('ctaData.subtitle')?.hasError('required')) {
                                         <mat-error>Subtitle is required</mat-error>
                                         }
@@ -977,7 +875,8 @@
                                     <div class="space-y-4">
                                         <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
                                             <mat-label>Image Source</mat-label>
-                                            <input matInput formControlName="imageSrc" readonly placeholder="assets/images/bg/example.png" />
+                                            <input matInput formControlName="imageSrc" readonly
+                                                placeholder="assets/images/bg/example.png" />
                                             @if (entityForm.get('ctaData.imageSrc')?.hasError('required')) {
                                             <mat-error>Image is required</mat-error>
                                             }
@@ -986,58 +885,43 @@
                                         <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
                                             <mat-label>Image Alt Text</mat-label>
                                             <input matInput formControlName="imageAlt" maxlength="200" />
-                                            <mat-hint align="end">{{ entityForm.get('ctaData.imageAlt')?.value?.length || 0 }}/200</mat-hint>
+                                            <mat-hint align="end">{{ entityForm.get('ctaData.imageAlt')?.value?.length
+                                                || 0 }}/200</mat-hint>
                                             @if (entityForm.get('ctaData.imageAlt')?.hasError('required')) {
                                             <mat-error>Alt text is required</mat-error>
                                             }
                                         </mat-form-field>
 
                                         <div class="flex flex-wrap gap-3">
-                                            <button
-                                                class="min-w-36"
-                                                mat-flat-button
-                                                color="primary"
-                                                type="button"
-                                                [disabled]="entityForm.disabled"
-                                                (click)="productCtaImageInput.click()"
-                                            >
+                                            <button class="min-w-36" mat-flat-button color="primary" type="button"
+                                                [disabled]="entityForm.disabled" (click)="productCtaImageInput.click()">
                                                 <mat-icon [svgIcon]="'mat_outline:file_upload'"></mat-icon>
                                                 <span class="ml-2">Upload Image</span>
                                             </button>
 
-                                            <button
-                                                mat-stroked-button
-                                                color="warn"
-                                                type="button"
+                                            <button mat-stroked-button color="warn" type="button"
                                                 [disabled]="!entityForm.get('ctaData.imageSrc')?.value || entityForm.disabled"
-                                                (click)="clearProductCtaImage()"
-                                            >
+                                                (click)="clearProductCtaImage()">
                                                 Clear Image
                                             </button>
                                         </div>
 
-                                        <input
-                                            hidden
-                                            #productCtaImageInput
-                                            type="file"
-                                            accept=".jpg,.jpeg,.png,.webp"
-                                            (change)="onProductCtaImageSelect($event)"
-                                        />
+                                        <input hidden #productCtaImageInput type="file" accept=".jpg,.jpeg,.png,.webp"
+                                            (change)="onProductCtaImageSelect($event)" />
 
                                         @if (isUploadingImage) {
                                         <div class="flex items-center gap-3 text-sm text-slate-500">
-                                            <mat-progress-spinner [diameter]="20" [mode]="'indeterminate'"></mat-progress-spinner>
+                                            <mat-progress-spinner [diameter]="20"
+                                                [mode]="'indeterminate'"></mat-progress-spinner>
                                             Uploading image...
                                         </div>
                                         }
                                     </div>
 
                                     <div class="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
-                                        <img
-                                            class="block h-full min-h-[220px] w-full bg-slate-100 object-cover"
+                                        <img class="block h-full min-h-[220px] w-full bg-slate-100 object-cover"
                                             [src]="resolveImageUrl(entityForm.get('ctaData.imageSrc')?.value)"
-                                            [alt]="entityForm.get('ctaData.imageAlt')?.value || 'CTA image preview'"
-                                        />
+                                            [alt]="entityForm.get('ctaData.imageAlt')?.value || 'CTA image preview'" />
                                     </div>
                                 </div>
                             </div>
@@ -1061,7 +945,8 @@
                                             <mat-form-field [subscriptSizing]="'dynamic'">
                                                 <mat-label>Label</mat-label>
                                                 <input matInput formControlName="label" maxlength="120" />
-                                                <mat-hint align="end">{{ ctaGroup.get('label')?.value?.length || 0 }}/120</mat-hint>
+                                                <mat-hint align="end">{{ ctaGroup.get('label')?.value?.length || 0
+                                                    }}/120</mat-hint>
                                                 @if (ctaGroup.get('label')?.hasError('required')) {
                                                 <mat-error>Label is required</mat-error>
                                                 }
@@ -1070,7 +955,8 @@
                                             <mat-form-field [subscriptSizing]="'dynamic'">
                                                 <mat-label>Link</mat-label>
                                                 <input matInput formControlName="link" maxlength="255" />
-                                                <mat-hint align="end">{{ ctaGroup.get('link')?.value?.length || 0 }}/255</mat-hint>
+                                                <mat-hint align="end">{{ ctaGroup.get('link')?.value?.length || 0
+                                                    }}/255</mat-hint>
                                                 @if (ctaGroup.get('link')?.hasError('required')) {
                                                 <mat-error>Link is required</mat-error>
                                                 }
@@ -1090,7 +976,46 @@
                             </div>
                         </div>
                     </mat-tab>
+                    <mat-tab label="SEO">
+                        <div class="space-y-5 p-2" formGroupName="seoData">
 
+                            <div class="grid gap-4">
+                                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                                    <mat-label>Page Title</mat-label>
+                                    <input matInput formControlName="pageTitle" maxlength="70" />
+                                    <mat-hint>Recommended length: 50-60 characters.</mat-hint>
+                                    <mat-hint align="end">{{ entityForm.get('seoData.pageTitle')?.value?.length || 0
+                                        }}/70</mat-hint>
+                                    @if (entityForm.get('seoData.pageTitle')?.hasError('required')) {
+                                    <mat-error>Page title is required</mat-error>
+                                    }
+                                </mat-form-field>
+
+                                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                                    <mat-label>Meta Description</mat-label>
+                                    <textarea matInput formControlName="metaDescription" rows="2"
+                                        maxlength="160"></textarea>
+                                    <mat-hint>Recommended length: 140-160 characters.</mat-hint>
+                                    <mat-hint align="end">{{ entityForm.get('seoData.metaDescription')?.value?.length ||
+                                        0 }}/160</mat-hint>
+                                    @if (entityForm.get('seoData.metaDescription')?.hasError('required')) {
+                                    <mat-error>Meta description is required</mat-error>
+                                    }
+                                </mat-form-field>
+
+                                <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                                    <mat-label>Meta Keywords</mat-label>
+                                    <textarea matInput formControlName="metaKeywords" rows="2"
+                                        maxlength="300"></textarea>
+                                    <mat-hint>Comma-separated keywords.</mat-hint>
+                                    <mat-hint align="end">{{ entityForm.get('seoData.metaKeywords')?.value?.length || 0
+                                        }}/300</mat-hint>
+                                </mat-form-field>
+
+                            </div>
+
+                        </div>
+                    </mat-tab>
                 </mat-tab-group>
             </form>
         </div>
@@ -1134,11 +1059,8 @@
     </div>
 
     <div class="max-h-[78vh] overflow-auto bg-slate-950 p-4">
-        <img
-            class="mx-auto max-h-[72vh] max-w-full rounded object-contain"
-            [src]="galleryImagePreview"
-            [alt]="galleryImagePreviewTitle || 'Gallery image preview'"
-        />
+        <img class="mx-auto max-h-[72vh] max-w-full rounded object-contain" [src]="galleryImagePreview"
+            [alt]="galleryImagePreviewTitle || 'Gallery image preview'" />
     </div>
 </ng-template>
 
@@ -1154,11 +1076,8 @@
         </div>
     </div>
 
-    <form
-        class="flex max-h-[70vh] flex-col gap-5 overflow-y-auto p-5"
-        [formGroup]="customerStoryDialogForm"
-        enctype="multipart/form-data"
-    >
+    <form class="flex max-h-[70vh] flex-col gap-5 overflow-y-auto p-5" [formGroup]="customerStoryDialogForm"
+        enctype="multipart/form-data">
         <div class="grid gap-4">
             <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
                 <mat-label>Name</mat-label>
@@ -1204,46 +1123,26 @@
                     </mat-form-field>
 
                     <div class="flex flex-wrap gap-3">
-                        <button
-                            class="min-w-36"
-                            mat-flat-button
-                            color="primary"
-                            type="button"
-                            [disabled]="isUploadingImage"
-                            (click)="customerStoryImageInput.click()"
-                        >
+                        <button class="min-w-36" mat-flat-button color="primary" type="button"
+                            [disabled]="isUploadingImage" (click)="customerStoryImageInput.click()">
                             <mat-icon [svgIcon]="'mat_outline:file_upload'"></mat-icon>
                             <span class="ml-2">Upload Image</span>
                         </button>
 
-                        <button
-                            mat-stroked-button
-                            color="accent"
-                            type="button"
-                            [disabled]="isUploadingImage"
-                            (click)="usePlaceholderCustomerStoryImage()"
-                        >
+                        <button mat-stroked-button color="accent" type="button" [disabled]="isUploadingImage"
+                            (click)="usePlaceholderCustomerStoryImage()">
                             Use Placeholder
                         </button>
 
-                        <button
-                            mat-stroked-button
-                            color="warn"
-                            type="button"
+                        <button mat-stroked-button color="warn" type="button"
                             [disabled]="!customerStoryDialogForm.get('image')?.value || isUploadingImage || isDeletingImage"
-                            (click)="clearCustomerStoryImage()"
-                        >
+                            (click)="clearCustomerStoryImage()">
                             Clear Image
                         </button>
                     </div>
 
-                    <input
-                        hidden
-                        #customerStoryImageInput
-                        type="file"
-                        accept=".jpg,.jpeg,.png,.webp"
-                        (change)="onCustomerStoryImageSelect($event)"
-                    />
+                    <input hidden #customerStoryImageInput type="file" accept=".jpg,.jpeg,.png,.webp"
+                        (change)="onCustomerStoryImageSelect($event)" />
 
                     @if (isUploadingImage) {
                     <div class="flex items-center gap-3 text-sm text-slate-500">
@@ -1254,11 +1153,9 @@
                 </div>
 
                 <div class="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
-                    <img
-                        class="block h-full min-h-[220px] w-full bg-slate-100 object-cover"
+                    <img class="block h-full min-h-[220px] w-full bg-slate-100 object-cover"
                         [src]="customerStoryImagePreview || resolveImageUrl(customerStoryDialogForm.get('image')?.value || placeholderCustomerStoryImagePath)"
-                        [alt]="customerStoryDialogForm.get('name')?.value || 'Testimonial image preview'"
-                    />
+                        [alt]="customerStoryDialogForm.get('name')?.value || 'Testimonial image preview'" />
                 </div>
             </div>
         </div>
@@ -1276,14 +1173,8 @@
             </mat-form-field>
 
             <button mat-button type="button" (click)="closeCustomerStoryDialog()">Cancel</button>
-            <button
-                class="px-6"
-                mat-flat-button
-                color="primary"
-                type="button"
-                [disabled]="customerStoryDialogForm.invalid || isUploadingImage"
-                (click)="saveCustomerStory()"
-            >
+            <button class="px-6" mat-flat-button color="primary" type="button"
+                [disabled]="customerStoryDialogForm.invalid || isUploadingImage" (click)="saveCustomerStory()">
                 <span>{{ customerStoryDialogMode === 'add' ? 'Add Testimonial' : 'Update Testimonial' }}</span>
             </button>
         </div>
