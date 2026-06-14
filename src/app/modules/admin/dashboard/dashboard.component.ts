@@ -67,21 +67,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.user = this._userService.user$;
 
         this._dashboardService.enquiries.subscribe((response) => {
-            console.log('enquiries', response);
             if (response.status) {
                 this.enquiryData = response.data;
             }
         });
 
         this._dashboardService.careerEnquiries.subscribe((response) => {
-            console.log('career enquiries', response);
             if (response.status) {
                 this.careerEnquiryData = response.data;
             }
         });
 
         this._dashboardService.productEnquiries.subscribe((response) => {
-            console.log('product enquiries', response);
             if (response.status) {
                 this.productEnquiryData = response.data;
             }
