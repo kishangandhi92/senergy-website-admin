@@ -1,44 +1,48 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from 'environments/environment';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, catchError, of, tap } from 'rxjs';
+
+type EnquiryType = 'general' | 'career' | 'product';
+
+interface EnquiryResponse {
+    status: boolean;
+    data: any[];
+}
 
 @Injectable({ providedIn: 'root' })
 export class EnquiryService {
-    private _enquries: BehaviorSubject<any[] | null> =
-        new BehaviorSubject(null);
-    private apiUrl = environment.apiBaseUrl + '/api/a/enquiries';
+    private readonly _enquiries = new BehaviorSubject<any[]>([]);
+    private readonly apiUrl = environment.apiBaseUrl + '/api/a/enquiries';
 
-    /**
-     * Constructor
-     */
-    constructor(private _httpClient: HttpClient) {}
+    constructor(private readonly _httpClient: HttpClient) {}
 
-    // -----------------------------------------------------------------------------------------------------
-    // @ Accessors
-    // -----------------------------------------------------------------------------------------------------
-
-    /**
-     * Getter for tags
-     */
     get enquiries$(): Observable<any[]> {
-        return this._enquries.asObservable();
+        return this._enquiries.asObservable();
     }
 
-    /**
-     * Get recent works
-     */
-    getEnquiries(type: string) {
-        return this._httpClient.get(this.apiUrl + '/' + type).pipe(
-            tap((response: any) => {
-                if (response.status) {
-                    this._enquries.next(response.data as any[]);
-                }
+    getEnquiries(type: EnquiryType): Observable<EnquiryResponse> {
+        this._enquiries.next([]);
+
+        return this._httpClient.get<EnquiryResponse>(this.apiUrl + '/' + type).pipe(
+            tap((response) => {
+                this._enquiries.next(response.status ? (response.data ?? []) : []);
+            }),
+            catchError(() => {
+                this._enquiries.next([]);
+
+                return of({
+                    status: false,
+                    data: [],
+                });
             })
         );
     }
 
-    downloadExcel(type) {
-        window.open(environment.apiBaseUrl + '/api/u/enquiries/export/' + type, '_blank');
+    downloadExcel(type: EnquiryType): void {
+        window.open(
+            environment.apiBaseUrl + '/api/u/enquiries/export/' + type,
+            '_blank'
+        );
     }
 }

@@ -1,24 +1,9 @@
 <div class="bg-card flex min-w-0 flex-auto flex-col dark:bg-transparent sm:absolute sm:inset-0 sm:overflow-hidden">
-
-    <!-- Header -->
     <div
         class="relative flex flex-0 flex-col border-b px-6 py-8 sm:flex-row sm:items-center sm:justify-between md:px-8">
-        <!-- Loader -->
-        @if (isLoading) {
-        <div class="absolute inset-x-0 bottom-0">
-            <mat-progress-bar [mode]="'indeterminate'"></mat-progress-bar>
-        </div>
-        }
-        <!-- Title -->
-        <div class="text-4xl font-extrabold tracking-tight">General Enquiries</div>
-        <!-- Actions -->
+        <div class="text-4xl font-extrabold tracking-tight">{{ pageTitle }}</div>
+
         <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
-            <!-- Search -->
-            <!-- <mat-form-field class="fuse-mat-dense fuse-mat-rounded min-w-64" [subscriptSizing]="'dynamic'">
-                <mat-icon class="icon-size-5" matPrefix [svgIcon]="'heroicons_solid:magnifying-glass'"></mat-icon>
-                <input matInput [(ngModel)]="query" [autocomplete]="'off'" [placeholder]="'Search by Name'" />
-            </mat-form-field> -->
-            <!-- Add product button -->
             <button class="ml-4" mat-flat-button [color]="'primary'" (click)="downloadExcel()">
                 <mat-icon [svgIcon]="'mat_outline:file_download'"></mat-icon>
                 <span class="ml-2 mr-1">Download Excel</span>
@@ -26,69 +11,38 @@
         </div>
     </div>
 
-    <!-- Main -->
     <div class="flex flex-auto overflow-hidden">
-        <!-- Products list -->
         <div class="flex flex-auto flex-col overflow-hidden sm:overflow-y-auto">
-
-
-            @if (enquiries$ | async; as enquiries) {
-            @if (enquiries.length > 0) {
-            <div class="grid">
-            
-                @if(type === 'general') {
-                    <div class="general-grid text-secondary sticky top-0 z-10 grid gap-4 bg-gray-50 px-6 py-4 text-md font-semibold shadow dark:bg-black dark:bg-opacity-5 md:px-8"
-                        matSort matSortDisableClear>
-                        <div [mat-sort-header]="'fullname'">Name</div>
-                        <div [mat-sort-header]="'phone'">Phone</div>
-                        <div [mat-sort-header]="'emailId'">Email ID</div>
-                        <div [mat-sort-header]="'purpose'">Purpose</div>
-                        <div [mat-sort-header]="'message'">Message</div>
-                        <div [mat-sort-header]="'enquiredOn'">Enquired On</div>
-                    </div>
-
-                    <!-- Rows -->
-                    @if (enquiries$ | async | SearchFilter:query:'firstname'| sort: _sort?.active:_sort?.direction; as
-                    enquiries
-                    ) {
-
-                    <div *ngIf="enquiries.length > 0; else noData">
-                        @for (
-                        user of enquiries;
-                        track trackByFn($index, user)
-                        ) {
-                        <div class="general-grid grid items-center gap-4 border-b px-6 py-3 md:px-8">
-
-                            <div class="truncate " [title]="user.name">
-                                {{ user.name }}
-                            </div>
-
-                            <div class="truncate" [title]="user.phone">
-                                {{ user.phone }}
-                            </div>
-                            <div class="truncate" [title]="user.emailId">
-                                {{ user.emailId }}
-                            </div>
-                            <div class="truncate" [title]="user.purpose">
-                                {{ user.purpose }}
-                            </div>
-                            <div class="truncate" [title]="user.message">
-                                {{ user.message }}
-                            </div>
-                            <div class="truncate" [title]="user.enquiredOn">
-                                {{ user.enquiredOn }}
-                            </div>
-                        </div>
-                        }
-                    </div>
-                    <ng-template #noData>
-                        <div class="border-t p-8 text-center text-2xl tracking-tight">No records found for the term <span
-                                class="font-semibold ">"{{query }}"</span></div>
-                    </ng-template>
-
+            @if (displayedColumns.length > 0) {
+            <div class="overflow-x-auto">
+                <table
+                    mat-table
+                    [dataSource]="dataSource"
+                    matSort
+                    matSortDisableClear
+                    class="enquiries-table w-full"
+                    [style.--enquiry-column-count]="displayedColumns.length">
+                    @for (column of columns; track column.key) {
+                    <ng-container [matColumnDef]="column.key">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                            {{ column.label }}
+                        </th>
+                        <td mat-cell *matCellDef="let enquiry">
+                            <span class="block truncate" [title]="enquiry[column.key] ?? ''">
+                                {{ enquiry[column.key] ?? '-' }}
+                            </span>
+                        </td>
+                    </ng-container>
                     }
-                }
 
+                    <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+                    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+                    <tr class="mat-row" *matNoDataRow>
+                        <td class="mat-cell empty-state" [attr.colspan]="displayedColumns.length">
+                            There are no enquiries yet!
+                        </td>
+                    </tr>
+                </table>
             </div>
             }
             @else {
@@ -96,16 +50,6 @@
                 There are no enquiries yet!
             </div>
             }
-            } 
-            @else {
- <div class="border-t p-8 text-center text-4xl tracking-tight sm:p-16">
-                There are no enquiries yet!
-            </div>
-            }
-
-
-
         </div>
     </div>
-
 </div>

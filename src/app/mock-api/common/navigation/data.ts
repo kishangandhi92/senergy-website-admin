@@ -18,6 +18,20 @@ export const defaultNavigation: FuseNavigationItem[] = [
         link : '/enquiries/general'
     },
     {
+        id   : 'career-enquiries',
+        title: 'Career Enquiries',
+        type : 'basic',
+        icon : 'heroicons_outline:briefcase',
+        link : '/enquiries/career'
+    },
+    {
+        id   : 'product-enquiries',
+        title: 'Product Enquiries',
+        type : 'basic',
+        icon : 'heroicons_outline:cube',
+        link : '/enquiries/product'
+    },
+    {
         id: 'configurations',
         title: 'Configurations',
         type: 'group',

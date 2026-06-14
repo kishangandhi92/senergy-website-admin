@@ -6,8 +6,8 @@ import { environment } from 'environments/environment';
 @Injectable({ providedIn: 'root' })
 export class DashboardService {
     private _data: BehaviorSubject<any> = new BehaviorSubject(null);
-    private _locumEnquries: BehaviorSubject<any> = new BehaviorSubject(null);
-    private _clinicEnquries: BehaviorSubject<any> = new BehaviorSubject(null);
+    private _productEnquries: BehaviorSubject<any> = new BehaviorSubject(null);
+    private _careerEnquries: BehaviorSubject<any> = new BehaviorSubject(null);
     private _enquiries: BehaviorSubject<any> = new BehaviorSubject(null);
     private apiUrl = environment.apiBaseUrl + '/api/a/dashboard';
 
@@ -26,12 +26,12 @@ export class DashboardService {
         return this._data.asObservable();
     }
 
-    get locumEnquiries(): Observable<any> {
-        return this._locumEnquries.asObservable();
+    get productEnquiries(): Observable<any> {
+        return this._productEnquries.asObservable();
     }
 
-    get clinicEnquiries(): Observable<any> {
-        return this._clinicEnquries.asObservable();
+    get careerEnquiries(): Observable<any> {
+        return this._careerEnquries.asObservable();
     }
 
     get enquiries(): Observable<any> {
@@ -50,18 +50,18 @@ export class DashboardService {
         );
     }
 
-    getLocumEnquiries(): Observable<any> {
-        return this._httpClient.get(this.apiUrl + '/locumEnquries').pipe(
+    getProductEnquiries(): Observable<any> {
+        return this._httpClient.get(this.apiUrl + '/productEnquiries').pipe(
             tap((response: any[]) => {
-                this._locumEnquries.next(response);
+                this._productEnquries.next(response);
             })
         );
     }
 
-    getClinicEnquiries(): Observable<any> {
-        return this._httpClient.get(this.apiUrl + '/clinicEnquries').pipe(
+    getCareerEnquiries(): Observable<any> {
+        return this._httpClient.get(this.apiUrl + '/careerEnquiries').pipe(
             tap((response: any[]) => {
-                this._clinicEnquries.next(response);
+                this._careerEnquries.next(response);
             })
         );
     }

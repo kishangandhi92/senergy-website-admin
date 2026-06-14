@@ -43,10 +43,14 @@ import { FuseAlertComponent } from '@fuse/components/alert';
 
 export class DashboardComponent implements OnInit, OnDestroy {
     enquiryData;
+    careerEnquiryData;
+    productEnquiryData;
     data: any;
     private _unsubscribeAll: Subject<any> = new Subject<any>();
     user: Observable<User>;
     displayedColumns2: string[] = [ 'name', 'emailId', 'phone',  'purpose', 'message', 'enquiredOn'];
+    careerColumns: string[] = [ 'name', 'emailId', 'phone',  'job_title', 'message', 'enquiredOn'];
+    productColumns: string[] = [ 'name', 'emailId', 'phone',  'product', 'message', 'enquiredOn'];
     /**
      * Constructor
      */
@@ -66,6 +70,20 @@ export class DashboardComponent implements OnInit, OnDestroy {
             console.log('enquiries', response);
             if (response.status) {
                 this.enquiryData = response.data;
+            }
+        });
+
+        this._dashboardService.careerEnquiries.subscribe((response) => {
+            console.log('career enquiries', response);
+            if (response.status) {
+                this.careerEnquiryData = response.data;
+            }
+        });
+
+        this._dashboardService.productEnquiries.subscribe((response) => {
+            console.log('product enquiries', response);
+            if (response.status) {
+                this.productEnquiryData = response.data;
             }
         });
     }

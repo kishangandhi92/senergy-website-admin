@@ -1,118 +1,230 @@
-import {
-    AsyncPipe,
-    CommonModule,
-    NgClass,
-    NgTemplateOutlet,
-} from '@angular/common';
+import { CommonModule } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
     AfterViewInit,
     ChangeDetectorRef,
     Component,
-    OnDestroy,
+    DestroyRef,
     OnInit,
     ViewChild,
+    inject,
 } from '@angular/core';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatOptionModule, MatRippleModule } from '@angular/material/core';
-import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
-import { MatPaginatorModule } from '@angular/material/paginator';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSelectModule } from '@angular/material/select';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatSort, MatSortModule } from '@angular/material/sort';
-import { MatTableModule } from '@angular/material/table';
-import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { ActivatedRoute } from '@angular/router';
-import { FuseCardComponent } from '@fuse/components/card';
-import { PipesModule } from 'app/pipes/pipes.module';
-import { Observable, Subject } from 'rxjs';
+import { map } from 'rxjs';
 import { EnquiryService } from './enquiry.service';
+
+type EnquiryType = 'general' | 'career' | 'product';
+type EnquiryRow = Record<string, string | number | null | undefined>;
+
+interface EnquiryColumn {
+    key: string;
+    label: string;
+}
+
+interface EnquiryTableConfig {
+    title: string;
+    defaultSort: string;
+    columns?: EnquiryColumn[];
+}
+
+const ENQUIRY_TABLE_CONFIG: Record<EnquiryType, EnquiryTableConfig> = {
+    general: {
+        title: 'General Enquiries',
+        defaultSort: 'name',
+        columns: [
+            { key: 'name', label: 'Name' },
+            { key: 'phone', label: 'Phone' },
+            { key: 'emailId', label: 'Email ID' },
+            { key: 'purpose', label: 'Purpose' },
+            { key: 'message', label: 'Message' },
+            { key: 'enquiredOn', label: 'Enquired On' },
+        ],
+    },
+    career: {
+        title: 'Career Enquiries',
+        defaultSort: 'name',
+        columns: [
+            { key: 'name', label: 'Name' },
+            { key: 'phone', label: 'Phone' },
+            { key: 'emailId', label: 'Email ID' },
+            { key: 'job_title', label: 'Job Title' },
+            { key: 'message', label: 'Message' },
+            { key: 'enquiredOn', label: 'Enquired On' },
+        ],
+    },
+    product: {
+        title: 'Product Enquiries',
+        defaultSort: 'name',
+    },
+};
+
+const COLUMN_LABEL_OVERRIDES: Record<string, string> = {
+    emailId: 'Email ID',
+    enquiredOn: 'Enquired On',
+    job_title: 'Job Title',
+    product_name: 'Product Name',
+    productName: 'Product Name',
+};
+
+const HIDDEN_DYNAMIC_COLUMNS = new Set([
+    'id',
+    'autoNo',
+    'createdAt',
+    'updatedAt',
+    '__v',
+]);
+
+const PRIORITY_COLUMN_ORDER = [
+    'name',
+    'phone',
+    'emailId',
+    'productName',
+    'product_name',
+    'purpose',
+    'job_title',
+    'message',
+    'enquiredOn',
+];
 
 @Component({
     selector: 'app-enquiries',
     standalone: true,
     imports: [
-    MatProgressBarModule,
-    MatFormFieldModule,
-    MatIconModule,
-    MatInputModule,
-    FormsModule,
-    ReactiveFormsModule,
-    MatButtonModule,
-    MatSortModule,
-    MatPaginatorModule,
-    MatSlideToggleModule,
-    MatSelectModule,
-    MatOptionModule,
-    MatCheckboxModule,
-    MatRippleModule,
-    MatProgressSpinnerModule,
-    AsyncPipe,
-    MatSnackBarModule,
-    PipesModule,
-    MatTooltipModule,
-    CommonModule,
-    MatTableModule
-],
+        CommonModule,
+        MatButtonModule,
+        MatIconModule,
+        MatSortModule,
+        MatTableModule,
+    ],
     templateUrl: './enquiries.component.html',
     styleUrl: './enquiries.component.scss',
 })
-export class EnquiriesComponent implements OnInit, AfterViewInit, OnDestroy {
-    @ViewChild(MatSort) private _sort: MatSort = null;
-    query = '';
-    type = '';
-    enquiries$: Observable<any[]>;
-    isLoading: boolean = false;
+export class EnquiriesComponent implements OnInit, AfterViewInit {
+    @ViewChild(MatSort) private _sort!: MatSort;
 
-    private _unsubscribeAll: Subject<any> = new Subject<any>();
+    type: EnquiryType = 'general';
+    pageTitle = ENQUIRY_TABLE_CONFIG.general.title;
+    columns: EnquiryColumn[] = ENQUIRY_TABLE_CONFIG.general.columns ?? [];
+    displayedColumns: string[] = this.columns.map(({ key }) => key);
+    readonly dataSource = new MatTableDataSource<EnquiryRow>([]);
+
+    private readonly _destroyRef = inject(DestroyRef);
 
     constructor(
-        private route: ActivatedRoute,
-        private _changeDetectorRef: ChangeDetectorRef,
-        private _enquiryService: EnquiryService
-    ) {}
+        private readonly route: ActivatedRoute,
+        private readonly _changeDetectorRef: ChangeDetectorRef,
+        private readonly _enquiryService: EnquiryService
+    ) {
+        this.dataSource.sortingDataAccessor = (
+            item: EnquiryRow,
+            property: string
+        ): string | number => {
+            const value = item[property];
+
+            return typeof value === 'string'
+                ? value.toLocaleLowerCase()
+                : value ?? '';
+        };
+    }
 
     ngOnInit(): void {
-        this.type = this.route.snapshot.data['type']; // Get 'id' as a string
-        this.enquiries$ = this._enquiryService.enquiries$;
+        this.route.data
+            .pipe(
+                map((data) => data['type'] as EnquiryType),
+                takeUntilDestroyed(this._destroyRef)
+            )
+            .subscribe((routeType) => {
+                this.updateRouteType(routeType);
+                this.dataSource.data = [];
+            });
+
+        this._enquiryService.enquiries$
+            .pipe(takeUntilDestroyed(this._destroyRef))
+            .subscribe((enquiries) => {
+                this.columns = this.resolveColumns(enquiries);
+                this.displayedColumns = this.columns.map(({ key }) => key);
+                this.dataSource.data = enquiries;
+                this.applyDefaultSort();
+            });
     }
 
     ngAfterViewInit(): void {
-        if (this._sort) {
-            // Set the initial sort
-            this._sort.sort({
-                id: 'fullname',
-                start: 'asc',
-                disableClear: true,
-            });
-            // Mark for check
-            this._changeDetectorRef.detectChanges();
-        }
+        this.dataSource.sort = this._sort;
+        this.applyDefaultSort();
     }
 
-    ngOnDestroy(): void {
-        // Unsubscribe from all subscriptions
-        this._unsubscribeAll.next(null);
-        this._unsubscribeAll.complete();
-    }
-
-    /**
-     * Track by function for ngFor loops
-     *
-     * @param index
-     * @param item
-     */
-    trackByFn(index: number, item: any): any {
-        return item.id || index;
-    }
-
-    downloadExcel() {
+    downloadExcel(): void {
         this._enquiryService.downloadExcel(this.type);
+    }
+
+    private applyDefaultSort(): void {
+        if (!this._sort || this.displayedColumns.length === 0) {
+            return;
+        }
+
+        const configuredSortColumn =
+            ENQUIRY_TABLE_CONFIG[this.type].defaultSort;
+        const sortColumn = this.displayedColumns.includes(configuredSortColumn)
+            ? configuredSortColumn
+            : this.displayedColumns[0];
+
+        this._sort.sort({
+            id: sortColumn,
+            start: 'asc',
+            disableClear: true,
+        });
+
+        this._changeDetectorRef.detectChanges();
+    }
+
+    private updateRouteType(routeType: EnquiryType): void {
+        this.type = ENQUIRY_TABLE_CONFIG[routeType] ? routeType : 'general';
+        this.pageTitle = ENQUIRY_TABLE_CONFIG[this.type].title;
+        this.columns = this.resolveColumns();
+        this.displayedColumns = this.columns.map(({ key }) => key);
+    }
+
+    private resolveColumns(enquiries: EnquiryRow[] = []): EnquiryColumn[] {
+        const configuredColumns = ENQUIRY_TABLE_CONFIG[this.type].columns;
+
+        if (configuredColumns?.length) {
+            return configuredColumns;
+        }
+
+        if (!enquiries.length) {
+            return [];
+        }
+
+        return this.buildDynamicColumns(enquiries[0]);
+    }
+
+    private buildDynamicColumns(enquiry: EnquiryRow): EnquiryColumn[] {
+        const availableKeys = Object.keys(enquiry).filter(
+            (key) => !HIDDEN_DYNAMIC_COLUMNS.has(key)
+        );
+
+        const orderedKeys = [
+            ...PRIORITY_COLUMN_ORDER.filter((key) => availableKeys.includes(key)),
+            ...availableKeys.filter(
+                (key) => !PRIORITY_COLUMN_ORDER.includes(key)
+            ),
+        ];
+
+        return orderedKeys.map((key) => ({
+            key,
+            label:
+                COLUMN_LABEL_OVERRIDES[key] ?? this.formatColumnLabel(key),
+        }));
+    }
+
+    private formatColumnLabel(key: string): string {
+        return key
+            .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+            .replace(/_/g, ' ')
+            .replace(/\b\w/g, (char) => char.toUpperCase());
     }
 }

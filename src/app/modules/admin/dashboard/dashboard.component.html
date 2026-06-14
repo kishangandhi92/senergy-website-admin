@@ -6,7 +6,7 @@
                 <!-- Avatar and name -->
                 <div class="flex min-w-0 flex-auto items-center">
 
-                    <div class="ml-4 flex min-w-0 flex-col" *ngIf="user | async as user">
+                    <div class="flex min-w-0 flex-col" *ngIf="user | async as user">
 
                         <div
                             class="truncate text-2xl font-semibold leading-7 tracking-tight md:text-5xl md:leading-snug">
@@ -51,7 +51,7 @@
                                 Displaying recent 10 enquiries made from the website contact page
                             </div>
                         </div>
-                        <a [routerLink]="['/enquiries/general']"  class="ml-4" mat-flat-button [color]="'primary'">
+                        <a [routerLink]="['/enquiries/general']" class="ml-4" mat-flat-button [color]="'primary'">
                             <span class="ml-2 mr-1">Show All</span>
 
                         </a>
@@ -103,6 +103,138 @@
 
                             <tr mat-header-row *matHeaderRowDef="displayedColumns2"></tr>
                             <tr mat-row *matRowDef="let row; columns: displayedColumns2;"></tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow sm:col-span-6">
+                    <div class="flex justify-between">
+                        <div>
+                            <div class="text-2xl font-extrabold leading-none tracking-tight">
+                                Recent Career Enquries
+                            </div>
+                            <div class="text-secondary mt-1.5 mb-1.5 text-lg">
+                                Displaying recent 10 enquiries made from the careers page
+                            </div>
+                        </div>
+                        <a [routerLink]="['/enquiries/career']" class="ml-4" mat-flat-button [color]="'primary'">
+                            <span class="ml-2 mr-1">Show All</span>
+
+                        </a>
+                    </div>
+
+                    <div class="mt-2 flex flex-auto flex-col overflow-x-auto">
+                        <div *ngIf="!careerEnquiryData || careerEnquiryData.length === 0" class="no-records">
+
+                            <fuse-alert [type]="'warning'">
+                                No records found
+                            </fuse-alert>
+
+                        </div>
+                        <table mat-table [dataSource]="careerEnquiryData" class="mat-elevation-z8"
+                            *ngIf="careerEnquiryData && careerEnquiryData.length > 0">
+
+                            <!--- Note that these columns can be defined in any order.
+                                  The actual rendered columns are set as a property on the row definition" -->
+
+                            <ng-container matColumnDef="name">
+                                <th mat-header-cell *matHeaderCellDef> Name </th>
+                                <td mat-cell *matCellDef="let element"> {{element.name}} </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="emailId">
+                                <th mat-header-cell *matHeaderCellDef> Email ID </th>
+                                <td mat-cell *matCellDef="let element"> {{element.emailId}} </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="job_title">
+                                <th mat-header-cell *matHeaderCellDef> Job Title </th>
+                                <td mat-cell *matCellDef="let element"> {{element.job_title}} </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="phone">
+                                <th mat-header-cell *matHeaderCellDef> Phone </th>
+                                <td mat-cell *matCellDef="let element"> {{element.phone}} </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="message">
+                                <th mat-header-cell *matHeaderCellDef> Message </th>
+                                <td mat-cell *matCellDef="let element"> {{element.message}} </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="enquiredOn">
+                                <th mat-header-cell *matHeaderCellDef> Enquired On </th>
+                                <td mat-cell *matCellDef="let element"> {{element.enquiredOn}} </td>
+                            </ng-container>
+
+                            <tr mat-header-row *matHeaderRowDef="careerColumns"></tr>
+                            <tr mat-row *matRowDef="let row; columns: careerColumns;"></tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="bg-card flex flex-auto flex-col overflow-hidden rounded-2xl p-6 shadow sm:col-span-6">
+                    <div class="flex justify-between">
+                        <div>
+                            <div class="text-2xl font-extrabold leading-none tracking-tight">
+                                Recent Product Enquries
+                            </div>
+                            <div class="text-secondary mt-1.5 mb-1.5 text-lg">
+                                Displaying recent 10 enquiries made from the product page
+                            </div>
+                        </div>
+                        <a [routerLink]="['/enquiries/product']" class="ml-4" mat-flat-button [color]="'primary'">
+                            <span class="ml-2 mr-1">Show All</span>
+
+                        </a>
+                    </div>
+
+                    <div class="mt-2 flex flex-auto flex-col overflow-x-auto">
+                        <div *ngIf="!productEnquiryData || productEnquiryData.length === 0" class="no-records">
+
+                            <fuse-alert [type]="'warning'">
+                                No records found
+                            </fuse-alert>
+
+                        </div>
+                        <table mat-table [dataSource]="productEnquiryData" class="mat-elevation-z8"
+                            *ngIf="productEnquiryData && productEnquiryData.length > 0">
+
+                            <!--- Note that these columns can be defined in any order.
+                                  The actual rendered columns are set as a property on the row definition" -->
+
+                            <ng-container matColumnDef="name">
+                                <th mat-header-cell *matHeaderCellDef> Name </th>
+                                <td mat-cell *matCellDef="let element"> {{element.name}} </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="emailId">
+                                <th mat-header-cell *matHeaderCellDef> Email ID </th>
+                                <td mat-cell *matCellDef="let element"> {{element.emailId}} </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="product">
+                                <th mat-header-cell *matHeaderCellDef> Product </th>
+                                <td mat-cell *matCellDef="let element"> {{element.product}} </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="phone">
+                                <th mat-header-cell *matHeaderCellDef> Phone </th>
+                                <td mat-cell *matCellDef="let element"> {{element.phone}} </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="message">
+                                <th mat-header-cell *matHeaderCellDef> Message </th>
+                                <td mat-cell *matCellDef="let element"> {{element.message}} </td>
+                            </ng-container>
+
+                            <ng-container matColumnDef="enquiredOn">
+                                <th mat-header-cell *matHeaderCellDef> Enquired On </th>
+                                <td mat-cell *matCellDef="let element"> {{element.enquiredOn}} </td>
+                            </ng-container>
+
+                            <tr mat-header-row *matHeaderRowDef="productColumns"></tr>
+                            <tr mat-row *matRowDef="let row; columns: productColumns;"></tr>
                         </table>
                     </div>
                 </div>

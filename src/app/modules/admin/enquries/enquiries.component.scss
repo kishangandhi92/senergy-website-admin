@@ -1,8 +1,37 @@
-.locum-grid {
-    grid-template-columns:  repeat(7, 1fr);
+.enquiries-table {
+    --enquiry-column-count: 1;
+    background: transparent;
+    min-width: 100%;
+
+    .mat-mdc-header-row,
+    .mat-mdc-row {
+        display: grid;
+        grid-template-columns: repeat(
+            var(--enquiry-column-count),
+            minmax(10rem, 1fr)
+        );
+    }
+
+    .mat-mdc-header-cell,
+    .mat-mdc-cell {
+        border-bottom-width: 1px;
+        padding: 0.75rem 1.5rem;
+    }
+
+    .mat-mdc-header-cell {
+        background: rgb(249 250 251);
+        font-size: 0.95rem;
+        font-weight: 600;
+    }
+
+    .mat-mdc-row:hover {
+        background: rgba(15, 23, 42, 0.02);
+    }
 }
 
-.clinic-grid,
-.general-grid {
-    grid-template-columns:  repeat(6, 1fr);
+.empty-state {
+    padding: 2rem;
+    text-align: center;
+    font-size: 1.5rem;
+    letter-spacing: -0.025em;
 }

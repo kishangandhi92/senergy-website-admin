@@ -9,6 +9,8 @@ export default [
         component: DashboardComponent,
         resolve: {
              enquiries: () => inject(DashboardService).getEnquiries(),
+             careerEnquiries: () => inject(DashboardService).getCareerEnquiries(),
+             productEnquiries: () => inject(DashboardService).getProductEnquiries(),
         },
     },
 ] as Routes;

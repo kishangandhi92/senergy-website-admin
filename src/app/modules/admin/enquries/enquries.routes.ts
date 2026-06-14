@@ -1,20 +1,15 @@
-import { Routes } from '@angular/router';
 import { inject } from '@angular/core';
-import { EnquiryService } from './enquiry.service';
+import { Routes } from '@angular/router';
 import { EnquiriesComponent } from './enquiries.component';
+import { EnquiryService } from './enquiry.service';
 
-export default [
-    {
-        path: 'general',
-        children: [
-            {
-                path: '',
-                component: EnquiriesComponent,
-                data: { type: 'general' },
-                resolve: {
-                    enquiries: () => inject(EnquiryService).getEnquiries('general'),
-                }
-            }
-        ],
-    }
-] as Routes;
+const enquiryTypes = ['general', 'career', 'product'] as const;
+
+export default enquiryTypes.map((type) => ({
+    path: type,
+    component: EnquiriesComponent,
+    data: { type },
+    resolve: {
+        enquiries: () => inject(EnquiryService).getEnquiries(type),
+    },
+})) as Routes;
