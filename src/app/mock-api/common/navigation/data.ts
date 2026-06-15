@@ -172,6 +172,13 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 type: 'basic',
                 icon: 'mat_outline:contact_phone',
                 link: '/configurations/contact',
+            },
+            {
+                id: 'configurations.privacy',
+                title: 'Privacy Policy',
+                type: 'basic',
+                icon: 'mat_outline:lock',
+                link: '/configurations/privacy',
             }
             // {
             //     id: 'configurations.about',

@@ -115,7 +115,7 @@ export class PrivacyComponent implements OnInit, OnDestroy {
 
     patchFormValues(data) {
         this.entityForm.patchValue({
-            privacy: data.privacy_policy,
+            privacy: data?.content?.content || '',
         });
     }
 
@@ -131,7 +131,9 @@ export class PrivacyComponent implements OnInit, OnDestroy {
         const formValues = this.entityForm.value;
 
         const requestObj = {
-            privacy: formValues.privacy
+            content: {
+                content: this.normalizeRichTextContent(formValues.privacy),
+            },
         };
 
         this._privacyService.update(requestObj).subscribe(
@@ -150,5 +152,11 @@ export class PrivacyComponent implements OnInit, OnDestroy {
                 this.entityForm.enable();
             }
         );
+    }
+
+    private normalizeRichTextContent(value: string): string {
+        return String(value || '')
+            .replace(/&nbsp;/gi, ' ')
+            .replace(/\u00a0/g, ' ');
     }
 }
