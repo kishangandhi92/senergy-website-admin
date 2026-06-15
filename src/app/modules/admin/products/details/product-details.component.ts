@@ -507,7 +507,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
     }
 
     removeGalleryImage(index: number): void {
-        if (this.galleryForms.length <= 3 || this.entityForm.disabled) {
+        if (this.galleryForms.length <= 1 || this.entityForm.disabled) {
             return;
         }
 
@@ -548,7 +548,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
             'gallery image',
             imageControl,
             () => {
-                if (removeAfterDelete && this.galleryForms.length > 3) {
+                if (removeAfterDelete && this.galleryForms.length > 1) {
                     this.galleryForms.removeAt(index);
                     this.syncGalleryPriorities();
                 }
@@ -1327,7 +1327,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
     }
 
     private createDefaultGalleryItems(): any[] {
-        return [1, 2, 3].map((priority) => ({
+        return [1].map((priority) => ({
             image: '',
             priority,
         }));
@@ -1443,7 +1443,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
             }))
             .sort((leftItem, rightItem) => leftItem.priority - rightItem.priority);
 
-        while (normalizedItems.length < 3) {
+        while (normalizedItems.length < 1) {
             normalizedItems.push({
                 image: '',
                 priority: normalizedItems.length + 1,

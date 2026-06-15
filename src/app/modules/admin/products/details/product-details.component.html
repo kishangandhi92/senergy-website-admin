@@ -204,7 +204,7 @@
                                 <div>
                                     <div class="text-base font-semibold text-slate-900">Gallery Images</div>
                                     <div class="text-sm text-slate-500">
-                                        Minimum 3 images and maximum 10 images. JPG, JPEG, PNG or WebP up to {{
+                                        Minimum 1 image and maximum 10 images. JPG, JPEG, PNG or WebP up to {{
                                         maxFileSizeInKb }} KB.
                                     </div>
                                 </div>
@@ -233,7 +233,7 @@
                                         </div>
 
                                         <button mat-icon-button color="warn" type="button"
-                                            [disabled]="galleryForms.length <= 3 || entityForm.disabled"
+                                            [disabled]="galleryForms.length <= 1 || entityForm.disabled"
                                             (click)="removeGalleryImage(galleryIndex)" matTooltip="Remove image">
                                             <mat-icon [svgIcon]="'heroicons_outline:trash'"></mat-icon>
                                         </button>
