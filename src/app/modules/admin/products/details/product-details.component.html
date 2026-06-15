@@ -396,7 +396,16 @@
                                     </div>
                                 </div>
 
-                                <div class="flex items-center gap-4">
+                                <div class="flex flex-wrap items-center gap-4">
+                                    <mat-form-field class="w-64" [subscriptSizing]="'dynamic'">
+                                        <mat-label>Title</mat-label>
+                                        <input matInput formControlName="howItWorksTitle" maxlength="100" />
+                                        <mat-hint align="end">{{ entityForm.get('details.howItWorksTitle')?.value?.length || 0 }}/100</mat-hint>
+                                        @if (entityForm.get('details.howItWorksTitle')?.hasError('required')) {
+                                        <mat-error>Title is required</mat-error>
+                                        }
+                                    </mat-form-field>
+
                                     <mat-checkbox formControlName="showHowItWorks" color="primary"
                                         (change)="onHowItWorksVisibilityChange()">
                                         Show this on Details Page?

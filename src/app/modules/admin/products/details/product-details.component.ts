@@ -211,6 +211,10 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
                         this.createHowItWorksItemGroup(item)
                     )
                 ),
+                howItWorksTitle: [
+                    '',
+                    [Validators.required, Validators.maxLength(100)],
+                ],
                 showHowItWorks: [true],
                 keyFeatures: this._formBuilder.array(
                     this.createDefaultKeyFeatureItems().map((item) =>
@@ -1187,6 +1191,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
             howItWorks: this.normalizeHowItWorksItems(
                 parsedDetails?.howItWorks
             ),
+            howItWorksTitle: parsedDetails?.howItWorksTitle || '',
             showHowItWorks: parsedDetails?.showHowItWorks ?? true,
             keyFeatures: this.normalizeKeyFeatureItems(
                 parsedDetails?.keyFeatures
@@ -1874,12 +1879,15 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
 
     private updateHowItWorksSectionState(): void {
         const showSection = this.entityForm.get('details.showHowItWorks')?.value;
+        const titleControl = this.entityForm.get('details.howItWorksTitle');
 
         if (showSection) {
+            titleControl?.enable({ emitEvent: false });
             this.howItWorksForms.enable({ emitEvent: false });
             return;
         }
 
+        titleControl?.disable({ emitEvent: false });
         this.howItWorksForms.disable({ emitEvent: false });
     }
 
