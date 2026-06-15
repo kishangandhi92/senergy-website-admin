@@ -1,4 +1,4 @@
-<div class="flex min-w-0 flex-auto flex-col">
+<div class="absolute inset-0 flex min-w-0 flex-col overflow-hidden">
     <div class="bg-card">
         <!-- Header -->
         <div
@@ -46,7 +46,7 @@
     </div>
 
     <!-- Main -->
-    <div class="-mt-px flex-auto border-t">
+    <div class="flex-auto -mt-px border-t overflow-y-auto" cdkScrollable>
         <div class="mx-auto w-full max-w-screen-xxl">
             <!-- Tabs -->
             <form [formGroup]="entityForm">
@@ -930,7 +930,7 @@
                                 <div class="mb-4">
                                     <div class="text-lg font-semibold text-slate-900">Call To Actions</div>
                                     <div class="text-sm text-slate-500">
-                                        Configure the two fixed CTA buttons for this product CTA section.
+                                        Configure one required primary CTA and an optional secondary CTA.
                                     </div>
                                 </div>
 
@@ -938,12 +938,14 @@
                                     @for (ctaGroup of productCtaForms.controls; track ctaGroup; let ctaIndex = $index) {
                                     <div [formGroupName]="ctaIndex" class="rounded-2xl border border-slate-200 p-4">
                                         <div class="mb-4 text-sm font-medium text-slate-900">
-                                            CTA {{ ctaIndex + 1 }} ({{ ctaIndex === 0 ? 'Primary' : 'Secondary' }})
+                                            CTA {{ ctaIndex + 1 }} ({{ ctaIndex === 0 ? 'Primary - Required' :
+                                            'Secondary - Optional' }})
                                         </div>
 
                                         <div class="grid gap-2">
                                             <mat-form-field [subscriptSizing]="'dynamic'">
-                                                <mat-label>Label</mat-label>
+                                                <mat-label>{{ ctaIndex === 0 ? 'Label' : 'Label (optional)'
+                                                    }}</mat-label>
                                                 <input matInput formControlName="label" maxlength="120" />
                                                 <mat-hint align="end">{{ ctaGroup.get('label')?.value?.length || 0
                                                     }}/120</mat-hint>
@@ -953,7 +955,7 @@
                                             </mat-form-field>
 
                                             <mat-form-field [subscriptSizing]="'dynamic'">
-                                                <mat-label>Link</mat-label>
+                                                <mat-label>{{ ctaIndex === 0 ? 'Link' : 'Link (optional)' }}</mat-label>
                                                 <input matInput formControlName="link" maxlength="255" />
                                                 <mat-hint align="end">{{ ctaGroup.get('link')?.value?.length || 0
                                                     }}/255</mat-hint>
@@ -969,6 +971,13 @@
                                                     <mat-option value="_blank">New Tab</mat-option>
                                                 </mat-select>
                                             </mat-form-field>
+
+                                            @if (ctaGroup.hasError('ctaIncomplete') && (ctaGroup.get('label')?.touched
+                                            || ctaGroup.get('link')?.touched)) {
+                                            <div class="text-xs font-medium text-red-600">
+                                                Secondary CTA needs both label and link, or leave both blank.
+                                            </div>
+                                            }
                                         </div>
                                     </div>
                                     }

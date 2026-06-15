@@ -1300,15 +1300,35 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
     }
 
     private createProductCtaGroup(cta: any): UntypedFormGroup {
-        return this._formBuilder.group({
-            label: [cta?.label || '', [Validators.required, Validators.maxLength(120)]],
-            link: [cta?.link || '', [Validators.required, Validators.maxLength(255)]],
-            style: [cta?.style || 'primary', [Validators.required]],
-            target: [
-                cta?.target === '_blank' ? '_blank' : '_self',
-                [Validators.required],
-            ],
-        });
+        const style = cta?.style === 'secondary' ? 'secondary' : 'primary';
+        const isPrimary = style === 'primary';
+
+        return this._formBuilder.group(
+            {
+                label: [
+                    cta?.label || '',
+                    [
+                        ...(isPrimary ? [Validators.required] : []),
+                        Validators.maxLength(120),
+                    ],
+                ],
+                link: [
+                    cta?.link || '',
+                    [
+                        ...(isPrimary ? [Validators.required] : []),
+                        Validators.maxLength(255),
+                    ],
+                ],
+                style: [style, [Validators.required]],
+                target: [
+                    cta?.target === '_blank' ? '_blank' : '_self',
+                    [Validators.required],
+                ],
+            },
+            {
+                validators: isPrimary ? [] : [this.optionalProductCtaValidator],
+            }
+        );
     }
 
     private createCustomerStoryGroup(customerStory: any): UntypedFormGroup {
@@ -1519,8 +1539,8 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
 
     private normalizeProductCtaItem(cta: any, index: number): any {
         return {
-            label: cta?.label || '',
-            link: cta?.link || '',
+            label: String(cta?.label || '').trim(),
+            link: String(cta?.link || '').trim(),
             style: index === 0 ? 'primary' : 'secondary',
             target: cta?.target === '_blank' ? '_blank' : '_self',
         };
@@ -1539,6 +1559,14 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
             );
         }
 
+        const primaryCta = this.normalizeProductCtaItem(ctas[0], 0);
+        const secondaryCta = this.normalizeProductCtaItem(ctas[1], 1);
+        const normalizedCtas = [primaryCta];
+
+        if (this.hasProductCtaContent(secondaryCta)) {
+            normalizedCtas.push(secondaryCta);
+        }
+
         return {
             content: {
                 title: formValue?.title || '',
@@ -1548,11 +1576,25 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
                 src: formValue?.imageSrc || '',
                 alt: formValue?.imageAlt || '',
             },
-            cta: [
-                this.normalizeProductCtaItem(ctas[0], 0),
-                this.normalizeProductCtaItem(ctas[1], 1),
-            ],
+            cta: normalizedCtas,
         };
+    }
+
+    private optionalProductCtaValidator = (
+        control: AbstractControl
+    ): ValidationErrors | null => {
+        const label = String(control.get('label')?.value || '').trim();
+        const link = String(control.get('link')?.value || '').trim();
+
+        if ((label && !link) || (!label && link)) {
+            return { ctaIncomplete: true };
+        }
+
+        return null;
+    };
+
+    private hasProductCtaContent(cta: any): boolean {
+        return !!String(cta?.label || '').trim() && !!String(cta?.link || '').trim();
     }
 
     private normalizeTechSpecRows(techSpecs: any): any[] {
