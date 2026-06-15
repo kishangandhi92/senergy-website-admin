@@ -506,7 +506,16 @@
                                     </div>
                                 </div>
 
-                                <div class="flex items-center gap-4">
+                                <div class="flex flex-wrap items-center gap-4">
+                                    <mat-form-field class="w-64" [subscriptSizing]="'dynamic'">
+                                        <mat-label>Title</mat-label>
+                                        <input matInput formControlName="keyFeaturesTitle" maxlength="100" />
+                                        <mat-hint align="end">{{ entityForm.get('details.keyFeaturesTitle')?.value?.length || 0 }}/100</mat-hint>
+                                        @if (entityForm.get('details.keyFeaturesTitle')?.hasError('required')) {
+                                        <mat-error>Title is required</mat-error>
+                                        }
+                                    </mat-form-field>
+
                                     <mat-checkbox formControlName="showKeyFeatures" color="primary"
                                         (change)="onKeyFeaturesVisibilityChange()">
                                         Show this on Details Page?
@@ -617,7 +626,16 @@
                                     </div>
                                 </div>
 
-                                <div class="flex items-center gap-4">
+                                <div class="flex flex-wrap items-center gap-4">
+                                    <mat-form-field class="w-64" [subscriptSizing]="'dynamic'">
+                                        <mat-label>Title</mat-label>
+                                        <input matInput formControlName="advancedCapabilitiesTitle" maxlength="100" />
+                                        <mat-hint align="end">{{ entityForm.get('details.advancedCapabilitiesTitle')?.value?.length || 0 }}/100</mat-hint>
+                                        @if (entityForm.get('details.advancedCapabilitiesTitle')?.hasError('required')) {
+                                        <mat-error>Title is required</mat-error>
+                                        }
+                                    </mat-form-field>
+
                                     <mat-checkbox formControlName="showAdvancedCapabilities" color="primary"
                                         (change)="onAdvancedCapabilitiesVisibilityChange()">
                                         Show this on Details Page?
@@ -702,7 +720,15 @@
                                     </div>
                                 </div>
 
-                                <div class="flex items-center gap-4">
+                                <div class="flex flex-wrap items-center gap-4">
+                                    <mat-form-field class="w-64" [subscriptSizing]="'dynamic'">
+                                        <mat-label>Title</mat-label>
+                                        <input matInput formControlName="techSpecsTitle" maxlength="100" />
+                                        <mat-hint align="end">{{ entityForm.get('details.techSpecsTitle')?.value?.length || 0 }}/100</mat-hint>
+                                        @if (entityForm.get('details.techSpecsTitle')?.hasError('required')) {
+                                        <mat-error>Title is required</mat-error>
+                                        }
+                                    </mat-form-field>
 
                                     <mat-checkbox formControlName="showTechSpecs" color="primary"
                                         (change)="onTechSpecsVisibilityChange()">
@@ -771,7 +797,16 @@
                                     </div>
                                 </div>
 
-                                <div class="flex items-center gap-4">
+                                <div class="flex flex-wrap items-center gap-4">
+                                    <mat-form-field class="w-64" [subscriptSizing]="'dynamic'">
+                                        <mat-label>Title</mat-label>
+                                        <input matInput formControlName="customerStoriesTitle" maxlength="100" />
+                                        <mat-hint align="end">{{ entityForm.get('details.customerStoriesTitle')?.value?.length || 0 }}/100</mat-hint>
+                                        @if (entityForm.get('details.customerStoriesTitle')?.hasError('required')) {
+                                        <mat-error>Title is required</mat-error>
+                                        }
+                                    </mat-form-field>
+
                                     <mat-checkbox formControlName="showCustomerStories" color="primary"
                                         (change)="onCustomerStoriesVisibilityChange()">
                                         Show this on Details Page?

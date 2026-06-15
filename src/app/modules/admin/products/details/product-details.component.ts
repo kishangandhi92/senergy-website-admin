@@ -221,12 +221,20 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
                         this.createKeyFeatureGroup(item)
                     )
                 ),
+                keyFeaturesTitle: [
+                    '',
+                    [Validators.required, Validators.maxLength(100)],
+                ],
                 showKeyFeatures: [true],
                 advancedCapabilities: this._formBuilder.array(
                     this.createDefaultAdvancedCapabilityItems().map((item) =>
                         this.createAdvancedCapabilityGroup(item)
                     )
                 ),
+                advancedCapabilitiesTitle: [
+                    '',
+                    [Validators.required, Validators.maxLength(100)],
+                ],
                 showAdvancedCapabilities: [true],
                 techSpecs: this._formBuilder.group({
                     rows: this._formBuilder.array(
@@ -235,8 +243,16 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
                         )
                     ),
                 }),
+                techSpecsTitle: [
+                    '',
+                    [Validators.required, Validators.maxLength(100)],
+                ],
                 showTechSpecs: [true],
                 customerStories: this._formBuilder.array([]),
+                customerStoriesTitle: [
+                    '',
+                    [Validators.required, Validators.maxLength(100)],
+                ],
                 showCustomerStories: [true],
             }),
         });
@@ -1196,17 +1212,22 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
             keyFeatures: this.normalizeKeyFeatureItems(
                 parsedDetails?.keyFeatures
             ),
+            keyFeaturesTitle: parsedDetails?.keyFeaturesTitle || '',
             showKeyFeatures: parsedDetails?.showKeyFeatures ?? true,
             advancedCapabilities: this.normalizeAdvancedCapabilityItems(
                 parsedDetails?.advancedCapabilities
             ),
+            advancedCapabilitiesTitle:
+                parsedDetails?.advancedCapabilitiesTitle || '',
             showAdvancedCapabilities:
                 parsedDetails?.showAdvancedCapabilities ?? true,
             techSpecs: this.normalizeTechSpecs(parsedDetails?.techSpecs),
+            techSpecsTitle: parsedDetails?.techSpecsTitle || '',
             showTechSpecs: parsedDetails?.showTechSpecs ?? true,
             customerStories: this.normalizeCustomerStories(
                 parsedDetails?.customerStories
             ),
+            customerStoriesTitle: parsedDetails?.customerStoriesTitle || '',
             showCustomerStories: parsedDetails?.showCustomerStories ?? true,
         };
     }
@@ -1893,12 +1914,15 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
 
     private updateKeyFeaturesSectionState(): void {
         const showSection = this.entityForm.get('details.showKeyFeatures')?.value;
+        const titleControl = this.entityForm.get('details.keyFeaturesTitle');
 
         if (showSection) {
+            titleControl?.enable({ emitEvent: false });
             this.keyFeatureForms.enable({ emitEvent: false });
             return;
         }
 
+        titleControl?.disable({ emitEvent: false });
         this.keyFeatureForms.disable({ emitEvent: false });
     }
 
@@ -1906,24 +1930,32 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         const showSection = this.entityForm.get(
             'details.showAdvancedCapabilities'
         )?.value;
+        const titleControl = this.entityForm.get(
+            'details.advancedCapabilitiesTitle'
+        );
 
         if (showSection) {
+            titleControl?.enable({ emitEvent: false });
             this.advancedCapabilityForms.enable({ emitEvent: false });
             return;
         }
 
+        titleControl?.disable({ emitEvent: false });
         this.advancedCapabilityForms.disable({ emitEvent: false });
     }
 
     private updateTechSpecsSectionState(): void {
         const techSpecsGroup = this.entityForm.get('details.techSpecs');
         const showSection = this.entityForm.get('details.showTechSpecs')?.value;
+        const titleControl = this.entityForm.get('details.techSpecsTitle');
 
         if (showSection) {
+            titleControl?.enable({ emitEvent: false });
             techSpecsGroup?.enable({ emitEvent: false });
             return;
         }
 
+        titleControl?.disable({ emitEvent: false });
         techSpecsGroup?.disable({ emitEvent: false });
     }
 
@@ -1931,12 +1963,15 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         const showSection = this.entityForm.get(
             'details.showCustomerStories'
         )?.value;
+        const titleControl = this.entityForm.get('details.customerStoriesTitle');
 
         if (showSection) {
+            titleControl?.enable({ emitEvent: false });
             this.customerStoryForms.enable({ emitEvent: false });
             return;
         }
 
+        titleControl?.disable({ emitEvent: false });
         this.customerStoryForms.disable({ emitEvent: false });
     }
 
