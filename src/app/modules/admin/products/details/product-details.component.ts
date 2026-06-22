@@ -92,6 +92,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
     customerStoryDialogForm: UntypedFormGroup | undefined;
     customerStoryDialogRef = null;
     selectedCustomerStoryIndex: number | null = null;
+    activeTabIndex = 0;
     customerStoryDialogMode: 'add' | 'edit' = 'add';
     customerStoryImagePreview = '';
     isUploadingImage = false;
@@ -115,6 +116,35 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         { value: 'enquiry', label: 'Enquiry' },
         { value: 'video', label: 'Video' },
         { value: 'general-link', label: 'General Link' },
+    ];
+    private readonly tabControlPaths: string[][] = [
+        ['title', 'slug', 'short_description', 'image', 'image_alt'],
+        ['details.pageHeader'],
+        ['details.gallery'],
+        ['details.overview'],
+        [
+            'details.howItWorksTitle',
+            'details.showHowItWorks',
+            'details.howItWorks',
+        ],
+        [
+            'details.keyFeaturesTitle',
+            'details.showKeyFeatures',
+            'details.keyFeatures',
+        ],
+        [
+            'details.advancedCapabilitiesTitle',
+            'details.showAdvancedCapabilities',
+            'details.advancedCapabilities',
+        ],
+        ['details.techSpecsTitle', 'details.showTechSpecs', 'details.techSpecs'],
+        [
+            'details.customerStoriesTitle',
+            'details.showCustomerStories',
+            'details.customerStories',
+        ],
+        ['ctaData'],
+        ['seoData'],
     ];
 
     private destroy$ = new Subject<void>(); // To clean up subscriptions
@@ -376,6 +406,27 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
 
     get showCustomerStories(): boolean {
         return !!this.entityForm.get('details.showCustomerStories')?.value;
+    }
+
+    onTabChange(index: number): void {
+        this.activeTabIndex = index;
+    }
+
+    isCurrentTabValid(): boolean {
+        return this.isTabValid(this.activeTabIndex);
+    }
+
+    isTabValid(tabIndex: number): boolean {
+        return this.getTabControls(tabIndex).every(
+            (control) => control.disabled || control.valid
+        );
+    }
+
+    markCurrentTabAsTouched(): void {
+        this.getTabControls(this.activeTabIndex).forEach((control) => {
+            control.markAllAsTouched();
+            control.updateValueAndValidity({ emitEvent: false });
+        });
     }
 
     addEntity(): void {
@@ -1161,6 +1212,12 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         if (!targetControl && controlName === 'image') {
             this.coverImagePreview = '';
         }
+    }
+
+    private getTabControls(tabIndex: number): AbstractControl[] {
+        return (this.tabControlPaths[tabIndex] || [])
+            .map((controlPath) => this.entityForm.get(controlPath))
+            .filter((control): control is AbstractControl => !!control);
     }
 
     private enableEntityForm(): void {

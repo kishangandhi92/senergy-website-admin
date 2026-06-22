@@ -50,7 +50,8 @@
         <div class="mx-auto w-full max-w-screen-xxl">
             <!-- Tabs -->
             <form [formGroup]="entityForm">
-                <mat-tab-group class="sm:px-2" mat-stretch-tabs="false" [animationDuration]="'0'" dynamicHeight>
+                <mat-tab-group class="sm:px-2" mat-stretch-tabs="false" [animationDuration]="'0'" dynamicHeight
+                    (selectedIndexChange)="onTabChange($event)">
                     <mat-tab label="Product Details">
                         <div class="p-2">
                             <div class="grid gap-6 lg:grid-cols-[minmax(0,1fr)_400px]">
