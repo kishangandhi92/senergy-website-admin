@@ -29,6 +29,16 @@
             <!-- Actions -->
             <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
 
+                <button [disabled]="entityForm?.disabled" class="ml-4" mat-stroked-button type="button"
+                    (click)="saveCurrentTab()" [color]="'primary'">
+                    @if (!entityForm?.disabled) {
+                    <span class="ml-2 mr-1">{{ getCurrentTabSaveButtonLabel() }}</span>
+                    }
+                    @if (entityForm?.disabled) {
+                    <mat-progress-spinner [diameter]="24" [mode]="'indeterminate'"></mat-progress-spinner>
+                    }
+                </button>
+
                 <!-- Add product button -->
                 <button [disabled]="entityForm.invalid || entityForm.disabled" class="ml-4" mat-flat-button
                     (click)="mode === 'CREATE' ? addEntity(): updateSelectedEntity()" [color]="'primary'">
