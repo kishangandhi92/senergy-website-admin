@@ -422,6 +422,14 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         );
     }
 
+    shouldDisableTabInCreateMode(tabIndex: number): boolean {
+        return (
+            this.mode === 'CREATE' &&
+            tabIndex > 0 &&
+            !this.isTabValid(0)
+        );
+    }
+
     markCurrentTabAsTouched(): void {
         this.getTabControls(this.activeTabIndex).forEach((control) => {
             control.markAllAsTouched();
