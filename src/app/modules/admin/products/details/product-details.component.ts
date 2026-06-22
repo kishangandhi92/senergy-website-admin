@@ -146,6 +146,19 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         ['ctaData'],
         ['seoData'],
     ];
+    private readonly tabSaveLabels = [
+        'Product Details',
+        'Page Header',
+        'Gallery',
+        'Overview',
+        'How it Works',
+        'Key Features',
+        'Advanced Capabilities',
+        'Tech Specs',
+        'Customer Stories',
+        'CTA',
+        'SEO',
+    ];
 
     private destroy$ = new Subject<void>(); // To clean up subscriptions
 
@@ -446,7 +459,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
             return 'Create Product Details First';
         }
 
-        return 'Save Current Tab';
+        return `Save ${this.tabSaveLabels[this.activeTabIndex] || 'Current'} Tab`;
     }
 
     saveCurrentTab(): void {
