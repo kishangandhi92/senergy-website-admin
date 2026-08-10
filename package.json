@@ -58,7 +58,7 @@
         "karma-jasmine": "5.1.0",
         "karma-jasmine-html-reporter": "2.1.0",
         "lodash": "4.17.21",
-        "postcss": "8.4.49",
+        "postcss": "8.5.23",
         "prettier": "3.4.2",
         "prettier-plugin-organize-imports": "4.1.0",
         "prettier-plugin-tailwindcss": "0.6.9",
