@@ -92,6 +92,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
     customerStoryDialogForm: UntypedFormGroup | undefined;
     customerStoryDialogRef = null;
     selectedCustomerStoryIndex: number | null = null;
+    activeTabIndex = 0;
     customerStoryDialogMode: 'add' | 'edit' = 'add';
     customerStoryImagePreview = '';
     isUploadingImage = false;
@@ -115,6 +116,48 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         { value: 'enquiry', label: 'Enquiry' },
         { value: 'video', label: 'Video' },
         { value: 'general-link', label: 'General Link' },
+    ];
+    private readonly tabControlPaths: string[][] = [
+        ['title', 'slug', 'short_description', 'image', 'image_alt'],
+        ['details.pageHeader'],
+        ['details.gallery'],
+        ['details.overview'],
+        [
+            'details.howItWorksTitle',
+            'details.showHowItWorks',
+            'details.howItWorks',
+        ],
+        [
+            'details.keyFeaturesTitle',
+            'details.showKeyFeatures',
+            'details.keyFeatures',
+        ],
+        [
+            'details.advancedCapabilitiesTitle',
+            'details.showAdvancedCapabilities',
+            'details.advancedCapabilities',
+        ],
+        ['details.techSpecsTitle', 'details.showTechSpecs', 'details.techSpecs'],
+        [
+            'details.customerStoriesTitle',
+            'details.showCustomerStories',
+            'details.customerStories',
+        ],
+        ['ctaData'],
+        ['seoData'],
+    ];
+    private readonly tabSaveLabels = [
+        'Product Details',
+        'Page Header',
+        'Gallery',
+        'Overview',
+        'How it Works',
+        'Key Features',
+        'Advanced Capabilities',
+        'Tech Specs',
+        'Customer Stories',
+        'CTA',
+        'SEO',
     ];
 
     private destroy$ = new Subject<void>(); // To clean up subscriptions
@@ -378,12 +421,94 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         return !!this.entityForm.get('details.showCustomerStories')?.value;
     }
 
+    onTabChange(index: number): void {
+        this.activeTabIndex = index;
+    }
+
+    isCurrentTabValid(): boolean {
+        return this.isTabValid(this.activeTabIndex);
+    }
+
+    isTabValid(tabIndex: number): boolean {
+        return this.getTabControls(tabIndex).every(
+            (control) => control.disabled || control.valid
+        );
+    }
+
+    shouldDisableTabInCreateMode(tabIndex: number): boolean {
+        return (
+            this.mode === 'CREATE' &&
+            tabIndex > 0 &&
+            !this.isTabValid(0)
+        );
+    }
+
+    markCurrentTabAsTouched(): void {
+        this.getTabControls(this.activeTabIndex).forEach((control) => {
+            control.markAllAsTouched();
+            control.updateValueAndValidity({ emitEvent: false });
+        });
+    }
+
+    getCurrentTabSaveButtonLabel(): string {
+        if (this.mode === 'CREATE' && this.activeTabIndex === 0) {
+            return 'Create Product Details';
+        }
+
+        if (this.mode === 'CREATE') {
+            return 'Create Product Details First';
+        }
+
+        return `Save ${this.tabSaveLabels[this.activeTabIndex] || 'Current'} Tab`;
+    }
+
+    saveCurrentTab(): void {
+        if (this.entityForm.disabled) {
+            return;
+        }
+
+        if (this.mode === 'CREATE' && this.activeTabIndex !== 0) {
+            this._snackBar.showError(
+                'Please create Product Details first before saving other tabs.'
+            );
+            return;
+        }
+
+        if (!this.isCurrentTabValid()) {
+            this.markCurrentTabAsTouched();
+            this._snackBar.showError(
+                'Please complete the required fields in the current tab.'
+            );
+            return;
+        }
+
+        if (this.mode === 'CREATE') {
+            this.createProduct();
+            return;
+        }
+
+        this.updateProduct('Current tab saved successfully');
+    }
+
     addEntity(): void {
         if (this.entityForm.invalid || this.entityForm.disabled) {
             this.entityForm.markAllAsTouched();
             return;
         }
 
+        this.createProduct();
+    }
+
+    updateSelectedEntity(): void {
+        if (this.entityForm.invalid || this.entityForm.disabled) {
+            this.entityForm.markAllAsTouched();
+            return;
+        }
+
+        this.updateProduct('Product updated successfully');
+    }
+
+    private createProduct(): void {
         this.entityForm.disable();
 
         this._productsService
@@ -422,12 +547,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
             });
     }
 
-    updateSelectedEntity(): void {
-        if (this.entityForm.invalid || this.entityForm.disabled) {
-            this.entityForm.markAllAsTouched();
-            return;
-        }
-
+    private updateProduct(successMessage: string): void {
         const productId = Number(this.id);
         if (!Number.isFinite(productId) || productId <= 0) {
             this._snackBar.showError(
@@ -458,7 +578,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
                         this.patchFormValues(product);
                     }
 
-                    this._snackBar.showSuccess('Product updated successfully');
+                    this._snackBar.showSuccess(successMessage);
                 },
                 error: () => {
                     this._snackBar.showError(
@@ -1161,6 +1281,12 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         if (!targetControl && controlName === 'image') {
             this.coverImagePreview = '';
         }
+    }
+
+    private getTabControls(tabIndex: number): AbstractControl[] {
+        return (this.tabControlPaths[tabIndex] || [])
+            .map((controlPath) => this.entityForm.get(controlPath))
+            .filter((control): control is AbstractControl => !!control);
     }
 
     private enableEntityForm(): void {
