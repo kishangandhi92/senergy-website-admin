@@ -3,7 +3,15 @@ import { inject, Injectable } from '@angular/core';
 import { AuthUtils } from 'app/core/auth/auth.utils';
 import { UserService } from 'app/core/user/user.service';
 import * as CryptoJS from 'crypto-js';
-import { catchError, Observable, of, switchMap, throwError } from 'rxjs';
+import {
+    catchError,
+    finalize,
+    Observable,
+    of,
+    shareReplay,
+    switchMap,
+    throwError,
+} from 'rxjs';
 import { User } from '../user/user.types';
 import { environment } from 'environments/environment';
 
@@ -12,6 +20,7 @@ export class AuthService {
     private _authenticated: boolean = false;
     private _httpClient = inject(HttpClient);
     private _userService = inject(UserService);
+    private _refreshAccessToken$?: Observable<any>;
 
     // -----------------------------------------------------------------------------------------------------
     // @ Accessors
@@ -26,6 +35,15 @@ export class AuthService {
 
     get accessToken(): string {
         return localStorage.getItem('accessToken') ?? '';
+    }
+
+    // Refresh token
+    set refreshToken(token: string) {
+        localStorage.setItem('refreshToken', token);
+    }
+
+    get refreshToken(): string {
+        return localStorage.getItem('refreshToken') ?? '';
     }
 
     // -----------------------------------------------------------------------------------------------------
@@ -92,6 +110,10 @@ export class AuthService {
                         // Store the access token in the local storage
                         this.accessToken = response.data.accessToken;
 
+                        if (response.data.refreshToken) {
+                            this.refreshToken = response.data.refreshToken;
+                        }
+
                         // Set the authenticated flag to true
                         this._authenticated = true;
 
@@ -118,6 +140,45 @@ export class AuthService {
                     return of(response);
                 })
             );
+    }
+
+    refreshAccessToken(): Observable<any> {
+
+        if (!this.refreshToken) {
+            return throwError(() => new Error('No refresh token available'));
+        }
+
+        // Concurrent 401 responses must wait for the same refresh request.
+        if (this._refreshAccessToken$) {
+            return this._refreshAccessToken$;
+        }
+
+        this._refreshAccessToken$ = this._httpClient
+            .post(
+                `${environment.apiBaseUrl}/api/a/refresh-token`,
+                {
+                    refreshToken: this.refreshToken
+                }
+            )
+            .pipe(
+                switchMap((response: any) => {
+
+                    if (!response.status || !response.accessToken) {
+                        return throwError(
+                            () => new Error('Unable to refresh token')
+                        );
+                    }
+
+                    this.accessToken = response.accessToken;
+
+                    return of(response);
+                }),
+                // Allow a later token expiry to start a new refresh request.
+                finalize(() => (this._refreshAccessToken$ = undefined)),
+                shareReplay({ bufferSize: 1, refCount: false })
+            );
+
+        return this._refreshAccessToken$;
     }
 
     /**
@@ -178,7 +239,9 @@ export class AuthService {
     signOut(): Observable<any> {
         // Remove the access token from the local storage
         localStorage.removeItem('accessToken');
-
+        localStorage.removeItem('refreshToken');
+        sessionStorage.removeItem('user');
+        
         // Set the authenticated flag to false
         this._authenticated = false;
 
@@ -222,13 +285,20 @@ export class AuthService {
         }
 
         // Check the access token availability
-        if (!this.accessToken) {
+        if (!this.accessToken && !this.refreshToken) {
             return of(false);
         }
 
         // Check the access token expire date
-        if (AuthUtils.isTokenExpired(this.accessToken)) {
-            return of(false);
+        if (this.accessToken && AuthUtils.isTokenExpired(this.accessToken)) {
+            if (!this.refreshToken) {
+                return of(false);
+            }
+
+            return this.refreshAccessToken().pipe(
+                switchMap(() => this.signInUsingToken()),
+                catchError(() => of(false))
+            );
         }
 
         let user = JSON.parse(sessionStorage.getItem('user'));

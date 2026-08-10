@@ -7,7 +7,7 @@ import {
 import { inject } from '@angular/core';
 import { AuthService } from 'app/core/auth/auth.service';
 import { AuthUtils } from 'app/core/auth/auth.utils';
-import { Observable, catchError, throwError } from 'rxjs';
+import { Observable, catchError, switchMap, throwError } from 'rxjs';
 
 /**
  * Intercept
@@ -47,16 +47,61 @@ export const authInterceptor = (
     // Response
     return next(newReq).pipe(
         catchError((error) => {
-            // Catch "401 Unauthorized" responses
-            if (error instanceof HttpErrorResponse && error.status === 401) {
-                // Sign out
-                authService.signOut();
 
-                // Reload the app
-                location.reload();
+            // Only handle 401
+            if (error.status !== 401) {
+                return throwError(() => error);
             }
 
-            return throwError(error);
+             // Don't try to refresh the refresh-token request itself
+            if (req.url.includes('/refresh-token')) {
+                authService.signOut();
+                location.reload();
+
+                return throwError(() => error);
+            }
+
+
+            // If we don't have a refresh token,
+            // there is nothing we can do.
+            if (!authService.refreshToken) {
+                authService.signOut();
+                location.reload();
+
+                return throwError(() => error);
+            }
+
+            // Try to get a new access token
+            return authService.refreshAccessToken().pipe(
+
+                switchMap(() => {
+
+                    // Get the newly refreshed token
+                    const newAccessToken =
+                        authService.accessToken;
+
+                    // Retry the ORIGINAL request
+                    const retryRequest = req.clone({
+                        headers: req.headers.set(
+                            'Authorization',
+                            'Bearer ' + newAccessToken
+                        ),
+                    });
+
+                    return next(retryRequest);
+                }),
+
+                catchError((refreshError) => {
+
+                    // Refresh token itself has expired
+                    // or is invalid.
+                    authService.signOut();
+                    location.reload();
+
+                    return throwError(() => refreshError);
+                })
+            );
+
         })
     );
 };
