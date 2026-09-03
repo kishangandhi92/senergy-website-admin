@@ -1423,7 +1423,10 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
                 item?.title || '',
                 [Validators.required, Validators.maxLength(100)],
             ],
-            priority: [Number(item?.priority) || 1, [Validators.required]],
+            priority: [
+                Number(item?.priority) || 1,
+                [Validators.required, Validators.min(1)],
+            ],
         });
     }
 
@@ -1864,7 +1867,8 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
                 icon: item?.icon || item?.image || item?.src || '',
                 title: item?.title || '',
                 priority: Number(item?.priority) || index + 1,
-            }));
+            }))
+            .sort((leftItem, rightItem) => leftItem.priority - rightItem.priority);
 
         while (normalizedItems.length < 3) {
             normalizedItems.push({
