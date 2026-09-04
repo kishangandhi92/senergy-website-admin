@@ -904,7 +904,6 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
                 priority: this.advancedCapabilityForms.length + 1,
             })
         );
-        this.syncAdvancedCapabilityPriorities();
     }
 
     removeAdvancedCapability(index: number): void {
@@ -917,7 +916,6 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         }
 
         this.advancedCapabilityForms.removeAt(index);
-        this.syncAdvancedCapabilityPriorities();
     }
 
     onAdvancedCapabilitiesVisibilityChange(): void {
@@ -1441,7 +1439,10 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
                 this.normalizeRichTextContent(item?.description),
                 [this.richTextRequiredValidator],
             ],
-            priority: [Number(item?.priority) || 1, [Validators.required]],
+            priority: [
+                Number(item?.priority) || 1,
+                [Validators.required, Validators.min(1)],
+            ],
         });
     }
 
@@ -2117,14 +2118,6 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
 
         titleControl?.disable({ emitEvent: false });
         this.customerStoryForms.disable({ emitEvent: false });
-    }
-
-    private syncAdvancedCapabilityPriorities(): void {
-        this.advancedCapabilityForms.controls.forEach((control, index) => {
-            control.get('priority')?.setValue(index + 1, {
-                emitEvent: false,
-            });
-        });
     }
 
     private sortCustomerStoriesByPriority(customerStories: any[]): any[] {
