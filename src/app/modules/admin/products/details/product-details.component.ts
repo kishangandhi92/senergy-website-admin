@@ -937,6 +937,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
             this.createTechSpecRowGroup({
                 heading: '',
                 content: '',
+                priority: this.techSpecRows.length + 1,
             })
         );
     }
@@ -1451,6 +1452,10 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
                 [Validators.required, Validators.maxLength(100)],
             ],
             content: [row?.content || row?.description || '', [Validators.required]],
+            priority: [
+                Number(row?.priority) || 1,
+                [Validators.required, Validators.min(1)],
+            ],
         });
     }
 
@@ -1538,6 +1543,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
             {
                 heading: '',
                 content: '',
+                priority: 1,
             },
         ];
     }
@@ -1759,10 +1765,13 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
               ? techSpecs
               : [];
 
-        const normalizedRows = rows.map((row) => ({
-            heading: row?.heading || row?.title || '',
-            content: row?.content || row?.description || '',
-        }));
+        const normalizedRows = rows
+            .map((row, index) => ({
+                heading: row?.heading || row?.title || '',
+                content: row?.content || row?.description || '',
+                priority: Number(row?.priority) || index + 1,
+            }))
+            .sort((leftRow, rightRow) => leftRow.priority - rightRow.priority);
 
         if (!normalizedRows.length && (techSpecs?.content || techSpecs?.description)) {
             normalizedRows.push({
@@ -1770,6 +1779,7 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
                 content: this.normalizeRichTextContent(
                     techSpecs?.content || techSpecs?.description
                 ),
+                priority: 1,
             });
         }
 
@@ -1777,10 +1787,14 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
             normalizedRows.push({
                 heading: '',
                 content: '',
+                priority: 1,
             });
         }
 
-        return normalizedRows;
+        return normalizedRows.map((row, index) => ({
+            ...row,
+            priority: index + 1,
+        }));
     }
 
     private normalizeCustomerStories(customerStories: any): any[] {

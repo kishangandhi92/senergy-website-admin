@@ -753,15 +753,27 @@
                                 <div class="overflow-hidden rounded-lg border border-slate-200 bg-white"
                                     formArrayName="rows">
                                     <div
-                                        class="hidden grid-cols-[260px_minmax(0,1fr)_56px] gap-3 border-b bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 md:grid">
+                                        class="hidden grid-cols-[96px_260px_minmax(0,1fr)_56px] gap-3 border-b bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 md:grid">
+                                        <div>Priority</div>
                                         <div>Table Heading</div>
                                         <div>Table Content</div>
                                         <div></div>
                                     </div>
 
                                     @for (row of techSpecRows.controls; track row; let rowIndex = $index) {
-                                    <div class="grid gap-3 border-b border-slate-100 p-4 last:border-b-0 md:grid-cols-[260px_minmax(0,1fr)_56px] md:items-start"
+                                    <div class="grid gap-3 border-b border-slate-100 p-4 last:border-b-0 md:grid-cols-[96px_260px_minmax(0,1fr)_56px] md:items-start"
                                         [formGroupName]="rowIndex">
+                                        <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                                            <mat-label>Priority</mat-label>
+                                            <input matInput type="number" formControlName="priority" min="1" />
+                                            @if (row.get('priority')?.hasError('required')) {
+                                            <mat-error>Required</mat-error>
+                                            }
+                                            @if (row.get('priority')?.hasError('min')) {
+                                            <mat-error>Min. 1</mat-error>
+                                            }
+                                        </mat-form-field>
+
                                         <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
                                             <mat-label>Heading</mat-label>
                                             <input matInput formControlName="heading" maxlength="100" />
