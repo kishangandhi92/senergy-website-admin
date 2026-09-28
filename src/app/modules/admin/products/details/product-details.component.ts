@@ -643,7 +643,6 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
                 priority: this.galleryForms.length + 1,
             })
         );
-        this.syncGalleryPriorities();
     }
 
     removeGalleryImage(index: number): void {
@@ -659,7 +658,6 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         }
 
         this.galleryForms.removeAt(index);
-        this.syncGalleryPriorities();
     }
 
     onGalleryImageSelect(index: number, event: Event): void {
@@ -690,7 +688,6 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
             () => {
                 if (removeAfterDelete && this.galleryForms.length > 1) {
                     this.galleryForms.removeAt(index);
-                    this.syncGalleryPriorities();
                 }
             }
         );
@@ -1376,7 +1373,10 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
     private createGalleryImageGroup(item: any): UntypedFormGroup {
         return this._formBuilder.group({
             image: [item?.image || '', [Validators.required]],
-            priority: [Number(item?.priority) || 1, [Validators.required]],
+            priority: [
+                Number(item?.priority) || 1,
+                [Validators.required, Validators.min(1)],
+            ],
         });
     }
 
@@ -2184,14 +2184,6 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
                     );
                 }
             );
-    }
-
-    private syncGalleryPriorities(): void {
-        this.galleryForms.controls.forEach((control, index) => {
-            control.get('priority')?.setValue(index + 1, {
-                emitEvent: false,
-            });
-        });
     }
 
     private normalizeUploadedImagePath(
