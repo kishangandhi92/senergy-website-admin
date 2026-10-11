@@ -27,7 +27,7 @@
         "highlight.js": "11.11.1",
         "lodash-es": "4.18.1",
         "luxon": "3.5.0",
-        "moment": "^2.30.1",
+        "moment": "^2.31.0",
         "ng-apexcharts": "1.15.0",
         "ng-recaptcha": "^13.2.1",
         "ngx-quill": "27.0.0",
