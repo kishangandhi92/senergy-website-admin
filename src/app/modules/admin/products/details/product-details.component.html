@@ -486,12 +486,16 @@
                                         </mat-form-field>
                                     </div>
 
-                                    <div class="rounded-lg bg-slate-100 px-3 py-2 text-center">
-                                        <div class="font-medium text-slate-500">Step</div>
-                                        <div class="text-lg font-semibold text-slate-900">
-                                            {{ item.get('priority')?.value || itemIndex + 1 }}
-                                        </div>
-                                    </div>
+                                    <mat-form-field class="w-full" [subscriptSizing]="'dynamic'">
+                                        <mat-label>Step</mat-label>
+                                        <input matInput type="number" formControlName="priority" min="1" />
+                                        @if (item.get('priority')?.hasError('required')) {
+                                        <mat-error>Required</mat-error>
+                                        }
+                                        @if (item.get('priority')?.hasError('min')) {
+                                        <mat-error>Min. 1</mat-error>
+                                        }
+                                    </mat-form-field>
 
                                     <button mat-icon-button color="warn" type="button" class="justify-self-end"
                                         [disabled]="!showHowItWorks || howItWorksForms.length <= 3 || entityForm.disabled"
