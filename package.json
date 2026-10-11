@@ -21,7 +21,7 @@
         "@angular/material-luxon-adapter": "19.0.4",
         "@angular/platform-browser": "19.0.5",
         "@angular/platform-browser-dynamic": "19.0.5",
-        "@angular/router": "19.0.5",
+        "@angular/router": "20.3.32",
         "apexcharts": "4.3.0",
         "crypto-js": "4.2.0",
         "highlight.js": "11.11.1",
