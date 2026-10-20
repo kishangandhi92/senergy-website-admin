@@ -182,11 +182,14 @@ $typography-config: mat.m2-define-typography-config(
 );
 
 /* Create a base theme without any color to set the density and typography */
+/* Material 20 needs a defined theme to generate component typography tokens. */
 @include mat.all-component-themes(
-    (
-        color: null,
-        density: 0,
-        typography: $typography-config,
+    mat.m2-define-light-theme(
+        (
+            color: null,
+            density: 0,
+            typography: $typography-config,
+        )
     )
 );
 
