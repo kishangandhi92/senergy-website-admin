@@ -6,7 +6,6 @@ import {
 } from '@angular/animations';
 import { BooleanInput, coerceBooleanProperty } from '@angular/cdk/coercion';
 import { ScrollStrategy, ScrollStrategyOptions } from '@angular/cdk/overlay';
-import { DOCUMENT } from '@angular/common';
 import {
     AfterViewInit,
     ChangeDetectionStrategy,
@@ -28,6 +27,7 @@ import {
     ViewChild,
     ViewChildren,
     ViewEncapsulation,
+    DOCUMENT
 } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { fuseAnimations } from '@fuse/animations';

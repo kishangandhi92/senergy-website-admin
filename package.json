@@ -11,17 +11,17 @@
         "test": "ng test"
     },
     "dependencies": {
-        "@angular/animations": "19.0.5",
-        "@angular/cdk": "19.0.4",
-        "@angular/common": "19.0.5",
-        "@angular/compiler": "19.0.5",
-        "@angular/core": "19.0.5",
-        "@angular/forms": "19.0.5",
-        "@angular/material": "19.0.4",
-        "@angular/material-luxon-adapter": "19.0.4",
-        "@angular/platform-browser": "19.0.5",
-        "@angular/platform-browser-dynamic": "19.0.5",
-        "@angular/router": "19.0.5",
+        "@angular/animations": "20.3.21",
+        "@angular/cdk": "20.2.14",
+        "@angular/common": "20.3.21",
+        "@angular/compiler": "20.3.21",
+        "@angular/core": "20.3.21",
+        "@angular/forms": "20.3.21",
+        "@angular/material": "20.2.14",
+        "@angular/material-luxon-adapter": "20.2.14",
+        "@angular/platform-browser": "20.3.21",
+        "@angular/platform-browser-dynamic": "20.3.21",
+        "@angular/router": "20.3.21",
         "apexcharts": "4.3.0",
         "crypto-js": "4.2.0",
         "highlight.js": "11.11.1",
@@ -38,9 +38,9 @@
         "zone.js": "0.15.0"
     },
     "devDependencies": {
-        "@angular-devkit/build-angular": "19.0.6",
-        "@angular/cli": "19.0.6",
-        "@angular/compiler-cli": "19.0.5",
+        "@angular/build": "^20.3.26",
+        "@angular/cli": "20.3.26",
+        "@angular/compiler-cli": "20.3.21",
         "@tailwindcss/typography": "0.5.15",
         "@types/chroma-js": "2.4.5",
         "@types/crypto-js": "4.2.2",
@@ -63,6 +63,6 @@
         "prettier-plugin-organize-imports": "4.1.0",
         "prettier-plugin-tailwindcss": "0.6.9",
         "tailwindcss": "3.4.17",
-        "typescript": "5.6.3"
+        "typescript": "5.9.3"
     }
 }

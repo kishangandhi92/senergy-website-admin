@@ -1,4 +1,3 @@
-import { DOCUMENT } from '@angular/common';
 import {
     Component,
     Inject,
@@ -6,6 +5,7 @@ import {
     OnInit,
     Renderer2,
     ViewEncapsulation,
+    DOCUMENT
 } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { FuseConfig, FuseConfigService } from '@fuse/services/config';
